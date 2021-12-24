@@ -1,0 +1,91 @@
+successes = 0
+failures = 0
+testnum = 0
+function compare(name, expected, actual)
+{
+    testnum = testnum + 1
+    if (expected == actual)
+    {
+        print(name, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        successes = successes + 1
+    }
+    else
+    {
+        print("###", name, " FAILED ", "Expected:  ", expected, " Actual:  ", actual)
+        failures = failures + 1
+    }
+}
+
+a=3
+b=4
+compare("Simple Assignment Test 1", a, 3)
+compare("Simple Assignment Test 2", b, 4)
+
+c = 3 + 4
+compare("Expression Test 1", c, 7)
+
+c = 4 - 3
+compare("Expression Test 2", c, 1)
+
+c = 3 * 4
+compare("Expression Test 3", c, 12)
+
+c = 4 / 4
+compare("Expression Test 4", c, 1)
+
+c = 4 < 3
+compare("Expression Test 5", c, 0)
+
+c = 3 < 4
+compare("Expression Test 6", c, 1)
+
+c = 4 <= 3
+compare("Expression Test 6", c, 0)
+
+c = 4 <= 4
+compare("Expression Test 7", c, 1)
+
+c = 4 > 5
+compare("Expression Test 8", c, 0)
+
+c = 4 > 3
+compare("Expression Test 9", c, 1)
+
+c = 4 >= 5
+compare("Expression Test 10", c, 0)
+
+c = 4 >= 4
+compare("Expression Test 11", c, 1)
+
+c = 4 == 5
+compare("Expression Test 12", c, 0)
+
+c = 4 == 4
+compare("Expression Test 13", c, 1)
+
+c = 4 != 4
+compare("Expression Test 14", c, 0)
+
+c = 4 != 5
+compare("Expression Test 15", c, 1)
+
+d = "JAGR"
+compare("Expression Test 16", d, "JAGR")
+
+e = "JAROMIR"
+f = e + d
+compare("Expression Test 17", "JAROMIRJAGR", f)
+
+a = 2
+b = 3
+g = (a+b)*b
+compare("Expression Test 18", g, 15)
+
+q = 1.0
+r = 2.0
+s = q + r
+compare("Floating Point Test 19", 3.0, s)
+
+print( "Tests Complete" )
+print( "Successes:  ", successes)
+print( "Failures:   ", failures)

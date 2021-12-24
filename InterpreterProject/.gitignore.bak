@@ -1,0 +1,11 @@
+*.o
+*.obj
+*.pdb
+*.log
+*.idb
+__pycache__/*
+InterpreterGrammar.cpp
+InterpreterGrammar.hpp
+
+
+

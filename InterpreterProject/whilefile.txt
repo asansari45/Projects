@@ -1,0 +1,6 @@
+e=5
+while e>=0
+{
+    print "E:  " e
+    e = e-1
+}

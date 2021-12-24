@@ -1,0 +1,36 @@
+successes = 0
+failures = 0
+testnum = 0
+function compare(name, expected, actual)
+{
+    testnum = testnum + 1
+
+    if (expected == actual)
+    {
+        print(name, " Test ", testnum, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        successes = successes + 1
+    }
+    else
+    {
+        print("###  ", name, " Test ", testnum, " FAILURE ", "Expected:  ", expected, " Actual:  ", actual)
+        failures = failures + 1
+    }
+}
+
+a = "Jagr"
+b = "Jagr"
+c = a == b
+compare("String Comparison", 1, c)
+
+a = "Asif"
+b = "Amir"
+c = a < b
+compare("String Comparison", 0, c)
+
+d = a + b
+compare("String Concatenation", "AsifAmir", d)
+
+print( "Tests Complete" )
+print( "Successes:  ", successes)
+print( "Failures:   ", failures)
+print( "Totals:  ", testnum)

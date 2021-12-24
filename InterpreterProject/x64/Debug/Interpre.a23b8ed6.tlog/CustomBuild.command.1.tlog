@@ -1,0 +1,4 @@
+^C:\USERS\ASANS\DOWNLOADS\VISUAL STUDIO PROJECTS\INTERPRETERPROJECT\INTERPRETER.L
+..\FlexBison\win_flex.exe --nounistd Interpreter.l
+^C:\USERS\ASANS\DOWNLOADS\VISUAL STUDIO PROJECTS\INTERPRETERPROJECT\INTERPRETER.Y
+..\FlexBison\win_bison --defines=InterpreterParser.hpp --output=InterpreterParser.cpp Interpreter.y

@@ -1,0 +1,40 @@
+successes = 0
+failures = 0
+testnum = 1
+function compare(name, expected, actual)
+{
+    if (expected == actual)
+    {
+        print(name, " Test ", testnum, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        successes = successes + 1
+    }
+    else
+    {
+        print("###  ", name, " Test ", testnum, " FAILURE ", "Expected:  ", expected, " Actual:  ", actual)
+        failures = failures + 1
+    }
+
+    testnum = testnum + 1
+}
+
+j = 0
+for (i=0, i<10, i = i + 1)
+{
+    j = j + 1
+}
+
+compare("For Loop", 10, i)
+compare("For Loop", 10, j)
+
+k = 0
+while (k < 10)
+{
+    k = k + 1
+}
+
+compare("While Loop", 10, k)
+
+print( "Tests Complete" )
+print( "Successes:  ", successes)
+print( "Failures:   ", failures)
+print( "Totals:  ", testnum)

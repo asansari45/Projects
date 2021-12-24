@@ -1,0 +1,94 @@
+successes = 0
+failures = 0
+testnum = 0
+function compare(name, expected, actual)
+{
+    testnum = testnum + 1
+    if (expected == actual)
+    {
+        print(name, " Test ", testnum, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        successes = successes + 1
+    }
+    else
+    {
+        print("###  ", name, " Test ", testnum, " FAILURE ", "Expected:  ", expected, " Actual:  ", actual)
+        failures = failures + 1
+    }
+}
+
+a=3
+b=4
+if (a > b)
+{
+    c = 7
+}
+else
+{
+    c = 8
+}
+compare("If Else", c, 8)
+
+if (b > a)
+{
+    c = 7
+}
+else
+{
+    c = 8
+}
+compare("If Else", c, 7)
+
+if (1 > 2)
+{
+    c = 7
+}
+elif (3 > 4)
+{
+    c = 8
+}
+elif (4 > 5)
+{
+    c = 9
+}
+else
+{
+    c = 10
+}
+compare("If Else", c, 10)
+
+if (1 > 2)
+{
+    c = 7
+}
+elif (3 > 4)
+{
+    c = 8
+}
+elif (6 > 5)
+{
+    c = 9
+}
+else
+{
+    c = 10
+}
+compare("If Else", c, 9)
+
+s = "JAGR"
+if ( s == "JAGR")
+{
+    c = 20
+}
+compare("If Else", c, 20)
+
+b = "JA" + "GR"
+if ( b == "JAGR")
+{
+    c = 40
+}
+compare("If String", c, 40)
+
+print( "Tests Complete" )
+print( "Successes:  ", successes)
+print( "Failures:   ", failures)
+print( "Totals:  ", testnum)

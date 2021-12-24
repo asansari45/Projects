@@ -1,0 +1,61 @@
+successes = 0
+failures = 0
+testnum = 0
+function compare(name, expected, actual)
+{
+    testnum = testnum + 1
+
+    if (expected == actual)
+    {
+        print(name, " Test ", testnum, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        successes = successes + 1
+    }
+    else
+    {
+        print("###  ", name, " Test ", testnum, " FAILURE ", "Expected:  ", expected, " Actual:  ", actual)
+        failures = failures + 1
+    }
+}
+
+a = dim[10]
+for (i=0, i<10, i = i + 1)
+{
+    a[i] = i
+}
+
+for (i=0, i<10, i = i + 1)
+{
+    compare("Single Dimension Test", i, a[i])
+}
+
+for (i=0, i<10, i = i + 1)
+{
+    a[i] = a[i] * 2
+}
+
+for (i=0, i<10, i = i + 1)
+{
+    compare("Single Dimension Expression Test", i*2, a[i])
+}
+
+b = dim[5,11]
+for (i=0, i < 5, i = i + 1)
+{
+    for (j=0, j<11, j = j + 1)
+    {
+        b[i,j] = i * j
+    }
+}
+
+for (i=0, i < 5, i = i + 1)
+{
+    for (j=0, j<11, j = j + 1)
+    {
+        compare("Double Dimension Test", i*j, b[i,j])
+    }
+}
+
+print( "Tests Complete" )
+print( "Successes:  ", successes)
+print( "Failures:   ", failures)
+print( "Totals:  ", testnum)

@@ -1,0 +1,22 @@
+successes = 0
+failures = 0
+function compare(name, expected, actual)
+{
+    if (expected == actual)
+    {
+        print(name, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        successes = successes + 1
+    }
+    else
+    {
+        print("###", name, " FAILED ", "Expected:  ", expected, " Actual:  ", actual)
+        failures = failures + 1
+    }
+}
+
+a = -1
+compare("Simple Negate", -1, a)
+
+print( "Tests Complete" )
+print( "Successes:  ", successes)
+print( "Failures:   ", failures)

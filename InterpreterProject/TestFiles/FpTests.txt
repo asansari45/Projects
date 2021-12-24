@@ -1,0 +1,29 @@
+successes = 0
+failures = 0
+testnum = 0
+function compare(name, expected, actual)
+{
+    testnum = testnum + 1
+    if (expected == actual)
+    {
+        print(name, " Test ", testnum, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        successes = successes + 1
+    }
+    else
+    {
+        print("###  ", name, " Test ", testnum, " FAILURE ", "Expected:  ", expected, " Actual:  ", actual)
+        failures = failures + 1
+    }
+}
+
+a = 3.0 + 4.0
+compare("FP Literals", 7.0, a)
+
+b = 10.0
+a = a + b
+compare("FP Variables", 17.0, a)
+
+print( "Tests Complete" )
+print( "Successes:  ", successes)
+print( "Failures:   ", failures)
+print( "Totals:  ", testnum)

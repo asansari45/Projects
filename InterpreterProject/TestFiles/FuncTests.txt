@@ -1,0 +1,53 @@
+successes = 0
+failures = 0
+testnum = 0
+function compare(name, expected, actual)
+{
+    testnum = testnum + 1
+    if (expected == actual)
+    {
+        print(name, " Test ", testnum, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        successes = successes + 1
+    }
+    else
+    {
+        print("###  ", name, " Test ", testnum, " FAILURE ", "Expected:  ", expected, " Actual:  ", actual)
+        failures = failures + 1
+    }
+}
+
+function foo(a, b, c)
+{
+    d = a + b + c
+    return(d)
+}
+
+function bar(a, b, c)
+{
+    foo(a*2, b*3, c*4)
+    e = d * 10
+}
+
+foo(1, 4, 6)
+compare("Func foo", 11, d)
+
+bar(2, 4, 6)
+compare("Func bar", 400, e)
+
+q = foo(3, 4, 5)
+compare("Func foo return", 12, q)
+
+function doo(a, b, c)
+{
+    i = a + b
+    j = 2 * c
+    return(i + j)
+}
+
+result = doo(2, 3, 4)
+compare("Func doo return", 13, result)
+
+print( "Tests Complete" )
+print( "Successes:  ", successes)
+print( "Failures:   ", failures)
+print( "Totals:  ", testnum)
