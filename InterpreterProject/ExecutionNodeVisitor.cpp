@@ -475,5 +475,10 @@ namespace Interpreter
         std::string path(std::filesystem::current_path().u8string());
         Log::GetInst()->AddMessage(path);
     }
+
+    void ExecutionNodeVisitor::VisitFunctionsNode(FunctionsNode* pNode)
+    {
+        FunctionTable::GetInst()->Dump();
+    }
 };
 

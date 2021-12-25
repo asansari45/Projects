@@ -23,6 +23,7 @@ class ClearNode;
 class ReturnNode;
 class DimNode;
 class PwdNode;
+class FunctionsNode;
 
 class NodeVisitor
 {
@@ -77,6 +78,9 @@ public:
     {
     }
     virtual void VisitPwdNode(PwdNode* pNode)
+    {
+    }
+    virtual void VisitFunctionsNode(FunctionsNode* pNode)
     {
     }
 };

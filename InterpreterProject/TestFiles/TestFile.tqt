@@ -1,2 +1,4 @@
-a=0
-b=a[0,0,0]
+function foo(){}
+function bar(){}
+function goo(a,b,c){}
+functions

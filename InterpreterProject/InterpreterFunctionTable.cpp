@@ -1,5 +1,6 @@
 #include "InterpreterFunctionTable.h"
 #include "InterpreterNode.hpp"
+#include "InterpreterLog.h"
 
 namespace Interpreter
 {
@@ -79,5 +80,32 @@ namespace Interpreter
 
         }
         m_Map.clear();
+    }
+
+    void FunctionTable::Dump()
+    {
+        for (std::map<std::string, FunctionDefNode*>::iterator i = m_Map.begin();
+            i != m_Map.end();
+            i++)
+        {
+            char buf[512];
+            FunctionDefNode* p = i->second;
+            sprintf_s(buf, sizeof(buf), "function %s(", p->GetNameVar()->GetName().c_str());
+            char params[512];
+            for (VarNode* pNode = p->GetInputVars(); pNode; pNode=dynamic_cast<VarNode*>(pNode->GetNext()))
+            {
+                if (pNode->GetNext() != nullptr)
+                {
+                    sprintf_s(params, sizeof(params), "%s,", pNode->GetName().c_str());
+                }
+                else
+                {
+                    sprintf_s(params, sizeof(params), "%s", pNode->GetName().c_str());
+                }
+                strcat_s(buf, params);
+            }
+            strcat_s(buf, ")");
+            Log::GetInst()->AddMessage(buf);
+        }
     }
 };

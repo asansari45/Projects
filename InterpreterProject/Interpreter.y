@@ -87,6 +87,7 @@ class Node;
 %token LARRAY_
 %token RARRAY_
 %token PWD_
+%token FUNCTIONS_
 %token <m_pNode> FUNCNAME_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
@@ -285,6 +286,21 @@ funcdef : FUNCTION_ FUNCNAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBR
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
             pNode->SetCode($6);
+            $$ = pNode;
+         }
+         |
+         FUNCTION_ FUNCNAME_ LPAREN_ param_list RPAREN_ LBRACKET_ RBRACKET_
+         {
+            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
+            pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
+            pNode->SetInputVars(dynamic_cast<Interpreter::VarNode*>($4));
+            $$ = pNode;
+         }
+         |
+         FUNCTION_ FUNCNAME_ LPAREN_ RPAREN_ LBRACKET_ RBRACKET_
+         {
+            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
+            pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
             $$ = pNode;
          }
          ;
@@ -573,6 +589,11 @@ command:
         $$ = new Interpreter::PwdNode;
         $$->SetLine(@1.end.line);
         $$->SetColumn(@1.end.column);
+    }
+    |
+    FUNCTIONS_
+    {
+        $$ = new Interpreter::FunctionsNode;
     }
     ;
 

@@ -169,7 +169,6 @@ bool SymbolTable::IsSymbolPresent(const std::string name)
         
 void SymbolTable::Dump()
 {
-    Log::GetInst()->AddMessage("Name Dims Value");
     for (std::map<std::string, SymbolInfo*>::iterator i = m_SymbolMap.begin();
         i != m_SymbolMap.end();
         i++)
@@ -181,24 +180,24 @@ void SymbolTable::Dump()
             char buf[512];
             if (dims.size() == 3)
             {
-                sprintf_s(buf, sizeof(buf), "%s [%d,%d,%d] ...", p->m_Name.c_str(), dims[0], dims[1], dims[2]);
+                sprintf_s(buf, sizeof(buf), "%s=dim[%d,%d,%d]", p->m_Name.c_str(), dims[0], dims[1], dims[2]);
                 Log::GetInst()->AddMessage(buf);
             }
             else if (dims.size() == 2)
             {
-                sprintf_s(buf, sizeof(buf), "%s [%d,%d] ...", p->m_Name.c_str(), dims[0], dims[1]);
+                sprintf_s(buf, sizeof(buf), "%s=dim[%d,%d]", p->m_Name.c_str(), dims[0], dims[1]);
                 Log::GetInst()->AddMessage(buf);
             }
             else if (dims.size() == 1)
             {
-                sprintf_s(buf, sizeof(buf), "%s [%d] ...", p->m_Name.c_str(), dims[0]);
+                sprintf_s(buf, sizeof(buf), "%s=dim[%d]", p->m_Name.c_str(), dims[0]);
                 Log::GetInst()->AddMessage(buf);
             }
         }
         else
         {
             char buf[512];
-            sprintf_s(buf, sizeof(buf), "%s ... %s", p->m_Name.c_str(), p->m_Value.GetRepresentation().c_str());
+            sprintf_s(buf, sizeof(buf), "%s", p->m_Name.c_str());
             Log::GetInst()->AddMessage(buf);
         }
     }

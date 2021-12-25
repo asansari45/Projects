@@ -108,6 +108,10 @@ int yycolumn = 1;
     return token::PWD_;
 }
 
+"functions" {
+    return token::FUNCTIONS_;
+}
+
 "function" {
     BEGIN(function);
     return token::FUNCTION_;
