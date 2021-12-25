@@ -9,6 +9,17 @@ InterpreterGrammar.hpp
 InterpreterLex.hpp
 InterpreterParser.hpp
 InterpreterParser.cpp
+lex.yy.cc
+Browse.VC.db
+Browse.VC.db-shm
+Browse.VC.db-wal
+Browse.VC.opendb
+.suo
+*.tlog
+*.ilk
+*.ipch
+*.pyc
+
 
 
 

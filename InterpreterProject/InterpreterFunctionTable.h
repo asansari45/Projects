@@ -18,6 +18,7 @@ public:
     bool AttachDefinition(std::string name, FunctionDefNode* f);
     FunctionDefNode* Lookup(std::string name);
     void Clear();
+    void Dump();
 private:
     FunctionTable()
     {

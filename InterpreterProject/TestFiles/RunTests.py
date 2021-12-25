@@ -218,5 +218,35 @@ class ErrorTests(unittest.TestCase) :
                                'c=a+b'],
                                ['LINE:  4, COLUMN:  4  Array operation failed on array a.  Wrong dimensions or element values of different types.'])
 
+class FunctionsCommandTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteFunctionsTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+
+
+    def test_functions_command(self):
+        self.ExecuteFunctionsTest(['function foo(){}',
+                                   'function bar(){}',
+                                   'function goo(a,b,c){}',
+                                   'functions'],
+                                   ['function bar()',
+                                    'function foo()',
+                                    'function goo(a,b,c)'])
+
 if __name__ == '__main__':
     unittest.main()

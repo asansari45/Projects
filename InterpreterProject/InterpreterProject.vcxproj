@@ -199,6 +199,9 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">InterpreterParser.cpp</Outputs>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="TestFiles\RunTests.py" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
