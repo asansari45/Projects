@@ -88,6 +88,7 @@ class Node;
 %token RARRAY_
 %token PWD_
 %token FUNCTIONS_
+%token VARS_
 %token <m_pNode> FUNCNAME_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
@@ -594,6 +595,11 @@ command:
     FUNCTIONS_
     {
         $$ = new Interpreter::FunctionsNode;
+    }
+    |
+    VARS_
+    {
+        $$ = new Interpreter::VarsCmdNode;
     }
     ;
 

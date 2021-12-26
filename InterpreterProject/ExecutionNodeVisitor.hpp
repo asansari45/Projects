@@ -33,6 +33,7 @@ public:
     virtual void VisitDimNode(DimNode* pNode);
     virtual void VisitPwdNode(PwdNode* pNode);
     virtual void VisitFunctionsNode(FunctionsNode* pNode);
+    virtual void VisitVarsCmdNode(VarsCmdNode* pNode);
 
     std::optional<Value> GetResult()
     {

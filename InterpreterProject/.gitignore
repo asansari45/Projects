@@ -19,7 +19,4 @@ Browse.VC.opendb
 *.ilk
 *.ipch
 *.pyc
-
-
-
-
+*.tqt

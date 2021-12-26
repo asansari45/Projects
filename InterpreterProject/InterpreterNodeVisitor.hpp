@@ -24,6 +24,7 @@ class ReturnNode;
 class DimNode;
 class PwdNode;
 class FunctionsNode;
+class VarsCmdNode;
 
 class NodeVisitor
 {
@@ -81,6 +82,9 @@ public:
     {
     }
     virtual void VisitFunctionsNode(FunctionsNode* pNode)
+    {
+    }
+    virtual void VisitVarsCmdNode(VarsCmdNode* pNode)
     {
     }
 };

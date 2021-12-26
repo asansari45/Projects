@@ -480,5 +480,10 @@ namespace Interpreter
     {
         FunctionTable::GetInst()->Dump();
     }
+
+    void ExecutionNodeVisitor::VisitVarsCmdNode(VarsCmdNode* pNode)
+    {
+        m_pGlobalSymbolTable->Dump();
+    }
 };
 

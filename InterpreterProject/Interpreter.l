@@ -112,6 +112,10 @@ int yycolumn = 1;
     return token::FUNCTIONS_;
 }
 
+"vars" {
+    return token::VARS_;
+}
+
 "function" {
     BEGIN(function);
     return token::FUNCTION_;
