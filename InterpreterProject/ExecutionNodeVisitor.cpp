@@ -96,31 +96,24 @@ namespace Interpreter
 
     void ExecutionNodeVisitor::VisitPrintNode(Interpreter::PrintNode* pNode)
     {
-        if (pNode->GetChild() != nullptr)
+        std::string s;
+        for (Interpreter::Node* pChild = pNode->GetChild(); pChild != nullptr; pChild = pChild->GetNext())
         {
-            std::string s;
-            for (Interpreter::Node* pChild = pNode->GetChild(); pChild != nullptr; pChild = pChild->GetNext())
+            pChild->Accept(*this);
+            std::optional<Value> value;
+            if (m_Nodes.size() != 0)
             {
-                pChild->Accept(*this);
-                std::optional<Value> value;
-                if (m_Nodes.size() != 0)
-                {
-                    value = GetRvalue(m_Nodes.back());
-                    m_Nodes.pop_back();
-                }
-
-                if (value != std::nullopt)
-                {
-                    std::string repr = value.value().GetRepresentation();
-                    s += repr;
-                }
+                value = GetRvalue(m_Nodes.back());
+                m_Nodes.pop_back();
             }
-            Log::GetInst()->AddMessage(s);
+
+            if (value != std::nullopt)
+            {
+                std::string repr = value.value().GetRepresentation();
+                s += repr;
+            }
         }
-        else
-        {
-            m_pGlobalSymbolTable->Dump();
-        }
+        Log::GetInst()->AddMessage(s);
     }
 
     void ExecutionNodeVisitor::VisitQuitNode(Interpreter::QuitNode* pNode)
