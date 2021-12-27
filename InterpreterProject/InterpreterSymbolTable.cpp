@@ -53,22 +53,43 @@ bool SymbolTable::ChangeSymbol(const std::string symbol, Value value, const std:
     }
 
     SymbolInfo* pSymbolInfo = i->second;
-    if (!pSymbolInfo->m_IsArray && pElement != nullptr)
-    {
-        return false;
-    }
-
-    if (pSymbolInfo->m_IsArray && pElement == nullptr)
-    {
-        return false;
-    }
-
     if (pSymbolInfo->m_IsArray)
     {
-        return pSymbolInfo->m_ArrayValue.SetValue(*pElement, value);
+        // The symbol is currently an array.
+        if (pElement != nullptr)
+        {
+            // An element is specified.
+            return pSymbolInfo->m_ArrayValue.SetValue(*pElement, value);
+        }
+
+        // No element is specified.  Let's change the element be a discrete element.
+        pSymbolInfo->m_IsArray = false;
+        pSymbolInfo->m_Value = value;
+        return true;
+    }
+
+    // Not an array
+    if (pElement != nullptr)
+    {
+        // A specific element is asked for a non-array.  Error.
+        return false;
     }
 
     pSymbolInfo->m_Value = value;
+    return true;
+}
+
+bool SymbolTable::ChangeSymbol(const std::string symbol, ArrayValue value)
+{
+    std::map<std::string, SymbolInfo*>::iterator i = m_SymbolMap.find(symbol);
+    if (i == m_SymbolMap.end())
+    {
+        return false;
+    }
+
+    SymbolInfo* pSymbolInfo = i->second;
+    pSymbolInfo->m_IsArray = true;
+    pSymbolInfo->m_ArrayValue = value;
     return true;
 }
 

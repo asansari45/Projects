@@ -169,7 +169,6 @@ std::optional<BinaryFunc::LvalueProperties> BinaryFunc::GetLvalueProperties(Node
     if (pVarNode != nullptr)
     {
         l.m_SymbolName = pVarNode->GetName();
-        l.m_pSymbolTable = pGlobalSymbols;
         if (pLocalSymbols != nullptr)
         {
             if (pLocalSymbols->IsSymbolPresent(l.m_SymbolName))
@@ -181,11 +180,18 @@ std::optional<BinaryFunc::LvalueProperties> BinaryFunc::GetLvalueProperties(Node
 
         if (!l.m_SymbolPresent)
         {
-            l.m_SymbolPresent = l.m_pSymbolTable->IsSymbolPresent(l.m_SymbolName);
+            l.m_SymbolPresent = pGlobalSymbols->IsSymbolPresent(l.m_SymbolName);
+            if (l.m_SymbolPresent)
+            {
+                l.m_pSymbolTable = pGlobalSymbols;
+            }
         }
 
         l.m_SymbolArraySpecifier = pVarNode->GetArraySpecifier();
-        l.m_SymbolArray = l.m_pSymbolTable->IsSymbolArray(l.m_SymbolName);
+        if (l.m_pSymbolTable != nullptr)
+        {
+            l.m_SymbolArray = l.m_pSymbolTable->IsSymbolArray(l.m_SymbolName);
+        }
 
         // a[0] only allowed if we have the symbol.
         // The symbol must be an array.
@@ -281,12 +287,7 @@ class EquFunc : public BinaryFunc
                 return nullptr;
             }
 
-            // Copy the entire array from the right to the left.
-            // Remove the symbol whether its there or not.
-            lval->m_pSymbolTable->DelSymbol(lval->m_SymbolName);
-
-            // Add another array symbol.
-            lval->m_pSymbolTable->AddSymbol(lval->m_SymbolName, rval->m_ArrayValue);
+            UpdateLval(*lval, rval->m_ArrayValue, pGlobalSymbols, pLocalSymbols);
             return nullptr;
         }
 
@@ -296,13 +297,9 @@ class EquFunc : public BinaryFunc
             // Left side is an entire array.
             // a=dim[10]
             // a = 3
-            // Error
-            ErrorInterface::ErrorInfo err(pLeft);
-            char buf[512];
-            sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNEXPECTED_ARRAY_SPECIFIER, lval->m_SymbolName.c_str());
-            err.m_Msg = buf;
-            pErrorInterface->SetErrorFlag(true);
-            pErrorInterface->SetErrorInfo(err);
+            // OK, Delete a, and make a new one.
+            lval->m_pSymbolTable->DelSymbol(lval->m_SymbolName);
+            lval->m_pSymbolTable->AddSymbol(lval->m_SymbolName, rval->m_Value);
             return nullptr;
         }
 
@@ -330,10 +327,51 @@ class EquFunc : public BinaryFunc
 
         // Left side is not an array, but a variable without an array specifier.
         // a = 3
-        lval->m_pSymbolTable->DelSymbol(lval->m_SymbolName);
-        bool status = lval->m_pSymbolTable->AddSymbol(lval->m_SymbolName, rval->m_Value);
-        assert(status);
+        UpdateLval(*lval, rval->m_Value, pGlobalSymbols, pLocalSymbols);
         return nullptr;
+    }
+private:
+
+    void UpdateLval(LvalueProperties& lval, ArrayValue& rval, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols)
+    {
+        if (lval.m_SymbolPresent)
+        {
+            // The symbol is already in the table.  Update it.
+            lval.m_pSymbolTable->ChangeSymbol(lval.m_SymbolName, rval);
+        }
+        else
+        {
+            // The symbol is not there, let's create one.
+            if (pLocalSymbols != nullptr)
+            {
+                pLocalSymbols->AddSymbol(lval.m_SymbolName, rval);
+            }
+            else
+            {
+                pGlobalSymbols->AddSymbol(lval.m_SymbolName, rval);
+            }
+        }
+    }
+
+    void UpdateLval(LvalueProperties& lval, Value& rval, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols)
+    {
+        if (lval.m_SymbolPresent)
+        {
+            // The symbol is already in the table.  Update it.
+            lval.m_pSymbolTable->ChangeSymbol(lval.m_SymbolName, rval);
+        }
+        else
+        {
+            // The symbol is not there, let's create one.
+            if (pLocalSymbols != nullptr)
+            {
+                pLocalSymbols->AddSymbol(lval.m_SymbolName, rval);
+            }
+            else
+            {
+                pGlobalSymbols->AddSymbol(lval.m_SymbolName, rval);
+            }
+        }
     }
 };
 

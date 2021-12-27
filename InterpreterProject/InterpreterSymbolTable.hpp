@@ -17,6 +17,7 @@ public:
     bool AddSymbol(const std::string name, Value value);
     bool AddSymbol(const std::string name, ArrayValue value);
     bool ChangeSymbol(const std::string name, Value value, const std::vector<int>* pElement = nullptr);
+    bool ChangeSymbol(const std::string name, ArrayValue value);
     std::optional<std::type_index> GetSymbolType(const std::string name);
     bool IsSymbolArray(const std::string name);
     std::optional<std::vector<int> > GetSymbolDims(const std::string name);

@@ -24,14 +24,15 @@ function foo(a, b, c)
 
 function bar(a, b, c)
 {
-    foo(a*2, b*3, c*4)
+    d=foo(a*2, b*3, c*4)
     e = d * 10
+    return(e)
 }
 
-foo(1, 4, 6)
+d = foo(1, 4, 6)
 compare("Func foo", 11, d)
 
-bar(2, 4, 6)
+e=bar(2, 4, 6)
 compare("Func bar", 400, e)
 
 q = foo(3, 4, 5)

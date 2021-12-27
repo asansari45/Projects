@@ -280,5 +280,144 @@ class VarsCommandTests(unittest.TestCase):
                                     'd=dim[10,10]',
                                     'e=dim[20,20,20]'])
 
+class EquTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def ExecuteErrorTest(self, testLines, expectedError):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        actualError = results[1].strip()
+        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
+        self.assertEqual(actualError, expectedError)
+
+    # lval is an entire array
+    def test_equ_lval_array(self):
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'a=7',
+                          'print(a)'],
+                         ['7'])
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'b=3',
+                          'a=b',
+                          'print(a)'],
+                         ['3'])
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'b=dim[10]',
+                          'b[3]=4'
+                          'a=b[3]',
+                          'print(a)'],
+                         ['4'])
+
+        result = ['0'] * 10
+        result[8] = '8'
+        self.ExecuteTest(['clear()',
+                          'a=dim[5]',
+                          'b=dim[10]',
+                          'b[8]=8'
+                          'a=b',
+                          'for (i=0,i<10,i=i+1){ print(a[i]) }'],
+                         result)
+        
+        self.ExecuteErrorTest(['clear()',
+                          'a=dim[10]',
+                          'a=b'],
+                         'LINE:  3, COLUMN:  4  b is not defined.')
+
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'a[1]=4',
+                          'print(a[1])'],
+                         ['4'])
+
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'b=3'
+                          'a[1]=b',
+                          'print(a[1])'],
+                         ['3'])
+
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'b=dim[10]',
+                          'b[2]=8',
+                          'a[1]=b[2]',
+                          'print(a[1])'],
+                         ['8'])
+
+        self.ExecuteErrorTest(['clear()',
+                          'a=dim[10]',
+                          'b=dim[20]',
+                          'a[0]=b'],
+                         'LINE:  4, COLUMN:  2  a has an unexpected array specifier.')
+
+        self.ExecuteErrorTest(['clear()',
+                          'a=dim[10]',
+                          'a[0]=b'],
+                         'LINE:  3, COLUMN:  7  b is not defined.')
+
+        self.ExecuteErrorTest(['clear()',
+                          'a[0]=2'],
+                         'LINE:  2, COLUMN:  2  a is not defined.')
+
+        self.ExecuteErrorTest(['clear()',
+                          'a=dim[10]',
+                          'a[10]=3'],
+                         'LINE:  3, COLUMN:  2  a contains an incorrect array specifier.')
+
+        self.ExecuteTest(['clear()',
+                          'a=3',
+                          'print(a)'],
+                         ['3'])
+
+        self.ExecuteTest(['clear()',
+                          'a=310',
+                          'b=a',
+                          'print(b)'],
+                         ['310'])
+
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'a[2]=8'
+                          'b=a[2]',
+                          'print(b)'],
+                         ['8'])
+
+        self.ExecuteTest(['clear()',
+                          'a=3',
+                          'b=dim[10]',
+                          'b[2]=8',
+                          'a=b',
+                          'print(a[2])'],
+                         ['8'])
+
+        self.ExecuteErrorTest(['clear()',
+                          'a=b'],
+                         'LINE:  2, COLUMN:  4  b is not defined.')
+
 if __name__ == '__main__':
     unittest.main()

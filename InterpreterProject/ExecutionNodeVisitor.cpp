@@ -303,6 +303,7 @@ namespace Interpreter
             SetErrorInfo(err);
             return;
         }
+        m_Nodes.pop_back();
 
         while (result.value().IfEval())
         {
@@ -323,6 +324,7 @@ namespace Interpreter
                 return;
             }
             result = GetResult();
+            m_Nodes.pop_back();
         }
     };
 
@@ -428,6 +430,111 @@ namespace Interpreter
         }
 
         pExpr->Accept(*this);
+
+        // Get the top of the stack
+        if (!IsErrorFlagSet())
+        {
+            assert(m_Nodes.size() != 0);
+            Node* pTop = m_Nodes.back();
+            m_Nodes.pop_back();
+
+            // If it's a ValueNode, we're done.
+            if (dynamic_cast<ValueNode*>(pTop) != nullptr)
+            {
+                m_Nodes.push_back(pTop);
+                return;
+            }
+
+            // It must be a var node
+            VarNode* pVarNode = dynamic_cast<VarNode*>(pTop);
+            assert(pVarNode != nullptr);
+
+            std::string symbol = pVarNode->GetName();
+            std::vector<int> elementSpecifier = pVarNode->GetArraySpecifier();
+
+            SymbolTable* pLocalSymbols = m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr;
+            if (pLocalSymbols && pLocalSymbols->IsSymbolPresent(symbol))
+            {
+                if (elementSpecifier.size() != 0)
+                {
+                    std::optional<Value> v = pLocalSymbols->GetSymbolValue(symbol, &elementSpecifier);
+                    if (v == std::nullopt)
+                    {
+                        SetErrorFlag(true);
+                        ErrorInfo err(pTop);
+                        char buf[256];
+                        sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, symbol);
+                        err.m_Msg = buf;
+                        SetErrorInfo(err);
+                    }
+
+                    ValueNode* pResult = new ValueNode;
+                    pResult->SetValue(*v);
+                    m_Nodes.push_back(pResult);
+                    return;
+                }
+
+                if (pLocalSymbols->IsSymbolArray(symbol))
+                {
+                    std::optional<ArrayValue> v = pLocalSymbols->GetArraySymbolValue(symbol);
+                    assert(v != std::nullopt);
+                    ValueNode* pResult = new ValueNode;
+                    pResult->SetArrayValue(*v);
+                    m_Nodes.push_back(pResult);
+                    return;
+                }
+
+                std::optional<Value> v = pLocalSymbols->GetSymbolValue(symbol);
+                assert(v != std::nullopt);
+
+                ValueNode* pResult = new ValueNode;
+                pResult->SetValue(*v);
+                m_Nodes.push_back(pResult);
+                return;
+            }
+
+            if (m_pGlobalSymbolTable->IsSymbolPresent(symbol))
+            {
+                if (elementSpecifier.size() != 0)
+                {
+                    std::optional<Value> v = m_pGlobalSymbolTable->GetSymbolValue(symbol, &elementSpecifier);
+                    if (v == std::nullopt)
+                    {
+                        SetErrorFlag(true);
+                        ErrorInfo err(pTop);
+                        char buf[256];
+                        sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, symbol);
+                        err.m_Msg = buf;
+                        SetErrorInfo(err);
+                    }
+
+                    ValueNode* pResult = new ValueNode;
+                    pResult->SetValue(*v);
+                    m_Nodes.push_back(pResult);
+                    return;
+                }
+
+                if (m_pGlobalSymbolTable->IsSymbolArray(symbol))
+                {
+                    std::optional<ArrayValue> v = m_pGlobalSymbolTable->GetArraySymbolValue(symbol);
+                    assert(v != std::nullopt);
+                    ValueNode* pResult = new ValueNode;
+                    pResult->SetArrayValue(*v);
+                    m_Nodes.push_back(pResult);
+                    return;
+                }
+
+                std::optional<Value> v = m_pGlobalSymbolTable->GetSymbolValue(symbol);
+                assert(v != std::nullopt);
+
+                ValueNode* pResult = new ValueNode;
+                pResult->SetValue(*v);
+                m_Nodes.push_back(pResult);
+                return;
+            }
+        }
+
+
     };
 
     void ExecutionNodeVisitor::VisitDimNode(Interpreter::DimNode* pDimNode)
