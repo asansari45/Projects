@@ -1,0 +1,55 @@
+function StackInit(len)
+{
+	stack = dim[len]
+	return(stack,-1)
+}
+
+function StackPush(stack, stacksize, top, item)
+{
+	top = top + 1
+	if (top < stacksize)
+	{
+		stack[top] = item
+		return(stack,top)
+	}
+
+	return(stack,-1)
+}
+
+function StackPop(stack, stacksize, top)
+{
+	if (top > -1)
+	{
+		item = stack[top]
+		top = top - 1
+		return(stack,top,item)
+	}
+
+	return(stack,-1,-1)
+}
+
+function StackDump(stack, stacksize, top)
+{
+	if (top == -1)
+	{
+		print("STACK EMPTY!!!")
+		return()
+	}
+
+	for (i=0, i<=top, i=i+1)
+	{
+		print(i, ".  ", stack[i])
+	}
+	print("STACK ITEM COUNT:  ", top+1)
+	print("STACK SIZE:  ", stacksize)
+}
+
+{s,t} = StackInit(10)
+StackDump(s,10,t)
+{s,t} = StackPush(s,10,t,5)
+StackDump(s,10,t)
+{s,t,i} = StackPop(s,10,t)
+StackDump(s,10,t)
+print(i)
+
+

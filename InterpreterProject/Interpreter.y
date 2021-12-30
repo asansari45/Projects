@@ -120,6 +120,9 @@ class Node;
 %nterm <m_pNode> expression_comma_list
 %nterm <m_pNode> expression_comma
 %nterm <m_pNode> array_specifier
+%nterm <m_pNode> lval_list
+%nterm <m_pNode> rval_list
+
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
@@ -350,9 +353,13 @@ expression_list : expression_comma_list expression
         Interpreter::Node* pNode = $1;
         for (; pNode->GetNext() != nullptr; pNode = pNode->GetNext());
         pNode->SetNext($2);
+        $$ = $1;
     }
     |
     expression
+    {
+        $$ = $1;
+    }
     ;
 
 expression_comma_list : expression_comma_list expression_comma
@@ -360,12 +367,33 @@ expression_comma_list : expression_comma_list expression_comma
         Interpreter::Node* pNode = $1;
         for (; pNode->GetNext() != nullptr; pNode = pNode->GetNext());
         pNode->SetNext($2);
+        $$ = $1;
     }
     |
     expression_comma
     ;
 
 expression_comma : expression COMMA_
+    {
+        $$ = $1;
+    }
+    ;
+
+lval_list : LBRACKET_ param_list RBRACKET_
+    {
+        Interpreter::VarListNode* pNode = new Interpreter::VarListNode;
+        pNode->SetList($2);
+        pNode->SetLine($2->GetLine());
+        $$ = pNode;
+    }
+    ;
+
+rval_list : LBRACKET_ expression_list RBRACKET_
+    {
+        Interpreter::VarListNode* pNode = new Interpreter::VarListNode;
+        pNode->SetList($2);
+        $$ = pNode;
+    }
     ;
 
 assignment:
@@ -398,6 +426,24 @@ assignment:
         pEquNode->SetOperator(Interpreter::BinaryNode::EQU);
         pEquNode->SetLeft(pAryNode);
         pEquNode->SetRight($4);
+        $$ = pEquNode;
+    }
+    |
+    lval_list EQUALS_ rval_list
+    {
+        Interpreter::BinaryNode* pEquNode = new Interpreter::BinaryNode;
+        pEquNode->SetOperator(Interpreter::BinaryNode::EQU);
+        pEquNode->SetLeft($1);
+        pEquNode->SetRight($3);
+        $$ = pEquNode;
+    }
+    |
+    lval_list EQUALS_ funccall
+    {
+        Interpreter::BinaryNode* pEquNode = new Interpreter::BinaryNode;
+        pEquNode->SetOperator(Interpreter::BinaryNode::EQU);
+        pEquNode->SetLeft($1);
+        pEquNode->SetRight($3);
         $$ = pEquNode;
     }
     ;
@@ -619,7 +665,7 @@ print:
     ;
 
 return:
-    RETURN_ LPAREN_ expression RPAREN_
+    RETURN_ LPAREN_ expression_list RPAREN_
     {
         Interpreter::ReturnNode* pNode = new Interpreter::ReturnNode;
         pNode->SetExpr($3);

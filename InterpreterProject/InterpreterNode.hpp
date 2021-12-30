@@ -6,6 +6,7 @@
 #include "InterpreterValue.h"
 #include "InterpreterArrayValue.h"
 #include "InterpreterContext.h"
+#include "InterpreterSymbolTable.hpp"
 
 namespace Interpreter
 {
@@ -156,10 +157,10 @@ public:
     }
 
     Value GetValue() { return m_Value; }
-    void SetValue(Value v) { m_Value = v; }
+    void SetValue(Value v) { m_Array = false; m_Value = v; }
 
     ArrayValue GetArrayValue() { return m_ArrayValue; }
-    void SetArrayValue(ArrayValue v) { m_ArrayValue = v; }
+    void SetArrayValue(ArrayValue v) { m_Array = true; m_ArrayValue = v; }
 
     bool IsArray() { return m_Array; }
 
@@ -206,9 +207,105 @@ public:
     std::vector<int> GetArraySpecifier() { return m_ArraySpecifier; }
     void SetArraySpecifier(std::vector<int> arraySpecifier) { m_ArraySpecifier = arraySpecifier; }
 
+    bool IsArray(SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols)
+    {
+        if (m_ArraySpecifier.size() != 0)
+        {
+            // Refers to a specific element
+            return false;
+        }
+
+        if (pLocalSymbols != nullptr && pLocalSymbols->IsSymbolPresent(m_Name))
+        {
+            return pLocalSymbols->IsSymbolArray(m_Name);
+        }
+
+        return pGlobalSymbols->IsSymbolArray(m_Name);
+    }
+
+    std::optional<ArrayValue> GetArrayValue(SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols)
+    {
+        assert(IsArray(pGlobalSymbols, pLocalSymbols));
+        if (pLocalSymbols != nullptr && pLocalSymbols->IsSymbolPresent(m_Name))
+        {
+            return pLocalSymbols->GetArraySymbolValue(m_Name);
+        }
+
+        return pGlobalSymbols->GetArraySymbolValue(m_Name);
+    }
+
 private:
     std::string m_Name;
     std::vector<int> m_ArraySpecifier;
+};
+
+class VarListNode : public Node
+{
+public:
+    VarListNode() :
+        Node(),
+        m_pList(nullptr)
+    {
+    }
+
+    VarListNode(const VarListNode& rNode) :
+        Node(rNode),
+        m_pList(rNode.m_pList)
+    {
+    }
+
+    virtual ~VarListNode()
+    {
+    }
+
+    virtual Node* Clone()
+    {
+        VarListNode* pNode = new VarListNode;
+        pNode->SetList(m_pList->CloneList());
+        return pNode;
+    }
+
+    virtual void Accept(Interpreter::NodeVisitor& rVisitor)
+    {
+        rVisitor.VisitVarListNode(this);
+    }
+    
+    void SetList(Node* pList)
+    {
+        m_pList = pList;
+    }
+
+    Node* GetList()
+    {
+        return m_pList;
+    }
+
+    void Append(Node* pNode)
+    {
+        if (m_pList == nullptr)
+        {
+            m_pList = pNode;
+            return;
+        }
+
+        Node* pEnd = m_pList;
+        for (; pEnd->GetNext() != nullptr; pEnd = pEnd->GetNext());
+        pEnd->SetNext(pNode);
+    }
+
+    int GetListCount()
+    {
+        int count = 0;
+        for (Node* pNode = m_pList; pNode; pNode = pNode->GetNext())
+        {
+            count++;
+        }
+        return count;
+    }
+private:
+
+    // The list of nodes.
+    Node* m_pList;
 };
 
 class BinaryNode : public Node
@@ -850,7 +947,7 @@ public:
         ReturnNode* pNode = new ReturnNode;
         if (m_pExpr != nullptr)
         {
-            pNode->SetExpr(m_pExpr->Clone());
+            pNode->SetExpr(m_pExpr->CloneList());
         }
         return pNode;
     }

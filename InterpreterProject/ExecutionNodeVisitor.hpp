@@ -34,6 +34,7 @@ public:
     virtual void VisitPwdNode(PwdNode* pNode);
     virtual void VisitFunctionsNode(FunctionsNode* pNode);
     virtual void VisitVarsCmdNode(VarsCmdNode* pNode);
+    virtual void VisitVarListNode(VarListNode* pNode);
 
     std::optional<Value> GetResult()
     {
@@ -45,39 +46,22 @@ public:
     }
 
 private:
-    std::optional<std::type_index> GetLvalueType(Interpreter::Node* pNode)
-    {
-        Interpreter::VarNode* pVarNode = dynamic_cast<Interpreter::VarNode*>(pNode);
-        if (pVarNode != nullptr)
-        {
-            return GetSymbolType(pVarNode->GetName());
-        }
-
-        return {};
-    }
-
-    std::optional<VarNode*> GetLvalue(Interpreter::Node* pNode)
-    {
-        return dynamic_cast<Interpreter::VarNode*>(pNode);
-    }
-
-    // Look at the local symbol table first, and then global symbol table.
-    std::optional<std::type_index> GetRvalueType(Interpreter::Node* pNode)
+    bool IsArray(Node* pNode)
     {
         ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
         if (pValueNode != nullptr)
         {
-            return typeid(int);
+            return pValueNode->IsArray();
         }
 
         VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
         if (pVarNode != nullptr)
         {
-            std::string symbol = pVarNode->GetName();
-            return GetSymbolType(symbol);
+            return pVarNode->IsArray(m_pGlobalSymbolTable, 
+                                     m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr);
         }
 
-        return {};
+        return false;
     }
 
     // Look at the local symbol table first, and then global symbol table.
@@ -93,6 +77,27 @@ private:
         if (pVarNode != nullptr)
         {
             return GetSymbolValue(pVarNode);
+        }
+
+        return {};
+    }
+
+    // Look at the local symbol table first, and then global symbol table.
+    std::optional<ArrayValue> GetRarrayValue(Interpreter::Node* pNode)
+    {
+        assert(IsArray(pNode));
+
+        ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
+        if (pValueNode != nullptr)
+        {
+            return pValueNode->GetArrayValue();
+        }
+
+        VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
+        if (pVarNode != nullptr)
+        {
+            return pVarNode->GetArrayValue(m_pGlobalSymbolTable,
+                                           m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr);
         }
 
         return {};

@@ -419,5 +419,105 @@ class EquTests(unittest.TestCase):
                           'a=b'],
                          'LINE:  2, COLUMN:  4  b is not defined.')
 
+class VarListTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def ExecuteErrorTest(self, testLines, expectedError):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        actualError = results[1].strip()
+        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
+        self.assertEqual(actualError, expectedError)
+
+    # Single element
+    def test_var_list_single(self):
+        self.ExecuteTest(['clear()',
+                          '{a}={2}',
+                          'print(a)'],
+                         ['2'])
+        self.ExecuteTest(['clear()',
+                          '{b}={3}',
+                          'print(b)'],
+                         ['3'])
+
+    # Multiple elements
+    def test_var_list_multiple(self):
+        self.ExecuteTest(['clear()',
+                          '{a,b}={2,3}',
+                          'print(a,b)'],
+                         ['23'])
+        self.ExecuteTest(['clear()',
+                          '{a,b,c}={3,4,5}',
+                          'print(a,b,c)'],
+                         ['345'])
+    # Arrays
+    def test_var_list_arrays(self):
+        self.ExecuteTest(['clear()',
+                           'a=dim[10]',
+                           'a[3]=4',
+                           'b=dim[20]',
+                           'b[5]=6'
+                          '{q,r}={a,b}',
+                          'print(q[3],r[5])'],
+                         ['46'])
+
+    def test_var_list_errors(self):
+        self.ExecuteErrorTest(['clear()',
+                               'b=3',
+                               'c=4',
+                               '{a}={b,c}'],
+                               'LINE:  5, COLUMN:  1  1 arguments on left 2 arguments on right.')
+        self.ExecuteErrorTest(['clear()',
+                               'b=3',
+                               'c=4',
+                               '{a,b}={c}'],
+                               'LINE:  5, COLUMN:  1  2 arguments on left 1 arguments on right.')
+        self.ExecuteErrorTest(['clear()',
+                               'a=3',
+                               'b=4',
+                               '{a,b}={a,d}'],
+                               'LINE:  4, COLUMN:  11  d is not defined.')
+
+    def test_var_list_functions(self):
+        self.ExecuteTest(['clear()',
+                          'function foo(){return(1,2,3)}',
+                          '{a,b,c}=foo()',
+                          'print(a,b,c)'],
+                         ['123'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    a=1',
+                          '    b=2',
+                          '    c=3',
+                          '    return(a,b,c)',
+                          '}',
+                          '{a,b,c}=foo()',
+                          'print(a,b,c)'],
+                         ['123'])
+
 if __name__ == '__main__':
     unittest.main()

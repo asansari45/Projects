@@ -253,8 +253,30 @@ std::optional<BinaryFunc::LvalueProperties> BinaryFunc::GetLvalueProperties(Node
 // a[0] = b[0] ; legal when a and b are defined and arrays.
 class EquFunc : public BinaryFunc
 {
-    virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+    virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, 
+                          ErrorInterface* pErrorInterface)
     {
+        // Check for variable lists.
+        VarListNode* pLeftVarList = dynamic_cast<VarListNode*>(pLeft);
+        VarListNode* pRightVarList = dynamic_cast<VarListNode*>(pRight);
+        if (pLeftVarList == nullptr && pRightVarList != nullptr || 
+            pLeftVarList != nullptr && pRightVarList == nullptr)
+        {
+            pErrorInterface->SetErrorFlag(true);
+            ErrorInterface::ErrorInfo err(pLeft);
+            char buf[512];
+            sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_VARLIST_BOTH_SIDES);
+            err.m_Msg = buf;
+            pErrorInterface->SetErrorInfo(err);
+            return nullptr;
+        }
+
+        if (pLeftVarList != nullptr)
+        {
+            ProcessVarLists(pLeftVarList, pRightVarList, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            return nullptr;
+        }
+
         // Figure it if we're operating with arrays or not.
         // Either both have to represent arrays or not.
         std::optional<RvalueProperties> rval = GetRvalueProperties(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
@@ -331,6 +353,38 @@ class EquFunc : public BinaryFunc
         return nullptr;
     }
 private:
+    void ProcessVarLists(VarListNode* pLeft, VarListNode* pRight, SymbolTable* pGlobalSymbols, 
+                         SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+    {
+        // Argument count check
+        if (pLeft->GetListCount() != pRight->GetListCount())
+        {
+            pErrorInterface->SetErrorFlag(true);
+            ErrorInterface::ErrorInfo err(pLeft);
+            char buf[512];
+            sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_VARLIST_ARGS, pLeft->GetListCount(), pRight->GetListCount());
+            err.m_Msg = buf;
+            pErrorInterface->SetErrorInfo(err);
+            return;
+        }
+
+        Node* pLeftNodes = pLeft->GetList();
+        Node* pRightNodes = pRight->GetList();
+        while (pLeftNodes != nullptr && pRightNodes != nullptr)
+        {
+            // Perform the copies one by one.
+            Perform(pLeftNodes, pRightNodes, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            if (pErrorInterface->IsErrorFlagSet())
+            {
+                // We're done, let's stop.
+                return;
+            }
+
+            // Advance pointers
+            pLeftNodes = pLeftNodes->GetNext();
+            pRightNodes = pRightNodes->GetNext();
+        }
+    }
 
     void UpdateLval(LvalueProperties& lval, ArrayValue& rval, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols)
     {
@@ -737,7 +791,8 @@ class NegFunc : public BinaryFunc
 
 class DimFunc : public BinaryFunc
 {
-    virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+    virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, 
+                          ErrorInterface* pErrorInterface)
     {
         DimNode* pDimNode = dynamic_cast<DimNode*>(pRight);
         assert(pDimNode != nullptr);
@@ -770,17 +825,7 @@ class DimFunc : public BinaryFunc
         SymbolTable* pSymbolTable = nullptr;
         if (pLocalSymbols != nullptr)
         {
-            bool status = pLocalSymbols->IsSymbolPresent(name);
-            if (status)
-            {
-                // Found in the local symbol table use it.
-                pSymbolTable = pLocalSymbols;
-            }
-            else
-            {
-                // Always use the global symbol table.
-                pSymbolTable = pGlobalSymbols;
-            }
+            pSymbolTable = pLocalSymbols;
         }
         else
         {
@@ -788,6 +833,7 @@ class DimFunc : public BinaryFunc
             pSymbolTable = pGlobalSymbols;
         }
 
+        // Remove from the symbol table if present.
         if (pSymbolTable->IsSymbolPresent(name))
         {
             pSymbolTable->DelSymbol(name);

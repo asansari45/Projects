@@ -19,6 +19,8 @@ namespace Interpreter
         const char* ERROR_FUNCTION_CREATION = "%s function could not be created.  Duplicate symbol may be present.";
         const char* ERROR_FUNCTION_ARGS = "%s function has %d arguments.  Called with %d arguments.";
         const char* ERROR_FUNCTION_EXPRESSION = "%s function has an invalid expression for an argument.";
+        const char* ERROR_VARLIST_ARGS = "%d arguments on left %d arguments on right.";
+        const char* ERROR_VARLIST_BOTH_SIDES = "Both sides of equation must be variable lists.";
 
         ErrorInterface() : m_ErrorFlag(false),
                            m_ErrInfo()

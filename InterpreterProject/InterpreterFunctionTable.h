@@ -17,7 +17,8 @@ public:
     void Rem(std::string name);
     bool AttachDefinition(std::string name, FunctionDefNode* f);
     FunctionDefNode* Lookup(std::string name);
-    void Clear();
+    void ClearDefinitions();
+    void ClearNames();
     void Dump();
 private:
     FunctionTable()
