@@ -12,13 +12,11 @@ class FunctionTable
 {
 public:
     static FunctionTable* GetInst();
-    bool Add(std::string name);
+    bool Add(std::string name, FunctionDefNode* f);
     bool IsPresent(std::string name);
     void Rem(std::string name);
-    bool AttachDefinition(std::string name, FunctionDefNode* f);
     FunctionDefNode* Lookup(std::string name);
-    void ClearDefinitions();
-    void ClearNames();
+    void Clear();
     void Dump();
 private:
     FunctionTable()

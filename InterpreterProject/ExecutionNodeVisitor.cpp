@@ -172,7 +172,7 @@ namespace Interpreter
 
     void ExecutionNodeVisitor::VisitClearNode(Interpreter::ClearNode* pNode)
     {
-        Interpreter::FunctionTable::GetInst()->ClearDefinitions();
+        Interpreter::FunctionTable::GetInst()->Clear();
         m_pGlobalSymbolTable->Clear();
     }
 
@@ -385,7 +385,7 @@ namespace Interpreter
     void ExecutionNodeVisitor::VisitFunctionDefNode(FunctionDefNode* pNode)
     {
         // Let's create a function definition in the table.
-        bool status = FunctionTable::GetInst()->AttachDefinition(pNode->GetNameVar()->GetName(),
+        bool status = FunctionTable::GetInst()->Add(pNode->GetNameVar()->GetName(),
             dynamic_cast<FunctionDefNode*>(pNode->Clone()));
         if (!status)
         {

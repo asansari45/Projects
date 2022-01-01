@@ -125,40 +125,13 @@ int yycolumn = 1;
 }
 
 "function" {
-    BEGIN(function);
     return token::FUNCTION_;
 }
-
-
-<function>[a-zA-Z]+ {
-            /* get out of function state, we're done with it*/
-            BEGIN(INITIAL);
-            Interpreter::VarNode* pNode = new Interpreter::VarNode;
-            pNode->SetName(yytext);
-            m_pYylval->m_pNode = pNode;
-
-            std::string funcname = yytext;
-            bool status = Interpreter::FunctionTable::GetInst()->Add(funcname);
-            if (!status)
-            {
-                // Function already in table, error.
-                return token::ERR_;
-            }
-            return token::FUNCNAME_;
-          }
 
 [a-zA-Z]+ {
             Interpreter::VarNode* pNode = new Interpreter::VarNode;
             pNode->SetName(yytext);
             m_pYylval->m_pNode = pNode;
-
-            std::string funcname = yytext;
-            bool status = Interpreter::FunctionTable::GetInst()->IsPresent(funcname);
-            if (status)
-            {
-                return token::FUNCNAME_;
-            }
-
             return token::NAME_;
           }
 

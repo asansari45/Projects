@@ -14,7 +14,7 @@ namespace Interpreter
         return m_pInst;
     }
 
-    bool FunctionTable::Add(std::string name)
+    bool FunctionTable::Add(std::string name, FunctionDefNode* pDef)
     {
         std::map<std::string, FunctionDefNode*>::iterator i = m_Map.find(name);
         if (i != m_Map.end())
@@ -23,8 +23,7 @@ namespace Interpreter
             return false;
         }
 
-        // Just insert the name into the map for now.
-        m_Map.insert(std::make_pair(name, nullptr));
+        m_Map.insert(std::make_pair(name, pDef));
         return true;
     }
 
@@ -42,23 +41,6 @@ namespace Interpreter
         }
     }
 
-    bool FunctionTable::AttachDefinition(std::string name, FunctionDefNode* f)
-    {
-        std::map<std::string, FunctionDefNode*>::iterator i = m_Map.find(name);
-        if (i != m_Map.end())
-        {
-            if (i->second != nullptr)
-            {
-                return false;
-            }
-
-            i->second = f;
-            return true;
-        }
-
-        return false;
-    }
-
     FunctionDefNode* FunctionTable::Lookup(std::string name)
     {
         std::map<std::string, FunctionDefNode*>::iterator i = m_Map.find(name);
@@ -70,47 +52,16 @@ namespace Interpreter
         return nullptr;
     }
 
-    void FunctionTable::ClearDefinitions()
+    void FunctionTable::Clear()
     {
-        std::vector<std::string> toBeDeleted;
         for (std::map<std::string, FunctionDefNode*>::iterator i = m_Map.begin();
             i != m_Map.end();
             i++)
         {
-            if (i->second != nullptr)
-            {
-                toBeDeleted.push_back(i->first);
-            }
+            delete i->second;
         }
 
-        for (size_t i = 0; i < toBeDeleted.size(); i++)
-        {
-            std::map<std::string, FunctionDefNode*>::iterator j = m_Map.find(toBeDeleted[i]);
-            assert(j != m_Map.end());
-            delete j->second;
-            m_Map.erase(j);
-        }
-    }
-
-    void FunctionTable::ClearNames()
-    {
-        std::vector<std::string> toBeDeleted;
-        for (std::map<std::string, FunctionDefNode*>::iterator i = m_Map.begin();
-            i != m_Map.end();
-            i++)
-        {
-            if (i->second == nullptr)
-            {
-                toBeDeleted.push_back(i->first);
-            }
-        }
-
-        for (size_t i = 0; i < toBeDeleted.size(); i++)
-        {
-            std::map<std::string, FunctionDefNode*>::iterator j = m_Map.find(toBeDeleted[i]);
-            assert(j != m_Map.end());
-            m_Map.erase(j);
-        }
+        m_Map.clear();
     }
 
     void FunctionTable::Dump()

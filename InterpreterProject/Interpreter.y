@@ -91,7 +91,6 @@ class Node;
 %token VARS_
 %token SRAND_
 %token RAND_
-%token <m_pNode> FUNCNAME_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
 %token <m_pNode> FILENAME_
@@ -302,7 +301,7 @@ for : FOR_ LPAREN_ assignment COMMA_ expression COMMA_ assignment RPAREN_ LBRACK
     }
     ;
 
-funcdef : FUNCTION_ FUNCNAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBRACKET_
+funcdef : FUNCTION_ NAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBRACKET_
          {
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
@@ -311,7 +310,7 @@ funcdef : FUNCTION_ FUNCNAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBR
             $$ = pNode;
          }
          |
-         FUNCTION_ FUNCNAME_ LPAREN_ RPAREN_ LBRACKET_ funclines RBRACKET_
+         FUNCTION_ NAME_ LPAREN_ RPAREN_ LBRACKET_ funclines RBRACKET_
          {
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
@@ -319,7 +318,7 @@ funcdef : FUNCTION_ FUNCNAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBR
             $$ = pNode;
          }
          |
-         FUNCTION_ FUNCNAME_ LPAREN_ param_list RPAREN_ LBRACKET_ RBRACKET_
+         FUNCTION_ NAME_ LPAREN_ param_list RPAREN_ LBRACKET_ RBRACKET_
          {
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
@@ -327,7 +326,7 @@ funcdef : FUNCTION_ FUNCNAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBR
             $$ = pNode;
          }
          |
-         FUNCTION_ FUNCNAME_ LPAREN_ RPAREN_ LBRACKET_ RBRACKET_
+         FUNCTION_ NAME_ LPAREN_ RPAREN_ LBRACKET_ RBRACKET_
          {
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
@@ -335,7 +334,7 @@ funcdef : FUNCTION_ FUNCNAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBR
          }
          ;
 
-funccall : FUNCNAME_ LPAREN_ expression_list RPAREN_
+funccall : NAME_ LPAREN_ expression_list RPAREN_
          {
             Interpreter::FunctionCallNode* pNode = new Interpreter::FunctionCallNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($1));
@@ -343,7 +342,7 @@ funccall : FUNCNAME_ LPAREN_ expression_list RPAREN_
             $$ = pNode;
          }
          |
-         FUNCNAME_ LPAREN_ RPAREN_
+         NAME_ LPAREN_ RPAREN_
          {
             Interpreter::FunctionCallNode* pNode = new Interpreter::FunctionCallNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($1));
