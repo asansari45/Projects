@@ -91,6 +91,7 @@ class Node;
 %token VARS_
 %token SRAND_
 %token RAND_
+%token LEN_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
 %token <m_pNode> FILENAME_
@@ -125,8 +126,7 @@ class Node;
 %nterm <m_pNode> rval_list
 %nterm <m_pNode> srand
 %nterm <m_pNode> rand
-
-
+%nterm <m_pNode> len
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
@@ -595,6 +595,35 @@ expression:
     STRING_
     |
     rand
+    |
+    len
+    ;
+
+len :
+    LEN_ LPAREN_ NAME_ RPAREN_
+    {
+        Interpreter::LenNode* pNode = new Interpreter::LenNode;
+        Interpreter::VarNode* pNameNode = dynamic_cast<Interpreter::VarNode*>($3);
+        assert(pNameNode != nullptr);
+        pNode->SetName(pNameNode->GetName());
+        delete pNameNode;
+        $$ = pNode;
+    }
+    |
+    LEN_ LPAREN_ NAME_ COMMA_ NUM_ RPAREN_
+    {
+        Interpreter::LenNode* pNode = new Interpreter::LenNode;
+        Interpreter::VarNode* pNameNode = dynamic_cast<Interpreter::VarNode*>($3);
+        assert(pNameNode != nullptr);
+        pNode->SetName(pNameNode->GetName());
+        delete pNameNode;
+        
+        Interpreter::ValueNode* pValueNode = dynamic_cast<Interpreter::ValueNode*>($5);
+        assert(pValueNode != nullptr);
+        pNode->SetDim(pValueNode->GetValue().GetIntValue());
+        delete pValueNode;
+        $$ = pNode;
+    }
     ;
 
 array_specifier :

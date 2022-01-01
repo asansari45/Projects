@@ -37,6 +37,7 @@ public:
     virtual void VisitVarListNode(VarListNode* pNode);
     virtual void VisitSrandNode(SrandNode* pNode);
     virtual void VisitRandNode(RandNode* pNode);
+    virtual void VisitLenNode(LenNode* pNode);
 
     std::optional<Value> GetResult()
     {

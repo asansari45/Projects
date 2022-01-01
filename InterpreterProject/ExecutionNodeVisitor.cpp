@@ -882,5 +882,63 @@ namespace Interpreter
         m_Nodes.push_back(pValueNode);
     }
 
+    void ExecutionNodeVisitor::VisitLenNode(LenNode* pNode)
+    {
+        // Make sure the symbol represents an array.
+        SymbolTable* pSymbolTable = m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr;
+        if (pSymbolTable)
+        {
+            if (!pSymbolTable->IsSymbolPresent(pNode->GetName()))
+            {
+                pSymbolTable = m_pGlobalSymbolTable;
+            }
+        }
+        else
+        {
+            pSymbolTable = m_pGlobalSymbolTable;
+        }
+
+        if (!pSymbolTable->IsSymbolPresent(pNode->GetName()))
+        {
+            ErrorInterface::ErrorInfo err(pNode);
+            char buf[512];
+            sprintf_s(buf, sizeof(buf), ERROR_MISSING_SYMBOL, pNode->GetName().c_str());
+            err.m_Msg = buf;
+            SetErrorFlag(true);
+            SetErrorInfo(err);
+            return;
+        }
+
+        if (!pSymbolTable->IsSymbolArray(pNode->GetName()))
+        {
+            ErrorInterface::ErrorInfo err(pNode);
+            char buf[512];
+            sprintf_s(buf, sizeof(buf), ERROR_ENTIRE_ARRAY_EXPECTED, pNode->GetName().c_str());
+            err.m_Msg = buf;
+            SetErrorFlag(true);
+            SetErrorInfo(err);
+            return;
+        }
+
+        std::optional<std::vector<int> > symbolDims = pSymbolTable->GetSymbolDims(pNode->GetName());
+        assert(symbolDims != std::nullopt);
+
+        if (pNode->GetDim() >= symbolDims->size())
+        {
+            ErrorInterface::ErrorInfo err(pNode);
+            char buf[512];
+            sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_LEN_DIMS, pNode->GetName().c_str(), symbolDims->size()-1);
+            err.m_Msg = buf;
+            SetErrorFlag(true);
+            SetErrorInfo(err);
+            return;
+        }
+
+        ValueNode* pValueNode = new ValueNode;
+        Value v;
+        v.SetIntValue(symbolDims->at(pNode->GetDim()));
+        pValueNode->SetValue(v);
+        m_Nodes.push_back(pValueNode);
+    }
 };
 

@@ -561,5 +561,90 @@ class SrandRandTests(unittest.TestCase):
                           '19053',
                           '23075'])
 
+class LenTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def ExecuteErrorTest(self, testLines, expectedError):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        actualError = results[1].strip()
+        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
+        self.assertEqual(actualError, expectedError)
+
+    def test_len_errors(self):
+        self.ExecuteErrorTest(['clear()',
+                               'a=1',
+                               'q=len(a)'],
+                               'LINE:  3, COLUMN:  9  a expected entire array.')
+        self.ExecuteErrorTest(['clear()',
+                               'a=dim[10]',
+                               'q=len(a,1)'],
+                               'LINE:  3, COLUMN:  11  Valid dimensions for a are 0-0.')
+        self.ExecuteErrorTest(['clear()',
+                               'a=dim[10,10]',
+                               'q=len(a,2)'],
+                               'LINE:  3, COLUMN:  11  Valid dimensions for a are 0-1.')
+        self.ExecuteErrorTest(['clear()',
+                               'a=dim[10,10,10]',
+                               'q=len(a,3)'],
+                               'LINE:  3, COLUMN:  11  Valid dimensions for a are 0-2.')
+    def test_len(self):
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'b=dim[11,12]',
+                          'c=dim[13,14,15]',
+                          'qa=len(a)',
+                          'qb=len(b)',
+                          'qc=len(c)',
+                          'print(qa,qb,qc)'],
+                          ['101113'])
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'b=dim[11,12]',
+                          'c=dim[13,14,15]',
+                          'qa=len(a,0)',
+                          'qb=len(b,0)',
+                          'qc=len(c,0)',
+                          'print(qa,qb,qc)'],
+                          ['101113'])
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'b=dim[11,12]',
+                          'c=dim[13,14,15]',
+                          'qb=len(b,1)',
+                          'qc=len(c,1)',
+                          'print(qb,qc)'],
+                          ['1214'])
+        self.ExecuteTest(['clear()',
+                          'a=dim[10]',
+                          'b=dim[11,12]',
+                          'c=dim[13,14,15]',
+                          'qc=len(c,2)',
+                          'print(qc)'],
+                          ['15'])
+     
+
 if __name__ == '__main__':
     unittest.main()

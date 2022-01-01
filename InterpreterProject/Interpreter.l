@@ -128,6 +128,10 @@ int yycolumn = 1;
     return token::FUNCTION_;
 }
 
+"len" {
+    return token::LEN_;
+}
+
 [a-zA-Z]+ {
             Interpreter::VarNode* pNode = new Interpreter::VarNode;
             pNode->SetName(yytext);

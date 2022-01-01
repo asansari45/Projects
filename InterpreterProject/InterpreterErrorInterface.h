@@ -23,6 +23,7 @@ namespace Interpreter
         const char* ERROR_VARLIST_ARGS = "%d arguments on left %d arguments on right.";
         const char* ERROR_VARLIST_BOTH_SIDES = "Both sides of equation must be variable lists.";
         const char* ERROR_INCORRECT_TYPE = "Wrong type specified for the operation.";
+        const char* ERROR_INCORRECT_LEN_DIMS = "Valid dimensions for %s are 0-%d.";
 
         ErrorInterface() : m_ErrorFlag(false),
                            m_ErrInfo()
