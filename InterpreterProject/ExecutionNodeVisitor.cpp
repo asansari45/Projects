@@ -79,9 +79,9 @@ namespace Interpreter
 
         // rnode operator lnode
         BinaryFunc* pFunc = AlgorithmRepository::GetInst()->Lookup(pNode->GetOperator());
-        Node* pResult = pFunc->Perform(pLeft, pRight, m_pGlobalSymbolTable, 
-                                       m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr, 
-                                       this);
+        Node* pResult = pFunc->Perform(pLeft, pRight, m_pGlobalSymbolTable,
+            m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr,
+            this);
 
         // Done with left and right
         delete pLeft;
@@ -385,8 +385,8 @@ namespace Interpreter
     void ExecutionNodeVisitor::VisitFunctionDefNode(FunctionDefNode* pNode)
     {
         // Let's create a function definition in the table.
-        bool status = FunctionTable::GetInst()->AttachDefinition(pNode->GetNameVar()->GetName(), 
-                                                                 dynamic_cast<FunctionDefNode*>(pNode->Clone()));
+        bool status = FunctionTable::GetInst()->AttachDefinition(pNode->GetNameVar()->GetName(),
+            dynamic_cast<FunctionDefNode*>(pNode->Clone()));
         if (!status)
         {
             SetErrorFlag(true);
@@ -505,6 +505,107 @@ namespace Interpreter
         delete pLocalTable;
         m_SymbolTableStack.pop_back();
     };
+
+    ValueNode* ExecutionNodeVisitor::GetTopOfStackValue(Node* pTop)
+    {
+        ValueNode* pValueNode = dynamic_cast<ValueNode*>(pTop);
+
+        // If it's a ValueNode, we're done.
+        if (pValueNode != nullptr)
+        {
+            return dynamic_cast<ValueNode*>(pValueNode->Clone());
+        }
+
+        // It must be a var node
+        VarNode* pVarNode = dynamic_cast<VarNode*>(pTop);
+        assert(pVarNode != nullptr);
+
+        // Get the value of the VarNode.
+        std::string symbol = pVarNode->GetName();
+        std::vector<int> elementSpecifier = pVarNode->GetArraySpecifier();
+
+        SymbolTable* pLocalSymbols = m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr;
+        if (pLocalSymbols && pLocalSymbols->IsSymbolPresent(symbol))
+        {
+            if (elementSpecifier.size() != 0)
+            {
+                std::optional<Value> v = pLocalSymbols->GetSymbolValue(symbol, &elementSpecifier);
+                if (v == std::nullopt)
+                {
+                    SetErrorFlag(true);
+                    ErrorInfo err(pTop);
+                    char buf[256];
+                    sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, symbol);
+                    err.m_Msg = buf;
+                    SetErrorInfo(err);
+                    return nullptr;
+                }
+
+                pValueNode = new ValueNode;
+                pValueNode->SetValue(*v);
+            }
+            else if (pLocalSymbols->IsSymbolArray(symbol))
+            {
+                std::optional<ArrayValue> v = pLocalSymbols->GetArraySymbolValue(symbol);
+                assert(v != std::nullopt);
+                pValueNode = new ValueNode;
+                pValueNode->SetArrayValue(*v);
+            }
+            else
+            {
+                std::optional<Value> v = pLocalSymbols->GetSymbolValue(symbol);
+                assert(v != std::nullopt);
+
+                pValueNode = new ValueNode;
+                pValueNode->SetValue(*v);
+            }
+        }
+        else if (m_pGlobalSymbolTable->IsSymbolPresent(symbol))
+        {
+            if (elementSpecifier.size() != 0)
+            {
+                std::optional<Value> v = m_pGlobalSymbolTable->GetSymbolValue(symbol, &elementSpecifier);
+                if (v == std::nullopt)
+                {
+                    SetErrorFlag(true);
+                    ErrorInfo err(pTop);
+                    char buf[256];
+                    sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, symbol);
+                    err.m_Msg = buf;
+                    SetErrorInfo(err);
+                    return nullptr;
+                }
+
+                pValueNode = new ValueNode;
+                pValueNode->SetValue(*v);
+            }
+            else if (m_pGlobalSymbolTable->IsSymbolArray(symbol))
+            {
+                std::optional<ArrayValue> v = m_pGlobalSymbolTable->GetArraySymbolValue(symbol);
+                assert(v != std::nullopt);
+                pValueNode = new ValueNode;
+                pValueNode->SetArrayValue(*v);
+            }
+
+            std::optional<Value> v = m_pGlobalSymbolTable->GetSymbolValue(symbol);
+            assert(v != std::nullopt);
+
+            pValueNode = new ValueNode;
+            pValueNode->SetValue(*v);
+        }
+        else
+        {
+            SetErrorFlag(true);
+            ErrorInfo err(pTop);
+            char buf[256];
+            sprintf_s(buf, sizeof(buf), ERROR_MISSING_SYMBOL, symbol);
+            err.m_Msg = buf;
+            SetErrorInfo(err);
+            return nullptr;
+        }
+
+        return pValueNode;
+    }
 
     void ExecutionNodeVisitor::VisitReturnNode(Interpreter::ReturnNode* pReturnNode)
     {
@@ -724,5 +825,62 @@ namespace Interpreter
     {
         m_Nodes.push_back(pNode->Clone());
     }
+
+    void ExecutionNodeVisitor::VisitSrandNode(SrandNode* pNode)
+    {
+        // Evaulate the expression
+        Node* pExpr = pNode->GetExpr();
+        pExpr->Accept(*this);
+        if (IsErrorFlagSet())
+        {
+            return;
+        }
+
+        assert(m_Nodes.size() != 0);
+        Node* pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+
+        ValueNode* pValueNode = GetTopOfStackValue(pTop);
+        delete pTop;
+        if (IsErrorFlagSet())
+        {
+            return;
+        }
+
+        if (pValueNode->IsArray())
+        {
+            SetErrorFlag(true);
+            ErrorInterface::ErrorInfo err(pValueNode);
+            err.m_Msg = ErrorInterface::ERROR_ARRAY_UNEXPECTED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        // Only ints allowed
+        Value v = pValueNode->GetValue();
+        if (v.GetType() != typeid(int))
+        {
+            SetErrorFlag(true);
+            ErrorInterface::ErrorInfo err(pValueNode);
+            err.m_Msg = ErrorInterface::ERROR_INCORRECT_TYPE;
+            SetErrorInfo(err);
+            return;
+        }
+
+        // Invoke srand()
+        srand(v.GetIntValue());
+    }
+
+    void ExecutionNodeVisitor::VisitRandNode(RandNode* pNode)
+    {
+        // Just evaluate rand() and place on stack.
+        int result = rand();
+        ValueNode* pValueNode = new ValueNode;
+        Value v;
+        v.SetIntValue(result);
+        pValueNode->SetValue(v);
+        m_Nodes.push_back(pValueNode);
+    }
+
 };
 

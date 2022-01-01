@@ -11,6 +11,7 @@ namespace Interpreter
         const char* ERROR_INCORRECT_ARRAY_SPECIFIER = "%s contains an incorrect array specifier.";
         const char* ERROR_UNEXPECTED_ARRAY_SPECIFIER = "%s has an unexpected array specifier.";
         const char* ERROR_ARRAY_OPERATION_FAILED = "Array operation failed on array %s.  Wrong dimensions or element values of different types.";
+        const char* ERROR_ARRAY_UNEXPECTED = "Array unexpected here.";
         const char* ERROR_ENTIRE_ARRAY_EXPECTED = "%s expected entire array.";
         const char* ERROR_BINARY_OPERATION_FAILED = "Binary operation failed.";
         const char* ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT = "Invalid expression in if statement.";
@@ -21,6 +22,7 @@ namespace Interpreter
         const char* ERROR_FUNCTION_EXPRESSION = "%s function has an invalid expression for an argument.";
         const char* ERROR_VARLIST_ARGS = "%d arguments on left %d arguments on right.";
         const char* ERROR_VARLIST_BOTH_SIDES = "Both sides of equation must be variable lists.";
+        const char* ERROR_INCORRECT_TYPE = "Wrong type specified for the operation.";
 
         ErrorInterface() : m_ErrorFlag(false),
                            m_ErrInfo()

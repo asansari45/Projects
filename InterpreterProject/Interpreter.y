@@ -89,6 +89,8 @@ class Node;
 %token PWD_
 %token FUNCTIONS_
 %token VARS_
+%token SRAND_
+%token RAND_
 %token <m_pNode> FUNCNAME_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
@@ -122,6 +124,9 @@ class Node;
 %nterm <m_pNode> array_specifier
 %nterm <m_pNode> lval_list
 %nterm <m_pNode> rval_list
+%nterm <m_pNode> srand
+%nterm <m_pNode> rand
+
 
 
 %left DEQ_ NEQ_
@@ -171,6 +176,8 @@ line:
     if
     |
     funccall
+    |
+    srand
     ;
 
 funclines : funclines funcline
@@ -202,6 +209,25 @@ funcline :
     return
     |
     funccall
+    |
+    srand
+    ;
+
+srand :
+    SRAND_ LPAREN_ expression RPAREN_
+    {
+        Interpreter::SrandNode* pNode = new Interpreter::SrandNode;
+        pNode->SetExpr($3);
+        $$ = pNode;
+    }
+    ;
+
+rand :
+    RAND_ LPAREN_ RPAREN_
+    {
+        Interpreter::RandNode* pNode = new Interpreter::RandNode;
+        $$ = pNode;
+    }
     ;
 
 if:
@@ -568,6 +594,8 @@ expression:
     }
     |
     STRING_
+    |
+    rand
     ;
 
 array_specifier :

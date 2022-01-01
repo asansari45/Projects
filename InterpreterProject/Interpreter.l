@@ -116,6 +116,14 @@ int yycolumn = 1;
     return token::VARS_;
 }
 
+"srand" {
+    return token::SRAND_;
+}
+
+"rand" {
+    return token::RAND_;
+}
+
 "function" {
     BEGIN(function);
     return token::FUNCTION_;

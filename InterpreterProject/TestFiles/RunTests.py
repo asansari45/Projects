@@ -278,7 +278,8 @@ class VarsCommandTests(unittest.TestCase):
                                     'b',
                                     'c=dim[10]',
                                     'd=dim[10,10]',
-                                    'e=dim[20,20,20]'])
+                                    'e=dim[20,20,20]',
+                                    'main'])
 
 class EquTests(unittest.TestCase):
     # class variables
@@ -518,6 +519,47 @@ class VarListTests(unittest.TestCase):
                           '{a,b,c}=foo()',
                           'print(a,b,c)'],
                          ['123'])
+
+class SrandRandTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def test_srand_rand(self):
+        self.ExecuteTest(['clear()',
+                          'srand(123)',
+                          'print(rand())',
+                          'print(rand())',
+                          'print(rand())'],
+                         ['440',
+                          '19053',
+                          '23075'])
+        
+        self.ExecuteTest(['clear()',
+                          'srand(123)',
+                          'a=rand()',
+                          'b=rand()',
+                          'c=rand()',
+                          'print(a)',
+                          'print(b)',
+                          'print(c)'],
+                         ['440',
+                          '19053',
+                          '23075'])
 
 if __name__ == '__main__':
     unittest.main()

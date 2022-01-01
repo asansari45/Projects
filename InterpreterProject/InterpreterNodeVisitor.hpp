@@ -26,6 +26,8 @@ class PwdNode;
 class FunctionsNode;
 class VarsCmdNode;
 class VarListNode;
+class SrandNode;
+class RandNode;
 
 class NodeVisitor
 {
@@ -89,6 +91,12 @@ public:
     {
     }
     virtual void VisitVarListNode(VarListNode* pNode)
+    {
+    }
+    virtual void VisitSrandNode(SrandNode* pNode)
+    {
+    }
+    virtual void VisitRandNode(RandNode* pNode)
     {
     }
 };

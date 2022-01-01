@@ -35,6 +35,8 @@ public:
     virtual void VisitFunctionsNode(FunctionsNode* pNode);
     virtual void VisitVarsCmdNode(VarsCmdNode* pNode);
     virtual void VisitVarListNode(VarListNode* pNode);
+    virtual void VisitSrandNode(SrandNode* pNode);
+    virtual void VisitRandNode(RandNode* pNode);
 
     std::optional<Value> GetResult()
     {
@@ -46,6 +48,8 @@ public:
     }
 
 private:
+    ValueNode* GetTopOfStackValue(Node* pTop);
+        
     bool IsArray(Node* pNode)
     {
         ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
