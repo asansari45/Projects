@@ -216,6 +216,21 @@ namespace Interpreter
             for (Node* pExecute = pIfNode->GetThen(); pExecute != nullptr; pExecute = pExecute->GetNext())
             {
                 pExecute->Accept(*this);
+                if (IsErrorFlagSet())
+                {
+                    // We're done
+                    return false;
+                }
+
+                // Check for return
+                if (m_Nodes.size() != 0)
+                {
+                    QuitNode* pNode = dynamic_cast<QuitNode*>(m_Nodes.back());
+                    if (pNode != nullptr)
+                    {
+                        break;
+                    }
+                }
             }
 
             return true;
@@ -295,6 +310,16 @@ namespace Interpreter
                 {
                     return;
                 }
+
+                // Check for return statement
+                if (m_Nodes.size() != 0)
+                {
+                    QuitNode* pQuitNode = dynamic_cast<QuitNode*>(m_Nodes.back());
+                    if (pQuitNode != nullptr)
+                    {
+                        return;
+                    }
+                }
             }
 
             // Evaluate again
@@ -334,6 +359,15 @@ namespace Interpreter
                 if (IsErrorFlagSet())
                 {
                     return;
+                }
+
+                if (m_Nodes.size() != 0)
+                {
+                    QuitNode* pQuitNode = dynamic_cast<QuitNode*>(m_Nodes.back());
+                    if (pQuitNode != nullptr)
+                    {
+                        return;
+                    }
                 }
             }
 

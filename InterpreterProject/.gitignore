@@ -20,3 +20,7 @@ Browse.VC.opendb
 *.ipch
 *.pyc
 *.tqt
+*.suo
+*.lastbuildstate
+*.FileListAbsolute.txt
+

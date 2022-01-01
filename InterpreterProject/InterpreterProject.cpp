@@ -87,6 +87,12 @@ int PerformInteractive()
 
     // Create a global symbol table.
     Interpreter::SymbolTable globalSymbols;
+
+    // Add the symbol main
+    Interpreter::Value v;
+    bool status = globalSymbols.AddSymbol("main", v);
+    assert(status);
+
     // read from stdin until EOF
     char input[256];
     char* pRet = gets_s(input, sizeof(input));
@@ -116,6 +122,10 @@ int PerformInteractive()
 int PerformFromFile(const std::string filename)
 {
     Interpreter::SymbolTable globalSymbols;
+    Interpreter::Value v;
+    bool status = globalSymbols.AddSymbol("main", v);
+    assert(status);
+
     InterpreterDriver driver(&globalSymbols);
 
     Interpreter::Context* pContext = new Interpreter::Context;
