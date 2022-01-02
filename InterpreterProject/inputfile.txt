@@ -1,3 +1,11 @@
-function goo(){return(1,2,3)}
-{a,b,c}=goo()
-print(a,b,c)
+function goo()
+{
+	i=4
+	while (i<10)
+	{
+		return(i)
+	}
+	return(20)
+}
+x=goo()
+print(x)

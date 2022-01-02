@@ -92,6 +92,7 @@ class Node;
 %token SRAND_
 %token RAND_
 %token LEN_
+%token BREAK_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
 %token <m_pNode> FILENAME_
@@ -127,6 +128,7 @@ class Node;
 %nterm <m_pNode> srand
 %nterm <m_pNode> rand
 %nterm <m_pNode> len
+%nterm <m_pNode> break
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
@@ -177,6 +179,10 @@ line:
     funccall
     |
     srand
+    |
+    break
+    |
+    return
     ;
 
 funclines : funclines funcline
@@ -210,6 +216,8 @@ funcline :
     funccall
     |
     srand
+    |
+    break
     ;
 
 srand :
@@ -732,6 +740,13 @@ return:
     {
         Interpreter::ReturnNode* pNode = new Interpreter::ReturnNode;
         $$ = pNode;
+    }
+    ;
+
+break:
+    BREAK_
+    {
+        $$ = new Interpreter::BreakNode;
     }
     ;
 

@@ -38,6 +38,7 @@ public:
     virtual void VisitSrandNode(SrandNode* pNode);
     virtual void VisitRandNode(RandNode* pNode);
     virtual void VisitLenNode(LenNode* pNode);
+    virtual void VisitBreakNode(BreakNode* pNode);
 
     std::optional<Value> GetResult()
     {

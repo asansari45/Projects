@@ -645,6 +645,429 @@ class LenTests(unittest.TestCase):
                           'print(qc)'],
                           ['15'])
      
+class ReturnTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def ExecuteErrorTest(self, testLines, expectedError):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        actualError = results[1].strip()
+        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
+        self.assertEqual(actualError, expectedError)
+
+    def test_function_return(self):
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    return(7)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['7'])
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    return(6,7)',
+                          '}',
+                          '{x,y}=foo()',
+                          'print(x,y)'],
+                          ['67'])
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    a=1',
+                          '    b=2',
+                          '    return(1,2)',
+                          '}',
+                          '{x,y}=foo()',
+                          'print(x,y)'],
+                          ['12'])
+
+    def test_while_return(self):
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=4',
+                          '    while(i<10)'
+                          '    {',
+                          '        return(i)',
+                          '    }',
+                          '    return(20)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['4'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=10',
+                          '    while(i<10)'
+                          '    {',
+                          '        return(i)',
+                          '    }',
+                          '    return(20)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['20'])
+
+    def test_while_return(self):
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=4',
+                          '    while(i<10)'
+                          '    {',
+                          '        return(i)',
+                          '    }',
+                          '    return(20)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['4'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=10',
+                          '    while(i<10)'
+                          '    {',
+                          '        return(i)',
+                          '    }',
+                          '    return(20)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['20'])
+
+    def test_for_return(self):
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    for(i=8,i<10,i=i+1)'
+                          '    {',
+                          '        return(i)',
+                          '    }',
+                          '    return(202)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['8'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    for(i=10,i<10,i=i+1)',
+                          '    {',
+                          '        return(i)',
+                          '    }',
+                          '    return(202)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['202'])
+
+    def test_if_return(self):
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=0',
+                          '    if (i==0)',
+                          '    {',
+                          '        j=404',
+                          '        return(j)',
+                          '    }',
+                          '    elif (i==1)',
+                          '    {',
+                          '         j=808',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==3)',
+                          '    {',
+                          '         j=909',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==5)',
+                          '    {',
+                          '         j=1001',
+                          '         return(j)',
+                          '    }',
+                          '    else',
+                          '    {',
+                          '        j=2002',
+                          '        return(j)'
+                          '    }'
+                          '    return(202)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['404'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=1',
+                          '    if (i==0)',
+                          '    {',
+                          '        j=404',
+                          '        return(j)',
+                          '    }',
+                          '    elif (i==1)',
+                          '    {',
+                          '         j=808',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==3)',
+                          '    {',
+                          '         j=909',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==5)',
+                          '    {',
+                          '         j=1001',
+                          '         return(j)',
+                          '    }',
+                          '    else',
+                          '    {',
+                          '        j=2002',
+                          '        return(j)'
+                          '    }'
+                          '    return(202)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['808'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=3',
+                          '    if (i==0)',
+                          '    {',
+                          '        j=404',
+                          '        return(j)',
+                          '    }',
+                          '    elif (i==1)',
+                          '    {',
+                          '         j=808',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==3)',
+                          '    {',
+                          '         j=909',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==5)',
+                          '    {',
+                          '         j=1001',
+                          '         return(j)',
+                          '    }',
+                          '    else',
+                          '    {',
+                          '        j=2002',
+                          '        return(j)'
+                          '    }'
+                          '    return(202)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['909'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=5',
+                          '    if (i==0)',
+                          '    {',
+                          '        j=404',
+                          '        return(j)',
+                          '    }',
+                          '    elif (i==1)',
+                          '    {',
+                          '         j=808',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==3)',
+                          '    {',
+                          '         j=909',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==5)',
+                          '    {',
+                          '         j=1001',
+                          '         return(j)',
+                          '    }',
+                          '    else',
+                          '    {',
+                          '        j=2002',
+                          '        return(j)'
+                          '    }'
+                          '    return(202)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['1001'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=6',
+                          '    if (i==0)',
+                          '    {',
+                          '        j=404',
+                          '        return(j)',
+                          '    }',
+                          '    elif (i==1)',
+                          '    {',
+                          '         j=808',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==3)',
+                          '    {',
+                          '         j=909',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==5)',
+                          '    {',
+                          '         j=1001',
+                          '         return(j)',
+                          '    }',
+                          '    else',
+                          '    {',
+                          '        j=2002',
+                          '        return(j)'
+                          '    }'
+                          '    return(202)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['2002'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=6',
+                          '    if (i==0)',
+                          '    {',
+                          '        j=404',
+                          '        return(j)',
+                          '    }',
+                          '    elif (i==1)',
+                          '    {',
+                          '         j=808',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==3)',
+                          '    {',
+                          '         j=909',
+                          '         return(j)',
+                          '    }',
+                          '    elif (i==5)',
+                          '    {',
+                          '         j=1001',
+                          '         return(j)',
+                          '    }',
+                          '    else',
+                          '    {',
+                          '        j=2002',
+                          '        k=3003',
+                          '    }'
+                          '    return(202)',
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['202'])
+
+class BreakTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def ExecuteErrorTest(self, testLines, expectedError):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        actualError = results[1].strip()
+        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
+        self.assertEqual(actualError, expectedError)
+
+    def test_function_break(self):
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    for (i=0, i<10, i=i+1)',
+                          '    {',
+                          '        if (i==5)',
+                          '        {',
+                          '            break',
+                          '        }',
+                          '    }',
+                          '    return(i)'
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['5'])
+
+        self.ExecuteTest(['clear()',
+                          'function foo()',
+                          '{',
+                          '    i=0',
+                          '    while (i<10)',
+                          '    {',
+                          '        if (i==7)',
+                          '        {',
+                          '            break',
+                          '        }',
+                          '        i=i+1',
+                          '    }',
+                          '    return(i)'
+                          '}',
+                          'x=foo()',
+                          'print(x)'],
+                          ['7'])
+
 
 if __name__ == '__main__':
     unittest.main()

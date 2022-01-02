@@ -222,13 +222,16 @@ namespace Interpreter
                     return false;
                 }
 
-                // Check for return
+                // Check for return/break
                 if (m_Nodes.size() != 0)
                 {
-                    QuitNode* pNode = dynamic_cast<QuitNode*>(m_Nodes.back());
+                    StopNode* pNode = dynamic_cast<StopNode*>(m_Nodes.back());
                     if (pNode != nullptr)
                     {
-                        break;
+                        // We encountered a return or break statement.  Leave on stack for
+                        // function or for/while statement to process.
+                        // Stop processing.
+                        return true;
                     }
                 }
             }
@@ -283,6 +286,19 @@ namespace Interpreter
             {
                 return;
             }
+
+            // Check for return/break
+            if (m_Nodes.size() != 0)
+            {
+                StopNode* pNode = dynamic_cast<StopNode*>(m_Nodes.back());
+                if (pNode != nullptr)
+                {
+                    // We encountered a return or break statement.  Leave on stack for
+                    // function or for/while statement to process.
+                    // Stop processing.
+                    return;
+                }
+            }
         }
     }
 
@@ -290,8 +306,7 @@ namespace Interpreter
     {
         Node* pExpr = pWhileNode->GetExpr();
         pExpr->Accept(*this);
-        std::optional<Value> expr = GetResult();
-        if (expr == std::nullopt)
+        if (m_Nodes.size() == 0)
         {
             SetErrorFlag(true);
             ErrorInfo err(pWhileNode);
@@ -300,7 +315,28 @@ namespace Interpreter
             return;
         }
 
-        while (expr.value().IfEval())
+        Node* pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+        ValueNode* pExprResult = GetTopOfStackValue(pTop);
+        if (pExprResult == nullptr)
+        {
+            return;
+        }
+
+        // If it's an entire array, error.
+        if (pExprResult->IsArray())
+        {
+            delete pExprResult;
+            SetErrorFlag(true);
+            ErrorInfo err(pWhileNode);
+            err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        bool result = pExprResult->GetValue().IfEval();
+        delete pExprResult;
+        while (result)
         {
             // Just execute the then statements.
             for (Node* pExecute = pWhileNode->GetThen(); pExecute != nullptr; pExecute = pExecute->GetNext())
@@ -314,10 +350,22 @@ namespace Interpreter
                 // Check for return statement
                 if (m_Nodes.size() != 0)
                 {
-                    QuitNode* pQuitNode = dynamic_cast<QuitNode*>(m_Nodes.back());
-                    if (pQuitNode != nullptr)
+                    StopNode* pStopNode = dynamic_cast<StopNode*>(m_Nodes.back());
+                    if (pStopNode != nullptr)
                     {
-                        return;
+                        // If this is a return then leave it on the stack for the function call to process.
+                        if (pStopNode->GetReason() == StopNode::RETURN)
+                        {
+                            return;
+                        }
+
+                        // If this is a break then remove it from the stack and stop executing the while.
+                        if (pStopNode->GetReason() == StopNode::BREAK)
+                        {
+                            delete pStopNode;
+                            m_Nodes.pop_back();
+                            return;
+                        }
                     }
                 }
             }
@@ -328,7 +376,36 @@ namespace Interpreter
             {
                 return;
             }
-            expr = GetResult();
+            if (m_Nodes.size() == 0)
+            {
+                SetErrorFlag(true);
+                ErrorInfo err(pWhileNode);
+                err.m_Msg = ERROR_INVALID_EXPRESSION_IN_WHILE_STATEMENT;
+                SetErrorInfo(err);
+                return;
+            }
+
+            Node* pTop = m_Nodes.back();
+            m_Nodes.pop_back();
+            pExprResult = GetTopOfStackValue(pTop);
+            if (pExprResult == nullptr)
+            {
+                return;
+            }
+
+            // If it's an entire array, error.
+            if (pExprResult->IsArray())
+            {
+                delete pExprResult;
+                SetErrorFlag(true);
+                ErrorInfo err(pWhileNode);
+                err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+                SetErrorInfo(err);
+                return;
+            }
+
+            result = pExprResult->GetValue().IfEval();
+            delete pExprResult;
         }
     };
 
@@ -339,8 +416,7 @@ namespace Interpreter
 
         Node* pExpr = pForNode->GetExpr();
         pExpr->Accept(*this);
-        std::optional<Value> result = GetResult();
-        if (result == std::nullopt)
+        if (m_Nodes.size() == 0)
         {
             SetErrorFlag(true);
             ErrorInfo err(pForNode);
@@ -348,9 +424,28 @@ namespace Interpreter
             SetErrorInfo(err);
             return;
         }
-        m_Nodes.pop_back();
 
-        while (result.value().IfEval())
+        Node* pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+        ValueNode* pExprResult = GetTopOfStackValue(pTop);
+        if (pExprResult == nullptr)
+        {
+            return;
+        }
+
+        if (pExprResult->IsArray())
+        {
+            SetErrorFlag(true);
+            ErrorInfo err(pForNode);
+            err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        bool result = pExprResult->GetValue().IfEval();
+        delete pExprResult;
+
+        while (result)
         {
             // Just execute the then statements.
             for (Node* pExecute = pForNode->GetThen(); pExecute != nullptr; pExecute = pExecute->GetNext())
@@ -363,10 +458,22 @@ namespace Interpreter
 
                 if (m_Nodes.size() != 0)
                 {
-                    QuitNode* pQuitNode = dynamic_cast<QuitNode*>(m_Nodes.back());
-                    if (pQuitNode != nullptr)
+                    StopNode* pStopNode = dynamic_cast<StopNode*>(m_Nodes.back());
+                    if (pStopNode != nullptr )
                     {
-                        return;
+                        // If this is a return then leave it on the stack for the function call to process.
+                        if (pStopNode->GetReason() == StopNode::RETURN)
+                        {
+                            return;
+                        }
+
+                        // If this is a break then remove it from the stack and stop executing the for.
+                        if (pStopNode->GetReason() == StopNode::BREAK)
+                        {
+                            delete pStopNode;
+                            m_Nodes.pop_back();
+                            return;
+                        }
                     }
                 }
             }
@@ -377,8 +484,34 @@ namespace Interpreter
             {
                 return;
             }
-            result = GetResult();
+            if (m_Nodes.size() == 0)
+            {
+                SetErrorFlag(true);
+                ErrorInfo err(pForNode);
+                err.m_Msg = ERROR_INVALID_EXPRESSION_IN_FOR_STATEMENT;
+                SetErrorInfo(err);
+                return;
+            }
+
+            pTop = m_Nodes.back();
             m_Nodes.pop_back();
+            ValueNode* pExprResult = GetTopOfStackValue(pTop);
+            if (pExprResult == nullptr)
+            {
+                return;
+            }
+
+            if (pExprResult->IsArray())
+            {
+                SetErrorFlag(true);
+                ErrorInfo err(pForNode);
+                err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+                SetErrorInfo(err);
+                return;
+            }
+
+            result = pExprResult->GetValue().IfEval();
+            delete pExprResult;
         }
     };
 
@@ -480,7 +613,7 @@ namespace Interpreter
         // then the global table.
         m_SymbolTableStack.push_back(pLocalTable);
 
-        // Run the function until the end, or error, or quit.
+        // Run the function until the end, or error, or stop because we saw a return statement.
         for (Node* pFuncNode = pDefNode->GetCode(); pFuncNode != nullptr; pFuncNode = pFuncNode->GetNext())
         {
             pFuncNode->Accept(*this);
@@ -491,8 +624,8 @@ namespace Interpreter
 
             if (m_Nodes.size() != 0)
             {
-                QuitNode* pNode = dynamic_cast<QuitNode*>(m_Nodes.back());
-                if (pNode != nullptr)
+                StopNode* pNode = dynamic_cast<StopNode*>(m_Nodes.back());
+                if (pNode != nullptr && pNode->GetReason() == StopNode::RETURN)
                 {
                     delete pNode;
                     m_Nodes.pop_back();
@@ -768,8 +901,8 @@ namespace Interpreter
         }
 
         // Let's place a quit node to alert the function to stop executing
-        QuitNode* pQuitNode = new QuitNode();
-        m_Nodes.push_back(pQuitNode);
+        StopNode* pStopNode = new StopNode(StopNode::RETURN);
+        m_Nodes.push_back(pStopNode);
     };
 
     void ExecutionNodeVisitor::VisitDimNode(Interpreter::DimNode* pDimNode)
@@ -939,6 +1072,13 @@ namespace Interpreter
         v.SetIntValue(symbolDims->at(pNode->GetDim()));
         pValueNode->SetValue(v);
         m_Nodes.push_back(pValueNode);
+    }
+
+    // Encountered a break statement.  Let's place a stop node on the stack.
+    void ExecutionNodeVisitor::VisitBreakNode(BreakNode* pNode)
+    {
+        StopNode* pStopNode = new StopNode(StopNode::BREAK);
+        m_Nodes.push_back(pStopNode);
     }
 };
 

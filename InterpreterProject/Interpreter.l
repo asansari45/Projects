@@ -132,6 +132,10 @@ int yycolumn = 1;
     return token::LEN_;
 }
 
+"break" {
+    return token::BREAK_;
+}
+
 [a-zA-Z]+ {
             Interpreter::VarNode* pNode = new Interpreter::VarNode;
             pNode->SetName(yytext);
