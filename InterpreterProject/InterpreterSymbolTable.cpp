@@ -235,4 +235,20 @@ void SymbolTable::Clear()
     m_SymbolMap.clear();
 }
 
+SymbolTable* SymbolTable::CreateGlobalSymbols()
+{
+    SymbolTable* pSymbolTable = new SymbolTable();
+    assert(pSymbolTable != nullptr);
+
+    Value v;
+    bool status = pSymbolTable->AddSymbol("main", v);
+    assert(status);
+    return pSymbolTable;
+}
+
+void SymbolTable::DeleteGlobalSymbols(SymbolTable* pGlobalSymbols)
+{
+    delete pGlobalSymbols;
+}
+
 };

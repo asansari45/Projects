@@ -1,11 +1,12 @@
-function StackInit(len)
+function StackInit(length)
 {
-	stack = dim[len]
+	stack = dim[length]
 	return(stack,-1)
 }
 
-function StackPush(stack, stacksize, top, item)
+function StackPush(stack, top, item)
 {
+	stacksize = len(stack)
 	top = top + 1
 	if (top < stacksize)
 	{
@@ -16,8 +17,9 @@ function StackPush(stack, stacksize, top, item)
 	return(stack,-1)
 }
 
-function StackPop(stack, stacksize, top)
+function StackPop(stack, top)
 {
+	stacksize = len(stack)
 	if (top > -1)
 	{
 		item = stack[top]
@@ -28,7 +30,7 @@ function StackPop(stack, stacksize, top)
 	return(stack,-1,-1)
 }
 
-function StackDump(stack, stacksize, top)
+function StackDump(stack, top)
 {
 	if (top == -1)
 	{
@@ -40,16 +42,27 @@ function StackDump(stack, stacksize, top)
 	{
 		print(i, ".  ", stack[i])
 	}
+	stacksize = len(stack)
 	print("STACK ITEM COUNT:  ", top+1)
-	print("STACK SIZE:  ", stacksize)
+	print("STACK SIZE:        ", stacksize)
 }
 
-{s,t} = StackInit(10)
-StackDump(s,10,t)
-{s,t} = StackPush(s,10,t,5)
-StackDump(s,10,t)
-{s,t,i} = StackPop(s,10,t)
-StackDump(s,10,t)
-print(i)
+if (main==1)
+{
+	{s,t} = StackInit(10)
+	StackDump(s,t)
+	{s,t} = StackPush(s,t,5)
+	{s,t} = StackPush(s,t,7)
+	{s,t} = StackPush(s,t,11)
+	{s,t} = StackPush(s,t,13)
+	{s,t} = StackPush(s,t,17)
+	{s,t} = StackPush(s,t,19)
+	{s,t} = StackPush(s,t,23)
+	StackDump(s,t)
+	{s,t,myitem} = StackPop(s,t)
+	StackDump(s,t)
+	print("TOP:   ", t)
+	print("ITEM:  ", myitem)
+}
 
 

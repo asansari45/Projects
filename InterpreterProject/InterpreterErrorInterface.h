@@ -24,6 +24,7 @@ namespace Interpreter
         const char* ERROR_VARLIST_BOTH_SIDES = "Both sides of equation must be variable lists.";
         const char* ERROR_INCORRECT_TYPE = "Wrong type specified for the operation.";
         const char* ERROR_INCORRECT_LEN_DIMS = "Valid dimensions for %s are 0-%d.";
+        const char* ERROR_FILE_DOES_NOT_EXIST = "%s file does not exist.";
 
         ErrorInterface() : m_ErrorFlag(false),
                            m_ErrInfo()

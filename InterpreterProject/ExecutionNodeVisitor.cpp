@@ -145,6 +145,20 @@ namespace Interpreter
     void ExecutionNodeVisitor::VisitLoadNode(Interpreter::LoadNode* pLoadNode)
     {
         std::string filename = pLoadNode->GetChild()->GetName();
+
+        // Check if file exists first.
+        struct stat info;
+        if (stat(filename.c_str(), &info) != 0)
+        {
+            ErrorInterface::ErrorInfo err(pLoadNode);
+            char buf[512];
+            sprintf_s(buf, sizeof(buf), ERROR_FILE_DOES_NOT_EXIST, filename.c_str());
+            err.m_Msg = buf;
+            SetErrorFlag(true);
+            SetErrorInfo(err);
+            return;
+        }
+
         InterpreterDriver driver(m_pGlobalSymbolTable);
         Context* pContext = new Interpreter::Context;
         pContext->SetFile(filename);
@@ -163,8 +177,18 @@ namespace Interpreter
                 err.GetErrorInfo().m_Msg.c_str());
             Interpreter::Log::GetInst()->AddMessage(buf);
         }
+
+        // We just parsed a set of nodes from the file.  Insert the parsed nodes after the Load Node.
+        Interpreter::Node* pNext = pLoadNode->GetNext();
         Interpreter::Node* pNode = driver.GetResult();
         pLoadNode->SetNext(pNode);
+
+        // Go to the end of the parsed nodes and insert the pNext.
+        if (pNode != nullptr)
+        {
+            for (; pNode->GetNext(); pNode = pNode->GetNext());
+            pNode->SetNext(pNext);
+        }
 
         delete contextStack.back();
         contextStack.pop_back();
@@ -174,6 +198,9 @@ namespace Interpreter
     {
         Interpreter::FunctionTable::GetInst()->Clear();
         m_pGlobalSymbolTable->Clear();
+        Value v;
+        bool status = m_pGlobalSymbolTable->AddSymbol("main", v);
+        assert(status);
     }
 
     bool ExecutionNodeVisitor::ExecuteIfNode(Interpreter::IfNode* pIfNode)

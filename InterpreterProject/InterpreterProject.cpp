@@ -86,12 +86,7 @@ int PerformInteractive()
     Interpreter::Log::GetInst()->AddNoNewlineMessage(">");
 
     // Create a global symbol table.
-    Interpreter::SymbolTable globalSymbols;
-
-    // Add the symbol main
-    Interpreter::Value v;
-    bool status = globalSymbols.AddSymbol("main", v);
-    assert(status);
+    Interpreter::SymbolTable* pGlobalSymbols = Interpreter::SymbolTable::CreateGlobalSymbols();
 
     // read from stdin until EOF
     char input[256];
@@ -104,7 +99,7 @@ int PerformInteractive()
         pContext->SetLine(1);
         pContext->SetColumn(1);
         Interpreter::contextStack.push_back(pContext);
-        InterpreterDriver driver(&globalSymbols);
+        InterpreterDriver driver(pGlobalSymbols);
         driver.Parse(input);
 
         ExecuteNodes(driver, true);
@@ -116,17 +111,26 @@ int PerformInteractive()
         pRet = gets_s(input, sizeof(input));
     }
 
+    Interpreter::SymbolTable::DeleteGlobalSymbols(pGlobalSymbols);
+
     return 0;
 }
 
 int PerformFromFile(const std::string filename)
 {
-    Interpreter::SymbolTable globalSymbols;
-    Interpreter::Value v;
-    bool status = globalSymbols.AddSymbol("main", v);
-    assert(status);
+    // Check if file exists first.
+    struct stat info;
+    if (stat(filename.c_str(), &info) != 0)
+    {
+        char buf[512];
+        sprintf_s(buf, sizeof(buf), "%s file not found.", filename.c_str());
+        Interpreter::Log::GetInst()->AddMessage(buf);
+        return 0;
+    }
 
-    InterpreterDriver driver(&globalSymbols);
+    Interpreter::SymbolTable* pGlobalSymbols = Interpreter::SymbolTable::CreateGlobalSymbols();
+
+    InterpreterDriver driver(pGlobalSymbols);
 
     Interpreter::Context* pContext = new Interpreter::Context;
     pContext->SetFile(filename);

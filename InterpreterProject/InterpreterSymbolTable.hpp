@@ -27,6 +27,8 @@ public:
     bool DelSymbol(const std::string symbol);
     void Dump();
     void Clear();
+    static SymbolTable* CreateGlobalSymbols();
+    static void DeleteGlobalSymbols(SymbolTable* pGlobalSymbols);
 
 private:
     struct SymbolInfo

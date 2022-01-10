@@ -5,11 +5,12 @@ function mod(a,b)
 	return(r)
 }
 
-function CalculateLargestDivisor(a,len)
+function CalculateLargestDivisor(a)
 {
+	alen = len(a)
 	for (divisor = 1000000000, divisor != 0, divisor = divisor / 10)
 	{
-		for (i = 0, i < len, i=i+1 )
+		for (i = 0, i < alen, i=i+1 )
 		{
 			if (a[i]/divisor > 0)
 			{
@@ -20,16 +21,16 @@ function CalculateLargestDivisor(a,len)
 
 }
 
-function RadixSort(a, len)
+function RadixSort(a)
 {
-	buckets = dim[10, len]
+	buckets = dim[10, len(a)]
 	bucketCount = dim[10]
 
-	maxDivisor = CalculateLargestDivisor(a,len)
+	maxDivisor = CalculateLargestDivisor(a)
 	for (divisor=1, divisor != maxDivisor * 10, divisor = divisor * 10)
 	{
 		// Place in buckets
-		for (i=0, i < len, i=i+1)
+		for (i=0, i < len(a), i=i+1)
 		{
 			// Figure out the right bucket
 			number = a[i] / divisor
@@ -76,7 +77,7 @@ if (main==1)
 	{
 		print(i, ".  ", array[i])
 	}
-	s = RadixSort(array,10)
+	s = RadixSort(array)
 	print("AFTER:")
 	for (i=0, i < 10, i=i+1)
 	{

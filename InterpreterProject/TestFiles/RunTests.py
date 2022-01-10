@@ -1068,6 +1068,216 @@ class BreakTests(unittest.TestCase):
                           'print(x)'],
                           ['7'])
 
+class StackFunctionsTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def test_stack_init(self):
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(10)',
+                          'print(len(mystack),mytop)'],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '10-1'])
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(100)',
+                          'print(len(mystack),mytop)'],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '100-1'])
+
+    def test_stack_push(self):
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(10)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,1)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,2)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,3)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,5)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,7)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,11)',
+                          'print(mytop)',
+                          'StackDump(mystack,mytop)'
+                          ],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '5',
+                           '0.  1',
+                           '1.  2',
+                           '2.  3',
+                           '3.  5',
+                           '4.  7',
+                           '5.  11',
+                           'STACK ITEM COUNT:  6',
+                           'STACK SIZE:        10'])
+
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(10)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,1)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,2)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,3)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,5)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,7)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,11)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,13)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,17)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,19)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,23)',
+                          'print(mytop)',
+                          'StackDump(mystack,mytop)'
+                          ],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '9',
+                           '0.  1',
+                           '1.  2',
+                           '2.  3',
+                           '3.  5',
+                           '4.  7',
+                           '5.  11',
+                           '6.  13',
+                           '7.  17',
+                           '8.  19',
+                           '9.  23',
+                           'STACK ITEM COUNT:  10',
+                           'STACK SIZE:        10'])
+
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(10)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,1)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,2)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,3)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,5)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,7)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,11)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,13)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,17)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,19)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,23)',
+                          'print(mytop)',
+                          'StackDump(mystack,mytop)'
+                          ],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '9',
+                           '0.  1',
+                           '1.  2',
+                           '2.  3',
+                           '3.  5',
+                           '4.  7',
+                           '5.  11',
+                           '6.  13',
+                           '7.  17',
+                           '8.  19',
+                           '9.  23',
+                           'STACK ITEM COUNT:  10',
+                           'STACK SIZE:        10'])
+
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(10)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,1)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,2)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,3)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,5)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,7)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,11)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,13)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,17)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,19)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,23)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,29)',
+                          'print(mytop)',
+                          'StackDump(mystack,9)'
+                          ],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '-1',
+                           '0.  1',
+                           '1.  2',
+                           '2.  3',
+                           '3.  5',
+                           '4.  7',
+                           '5.  11',
+                           '6.  13',
+                           '7.  17',
+                           '8.  19',
+                           '9.  23',
+                           'STACK ITEM COUNT:  10',
+                           'STACK SIZE:        10'])
+
+    def test_stack_pop(self):
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(10)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,1)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,2)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,3)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,5)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,7)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,11)',
+                          '{mystack,mytop,myitem}=StackPop(mystack,mytop)',
+                          'print(myitem)',
+                          'StackDump(mystack,mytop)'
+                          ],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '11',
+                           '0.  1',
+                           '1.  2',
+                           '2.  3',
+                           '3.  5',
+                           '4.  7',
+                           'STACK ITEM COUNT:  5',
+                           'STACK SIZE:        10'])
+        
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(10)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,1)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,2)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,3)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,5)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,7)',
+                          '{mystack,mytop}=StackPush(mystack,mytop,11)',
+                          '{mystack,mytop,myitem}=StackPop(mystack,mytop)',
+                          'print(myitem)',
+                          '{mystack,mytop,myitem}=StackPop(mystack,mytop)',
+                          'print(myitem)',
+                          'StackDump(mystack,mytop)'
+                          ],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '11',
+                           '7',
+                           '0.  1',
+                           '1.  2',
+                           '2.  3',
+                           '3.  5',
+                           'STACK ITEM COUNT:  4',
+                           'STACK SIZE:        10'])
+
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\StackFunctions.txt)',
+                          '{mystack,mytop}=StackInit(10)',
+                          '{mystack,mytop,myitem}=StackPop(mystack,mytop)',
+                          'print(myitem)',
+                          'print(mytop)'
+                          ],
+                          ['Parsing from file:  ..\Functions\StackFunctions.txt', 
+                           '-1',
+                           '-1'])
 
 if __name__ == '__main__':
     unittest.main()
