@@ -77,8 +77,8 @@ class ErrorTests(unittest.TestCase) :
         for i in range(len(actualErrors)):
             actualError = actualErrors[i]
             expectedError = errorPrefix + expectedErrors[i]
-            print('actual=    (%s)' % actualError)
-            print('expected=  (%s)' % expectedError)
+            # print('actual=    (%s)' % actualError)
+            # print('expected=  (%s)' % expectedError)
             self.assertEqual(actualError, expectedError)
 
     # Perform a set of tests that make sure the interpreter reports an error
@@ -204,19 +204,19 @@ class ErrorTests(unittest.TestCase) :
         self.ExecuteErrorTest(['a=dim[8]', 
                                'b=dim[9]',
                                'c=a+b'],
-                               ['LINE:  3, COLUMN:  4  Array operation failed on array a.  Wrong dimensions or element values of different types.'])
+                               ['LINE:  3, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'])
 
         self.ExecuteErrorTest(['a=dim[9]', 
                                'b=dim[9]',
                                'b[1] = 3.1415927',
                                'c=a+b'],
-                               ['LINE:  4, COLUMN:  4  Array operation failed on array a.  Wrong dimensions or element values of different types.'])
+                               ['LINE:  4, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'])
 
         self.ExecuteErrorTest(['a=dim[9]', 
                                'b=dim[9]',
                                'b[1] = \"gadzooks\"',
                                'c=a+b'],
-                               ['LINE:  4, COLUMN:  4  Array operation failed on array a.  Wrong dimensions or element values of different types.'])
+                               ['LINE:  4, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'])
 
 class FunctionsCommandTests(unittest.TestCase):
     # class variables
@@ -274,7 +274,8 @@ class VarsCommandTests(unittest.TestCase):
                                    'd=dim[10,10]',
                                    'e=dim[20,20,20]',
                                    'vars'],
-                                   ['a',
+                                   ['GLOBAL Symbol Table Contents',
+                                    'a',
                                     'b',
                                     'c=dim[10]',
                                     'd=dim[10,10]',
@@ -597,7 +598,7 @@ class LenTests(unittest.TestCase):
         self.ExecuteErrorTest(['clear()',
                                'a=1',
                                'q=len(a)'],
-                               'LINE:  3, COLUMN:  9  a expected entire array.')
+                               'LINE:  3, COLUMN:  9  Expected entire array.')
         self.ExecuteErrorTest(['clear()',
                                'a=dim[10]',
                                'q=len(a,1)'],
@@ -1278,6 +1279,137 @@ class StackFunctionsTests(unittest.TestCase):
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
                            '-1',
                            '-1'])
+
+class ReferenceTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def test_simple_references(self):
+        # simple variable
+        self.ExecuteTest(['clear()',
+                          'function foo(&a)',
+                          '{',
+                          '    a=3',
+                          '}',
+                          'b=8',
+                          'foo(b)',
+                          'print(b)'],
+                          ['3'])
+        
+        # array variables
+        self.ExecuteTest(['clear()',
+                          'function foo(&a)',
+                          '{',
+                          '    a[8]=130',
+                          '}',
+                          'b=dim[10]',
+                          'foo(b)',
+                          'print(b[8])'],
+                          ['130'])
+        self.ExecuteTest(['clear()',
+                          'function foo(&a)',
+                          '{',
+                          '    a[0,8]=180',
+                          '}',
+                          'b=dim[10,10]',
+                          'foo(b)',
+                          'print(b[0,8])'],
+                          ['180'])
+        self.ExecuteTest(['clear()',
+                          'function foo(&a)',
+                          '{',
+                          '    a[3,1,9]=428',
+                          '}',
+                          'b=dim[10,10,10]',
+                          'foo(b)',
+                          'print(b[0,0,0],b[3,1,9])'],
+                          ['0428'])
+
+    def test_mixture_references(self):
+        self.ExecuteTest(['clear()',
+                          'function foo(&a,b)',
+                          '{',
+                          '    a=b+5',
+                          '}',
+                          'b=10',
+                          'foo(b,b)',
+                          'print(b)'],
+                          ['15'])
+        self.ExecuteTest(['clear()',
+                          'function foo(&a,b,c,&d)',
+                          '{',
+                          '    a=b+5+c',
+                          '    d=b+20',
+                          '}',
+                          'q=5',
+                          'r=10',
+                          's=20',
+                          't=25',
+                          'foo(q,r,s,t)',
+                          'print(q,r,s,t)'],
+                          ['35102030'])
+
+    def test_nested_references(self):
+        self.ExecuteTest(['clear()',
+                          'function foo(&a)',
+                          '{',
+                          '    a=a+5',
+                          '}',
+                          'function goo(&a)',
+                          '{',
+                          '    a=a+5'
+                          '    foo(a)',
+                          '}',
+                          'b=10',
+                          'goo(b)',
+                          'print(b)'],
+                          ['20'])
+        self.ExecuteTest(['clear()',
+                          'function foo(&a)',
+                          '{',
+                          '    a=a+5',
+                          '}',
+                          'function goo(&a)',
+                          '{',
+                          '    a=a+5'
+                          '    foo(a)',
+                          '}',
+                          'function hoo(&a)',
+                          '{',
+                          '    a=a+5'
+                          '    goo(a)',
+                          '}',
+                          'b=10',
+                          'hoo(b)',
+                          'print(b)'],
+                          ['25'])
+
+    def test_return_references(self):
+        self.ExecuteTest(['clear()',
+                          'function foo(&a)',
+                          '{',
+                          '    a=a+5',
+                          '    return(a)',
+                          '}',
+                          'b=10',
+                          'x = foo(b)',
+                          'print(b,x)'],
+                          ['1515'])
 
 if __name__ == '__main__':
     unittest.main()

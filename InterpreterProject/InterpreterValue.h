@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <typeindex>
+#include <optional>
 
 namespace Interpreter
 {
@@ -251,298 +252,10 @@ namespace Interpreter
             return false;
         }
 
-        bool Les(Value& p)
-        {
-            std::type_index mytype = GetType();
-            std::type_index othertype = p.GetType();
-
-            if (mytype == typeid(int))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_IntValue < p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_IntValue < p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(float))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_FloatValue < p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_FloatValue < p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(std::string))
-            {
-                if (othertype == typeid(std::string))
-                {
-                    return m_StringValue < p.GetStringValue();
-                }
-
-                return false;
-            }
-
-            return false;
-        }
-
-        bool Leq(Value& p)
-        {
-            std::type_index mytype = GetType();
-            std::type_index othertype = p.GetType();
-
-            if (mytype == typeid(int))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_IntValue <= p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_IntValue <= p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(float))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_FloatValue <= p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_FloatValue <= p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(std::string))
-            {
-                if (othertype == typeid(std::string))
-                {
-                    return m_StringValue <= p.GetStringValue();
-                }
-
-                return false;
-            }
-
-            return false;
-        }
-
-        bool Grt(Value& p)
-        {
-            std::type_index mytype = GetType();
-            std::type_index othertype = p.GetType();
-
-            if (mytype == typeid(int))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_IntValue > p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_IntValue > p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(float))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_FloatValue > p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_FloatValue > p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(std::string))
-            {
-                if (othertype == typeid(std::string))
-                {
-                    return m_StringValue > p.GetStringValue();
-                }
-
-                return false;
-            }
-
-            return false;
-        }
-
-        bool Geq(Value& p)
-        {
-            std::type_index mytype = GetType();
-            std::type_index othertype = p.GetType();
-
-            if (mytype == typeid(int))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_IntValue >= p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_IntValue >= p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(float))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_FloatValue >= p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_FloatValue >= p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(std::string))
-            {
-                if (othertype == typeid(std::string))
-                {
-                    return m_StringValue >= p.GetStringValue();
-                }
-
-                return false;
-            }
-
-            return false;
-        }
-
-        bool Deq(Value& p)
-        {
-            std::type_index mytype = GetType();
-            std::type_index othertype = p.GetType();
-
-            if (mytype == typeid(int))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_IntValue == p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_IntValue == p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(float))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_FloatValue == p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_FloatValue == p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(std::string))
-            {
-                if (othertype == typeid(std::string))
-                {
-                    return m_StringValue == p.GetStringValue();
-                }
-
-                return false;
-            }
-
-            return false;
-        }
-
-        bool Neq(Value& p)
-        {
-            std::type_index mytype = GetType();
-            std::type_index othertype = p.GetType();
-
-            if (mytype == typeid(int))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_IntValue != p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_IntValue != p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(float))
-            {
-                if (othertype == typeid(int))
-                {
-                    return m_FloatValue != p.GetIntValue();
-                }
-
-                if (othertype == typeid(float))
-                {
-                    return m_FloatValue != p.GetFloatValue();
-                }
-
-                return false;
-            }
-
-            if (mytype == typeid(std::string))
-            {
-                if (othertype == typeid(std::string))
-                {
-                    return m_StringValue != p.GetStringValue();
-                }
-
-                return false;
-            }
-
-            return false;
-        }
-
         bool Neg()
         {
             std::type_index mytype = GetType();
-            
+
             if (mytype == typeid(std::string))
             {
                 return false;
@@ -559,6 +272,294 @@ namespace Interpreter
             }
 
             return true;
+        }
+
+        std::optional<bool> Les(Value& p)
+        {
+            std::type_index mytype = GetType();
+            std::type_index othertype = p.GetType();
+
+            if (mytype == typeid(int))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_IntValue < p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_IntValue < p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(float))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_FloatValue < p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_FloatValue < p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(std::string))
+            {
+                if (othertype == typeid(std::string))
+                {
+                    return m_StringValue < p.GetStringValue();
+                }
+
+                return {};
+            }
+
+            return {};
+        }
+
+        std::optional<bool> Leq(Value& p)
+        {
+            std::type_index mytype = GetType();
+            std::type_index othertype = p.GetType();
+
+            if (mytype == typeid(int))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_IntValue <= p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_IntValue <= p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(float))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_FloatValue <= p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_FloatValue <= p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(std::string))
+            {
+                if (othertype == typeid(std::string))
+                {
+                    return m_StringValue <= p.GetStringValue();
+                }
+
+                return {};
+            }
+
+            return {};
+        }
+
+        std::optional<bool> Grt(Value& p)
+        {
+            std::type_index mytype = GetType();
+            std::type_index othertype = p.GetType();
+
+            if (mytype == typeid(int))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_IntValue > p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_IntValue > p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(float))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_FloatValue > p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_FloatValue > p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(std::string))
+            {
+                if (othertype == typeid(std::string))
+                {
+                    return m_StringValue > p.GetStringValue();
+                }
+
+                return {};
+            }
+
+            return {};
+        }
+
+        std::optional<bool> Geq(Value& p)
+        {
+            std::type_index mytype = GetType();
+            std::type_index othertype = p.GetType();
+
+            if (mytype == typeid(int))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_IntValue >= p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_IntValue >= p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(float))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_FloatValue >= p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_FloatValue >= p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(std::string))
+            {
+                if (othertype == typeid(std::string))
+                {
+                    return m_StringValue >= p.GetStringValue();
+                }
+
+                return {};
+            }
+
+            return {};
+        }
+
+        std::optional<bool> Deq(Value& p)
+        {
+            std::type_index mytype = GetType();
+            std::type_index othertype = p.GetType();
+
+            if (mytype == typeid(int))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_IntValue == p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_IntValue == p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(float))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_FloatValue == p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_FloatValue == p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(std::string))
+            {
+                if (othertype == typeid(std::string))
+                {
+                    return m_StringValue == p.GetStringValue();
+                }
+
+                return {};
+            }
+
+            return {};
+        }
+
+        std::optional<bool> Neq(Value& p)
+        {
+            std::type_index mytype = GetType();
+            std::type_index othertype = p.GetType();
+
+            if (mytype == typeid(int))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_IntValue != p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_IntValue != p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(float))
+            {
+                if (othertype == typeid(int))
+                {
+                    return m_FloatValue != p.GetIntValue();
+                }
+
+                if (othertype == typeid(float))
+                {
+                    return m_FloatValue != p.GetFloatValue();
+                }
+
+                return {};
+            }
+
+            if (mytype == typeid(std::string))
+            {
+                if (othertype == typeid(std::string))
+                {
+                    return m_StringValue != p.GetStringValue();
+                }
+
+                return {};
+            }
+
+            return {};
         }
 
 private:

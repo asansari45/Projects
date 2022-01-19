@@ -1,67 +1,90 @@
 function StackInit(length)
 {
 	stack = dim[length]
-	return(stack,-1)
+	return(stack)
 }
 
-function StackPush(stack, top, item)
+function StackIsFull(&s, &t)
 {
-	stacksize = len(stack)
-	top = top + 1
-	if (top < stacksize)
+	stacksize = len(s)
+	if (t >= stacksize)
 	{
-		stack[top] = item
-		return(stack,top)
+		return(1)
 	}
 
-	return(stack,-1)
+	return(0)
 }
 
-function StackPop(stack, top)
+function StackIsEmpty(&s,&t)
 {
-	stacksize = len(stack)
-	if (top > -1)
+	if (t==0)
 	{
-		item = stack[top]
-		top = top - 1
-		return(stack,top,item)
+		return(1)
 	}
 
-	return(stack,-1,-1)
+	return(0)
 }
 
-function StackDump(stack, top)
+function StackPush(&s, &t, item)
 {
-	if (top == -1)
+	result = StackIsFull(s,t)
+	if (result == 1)
+	{
+		return(0)
+	}
+
+	s[t] = item
+	t = t + 1
+	return(1)
+}
+
+function StackPop(&s, &t)
+{
+	result = StackIsEmpty(s,t)
+	if (result == 1)
+	{
+		return(0,-1)
+	}
+
+	t = t - 1
+	item = s[t]
+	return(1,item)
+}
+
+function StackDump(&s, &t)
+{
+	result = StackIsEmpty(s,t)
+	if (result == 1)
 	{
 		print("STACK EMPTY!!!")
 		return()
 	}
 
-	for (i=0, i<=top, i=i+1)
+	for (i=0, i<t, i=i+1)
 	{
-		print(i, ".  ", stack[i])
+		print(i, ".  ", s[i])
 	}
-	stacksize = len(stack)
-	print("STACK ITEM COUNT:  ", top+1)
+	stacksize = len(s)
+	print("STACK ITEM COUNT:  ", top)
 	print("STACK SIZE:        ", stacksize)
 }
 
 if (main==1)
 {
-	{s,t} = StackInit(10)
-	StackDump(s,t)
-	{s,t} = StackPush(s,t,5)
-	{s,t} = StackPush(s,t,7)
-	{s,t} = StackPush(s,t,11)
-	{s,t} = StackPush(s,t,13)
-	{s,t} = StackPush(s,t,17)
-	{s,t} = StackPush(s,t,19)
-	{s,t} = StackPush(s,t,23)
-	StackDump(s,t)
-	{s,t,myitem} = StackPop(s,t)
-	StackDump(s,t)
-	print("TOP:   ", t)
+	stack = StackInit(10)
+	top = 0
+	StackDump(stack,top)
+	r = StackPush(stack,top,5)
+	r = StackPush(stack,top,7)
+	r = StackPush(stack,top,11)
+	r = StackPush(stack,top,13)
+	r = StackPush(stack,top,17)
+	r = StackPush(stack,top,19)
+	r = StackPush(stack,top,23)
+	StackDump(stack,top)
+	{r,myitem} = StackPop(stack,top)
+	StackDump(stack,top)
+	print("TOP:   ", top)
 	print("ITEM:  ", myitem)
 }
 

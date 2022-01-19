@@ -11,6 +11,7 @@ Log* Log::m_pInst = nullptr;
 
 Log::Log() :
     m_Action(STDOUT_AND_FILE),
+    m_Type(NONE),
     m_File(DEFAULT_FILENAME),
     m_pFile(nullptr)
 {
@@ -41,6 +42,14 @@ void Log::AddMessage(const std::string msg)
     }
 }
 
+void Log::AddMessage(Type type, const std::string msg)
+{
+    if (m_Type == type)
+    {
+        AddMessage(msg);
+    }
+}
+
 void Log::AddNoNewlineMessage(const std::string msg)
 {
     if (m_Action == STDOUT_ONLY || m_Action == STDOUT_AND_FILE)
@@ -65,6 +74,13 @@ Log* Log::GetInst()
     return m_pInst;
 }
 
+void Log::AddNoNewlineMessage(Type type, const std::string msg)
+{
+    if (type == m_Type)
+    {
+        AddNoNewlineMessage(msg);
+    }
+}
 
 };
 

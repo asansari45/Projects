@@ -163,6 +163,10 @@ int main(int argc, char* argv[])
         {
             interactive = true;
         }
+        else if (strcmp(argv[i], "--debug") == 0)
+        {
+            Interpreter::Log::GetInst()->SetType(Interpreter::Log::DEBUG);
+        }
     }
 
     if (!interactive && !file)

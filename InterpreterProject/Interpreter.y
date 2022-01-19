@@ -93,6 +93,7 @@ class Node;
 %token RAND_
 %token LEN_
 %token BREAK_
+%token AMPERSAND_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
 %token <m_pNode> FILENAME_
@@ -129,6 +130,11 @@ class Node;
 %nterm <m_pNode> rand
 %nterm <m_pNode> len
 %nterm <m_pNode> break
+%nterm <m_pNode> param
+%nterm <m_pNode> func_param
+%nterm <m_pNode> func_param_comma
+%nterm <m_pNode> func_param_list
+%nterm <m_pNode> func_param_comma_list
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
@@ -309,11 +315,11 @@ for : FOR_ LPAREN_ assignment COMMA_ expression COMMA_ assignment RPAREN_ LBRACK
     }
     ;
 
-funcdef : FUNCTION_ NAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBRACKET_
+funcdef : FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ funclines RBRACKET_
          {
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
-            pNode->SetInputVars(dynamic_cast<Interpreter::VarNode*>($4));
+            pNode->SetInputVars($4);
             pNode->SetCode($7);
             $$ = pNode;
          }
@@ -326,11 +332,11 @@ funcdef : FUNCTION_ NAME_ LPAREN_ param_list RPAREN_ LBRACKET_ funclines RBRACKE
             $$ = pNode;
          }
          |
-         FUNCTION_ NAME_ LPAREN_ param_list RPAREN_ LBRACKET_ RBRACKET_
+         FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ RBRACKET_
          {
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
             pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
-            pNode->SetInputVars(dynamic_cast<Interpreter::VarNode*>($4));
+            pNode->SetInputVars($4);
             $$ = pNode;
          }
          |
@@ -358,14 +364,53 @@ funccall : NAME_ LPAREN_ expression_list RPAREN_
          }
          ;
 
-param_list : param_comma_list NAME_
+func_param_list : func_param_comma_list func_param
           {
               Interpreter::Node* pNode = $1;
               for (; pNode->GetNext() != nullptr; pNode = pNode->GetNext());
               pNode->SetNext($2);
           }
           |
-          NAME_
+          func_param
+          ;
+
+func_param_comma_list : func_param_comma_list func_param_comma
+    {
+        Interpreter::Node* pNode = $1;
+        for (; pNode->GetNext() != nullptr; pNode = pNode->GetNext());
+        pNode->SetNext($2);
+    }
+    |
+    func_param_comma
+    ;
+
+func_param_comma : func_param COMMA_
+    ;
+
+func_param :
+    AMPERSAND_ NAME_
+    {
+        Interpreter::VarNode* pNode = dynamic_cast<Interpreter::VarNode*>($2);
+        assert(pNode != nullptr);
+        std::string name = pNode->GetName();
+        delete pNode;
+
+        Interpreter::RefNode* pRefNode = new Interpreter::RefNode;
+        pRefNode->SetName(name);
+        $$ = pRefNode;
+    }
+    |
+    NAME_
+    ;
+
+param_list : param_comma_list param
+          {
+              Interpreter::Node* pNode = $1;
+              for (; pNode->GetNext() != nullptr; pNode = pNode->GetNext());
+              pNode->SetNext($2);
+          }
+          |
+          param
           ;
 
 param_comma_list : param_comma_list param_comma
@@ -378,7 +423,11 @@ param_comma_list : param_comma_list param_comma
     param_comma
     ;
 
-param_comma : NAME_ COMMA_
+param_comma : param COMMA_
+    ;
+
+param :
+    NAME_
     ;
 
 expression_list : expression_comma_list expression

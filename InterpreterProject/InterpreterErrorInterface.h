@@ -10,10 +10,11 @@ namespace Interpreter
         const char* ERROR_MISSING_SYMBOL = "%s is not defined.";
         const char* ERROR_INCORRECT_ARRAY_SPECIFIER = "%s contains an incorrect array specifier.";
         const char* ERROR_UNEXPECTED_ARRAY_SPECIFIER = "%s has an unexpected array specifier.";
-        const char* ERROR_ARRAY_OPERATION_FAILED = "Array operation failed on array %s.  Wrong dimensions or element values of different types.";
+        const char* ERROR_ARRAY_OPERATION_FAILED = "Array operation failed on array.  Wrong dimensions or element values of different types.";
         const char* ERROR_ARRAY_UNEXPECTED = "Array unexpected here.";
-        const char* ERROR_ENTIRE_ARRAY_EXPECTED = "%s expected entire array.";
+        const char* ERROR_ENTIRE_ARRAY_EXPECTED = "Expected entire array.";
         const char* ERROR_BINARY_OPERATION_FAILED = "Binary operation failed.";
+        const char* ERROR_UNARY_OPERATION_FAILED  = "Unary operation failed.";
         const char* ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT = "Invalid expression in if statement.";
         const char* ERROR_INVALID_EXPRESSION_IN_WHILE_STATEMENT = "Invalid expression in while statement.";
         const char* ERROR_INVALID_EXPRESSION_IN_FOR_STATEMENT = "Invalid expression in for statement.";
@@ -24,7 +25,9 @@ namespace Interpreter
         const char* ERROR_VARLIST_BOTH_SIDES = "Both sides of equation must be variable lists.";
         const char* ERROR_INCORRECT_TYPE = "Wrong type specified for the operation.";
         const char* ERROR_INCORRECT_LEN_DIMS = "Valid dimensions for %s are 0-%d.";
+        const char* ERROR_INCORRECT_DIM = "Incorrect dimension specified.";
         const char* ERROR_FILE_DOES_NOT_EXIST = "%s file does not exist.";
+        const char* ERROR_INVALID_REFERENCE_PARAMETER = "Invalid reference found for parameter %s.";
 
         ErrorInterface() : m_ErrorFlag(false),
                            m_ErrInfo()

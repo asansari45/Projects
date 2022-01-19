@@ -48,6 +48,9 @@
     <ClCompile Include="InterpreterContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="InterpreterLvalues.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ExecutionNodeVisitor.hpp">
@@ -93,6 +96,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="InterpreterErrorInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InterpreterLvalues.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InterpreterRvalue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

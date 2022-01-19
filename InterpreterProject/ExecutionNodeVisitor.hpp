@@ -63,8 +63,15 @@ private:
         VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
         if (pVarNode != nullptr)
         {
-            return pVarNode->IsArray(m_pGlobalSymbolTable, 
-                                     m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr);
+            if (pVarNode->GetArraySpecifier().size() != 0)
+            {
+                return false;
+            }
+
+            assert(pVarNode->GetSymbolTable() != nullptr);
+            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolTable()->ReadSymbol(pVarNode->GetName());
+            assert(info != std::nullopt);
+            return info->m_IsArray;
         }
 
         return false;
@@ -82,7 +89,10 @@ private:
         VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
         if (pVarNode != nullptr)
         {
-            return GetSymbolValue(pVarNode);
+            SymbolTable* pSymbolTable = pVarNode->GetSymbolTable();
+            std::optional<SymbolTable::SymbolInfo> info = pSymbolTable->ReadSymbol(pVarNode->GetName());
+            assert(info != std::nullopt);
+            return info->m_Value;
         }
 
         return {};
@@ -102,43 +112,13 @@ private:
         VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
         if (pVarNode != nullptr)
         {
-            return pVarNode->GetArrayValue(m_pGlobalSymbolTable,
-                                           m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr);
+            SymbolTable* pSymbolTable = pVarNode->GetSymbolTable();
+            std::optional<SymbolTable::SymbolInfo> info = pSymbolTable->ReadSymbol(pVarNode->GetName());
+            assert(info != std::nullopt);
+            return info->m_ArrayValue;
         }
 
         return {};
-    }
-
-    std::optional<Value> GetSymbolValue(VarNode* pVarNode)
-    {
-        std::string name = pVarNode->GetName();
-        std::vector<int> arraySpecifier = pVarNode->GetArraySpecifier();
-        SymbolTable* pLocalSymbolTable = m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr;
-        if (pLocalSymbolTable)
-        {
-            std::optional<Value> value = pLocalSymbolTable->GetSymbolValue(name, arraySpecifier.size() ? &arraySpecifier : nullptr );
-            if (value != std::nullopt)
-            {
-                return value;
-            }
-        }
-
-        return m_pGlobalSymbolTable->GetSymbolValue(name, arraySpecifier.size() ? &arraySpecifier : nullptr );
-    }
-
-    std::optional<std::type_index> GetSymbolType(const std::string s)
-    {
-        SymbolTable* pLocalSymbolTable = m_SymbolTableStack.size() != 0 ? m_SymbolTableStack.back() : nullptr;
-        if (pLocalSymbolTable)
-        {
-            std::optional<std::type_index> type = pLocalSymbolTable->GetSymbolType(s);
-            if (type != std::nullopt)
-            {
-                return type;
-            }
-        }
-
-        return m_pGlobalSymbolTable->GetSymbolType(s);
     }
 
     bool ExecuteIfNode(IfNode* pIfNode);
@@ -146,10 +126,11 @@ private:
     // All nodes are clones of the original tree.
     std::vector<Node*> m_Nodes;
 
+    // Function call stack
+    std::vector<FunctionDefNode*> m_FunctionCallStack;
+
     // Global symbol table.
     SymbolTable* m_pGlobalSymbolTable;
 
-    // Local symbol tables.
-    std::vector<SymbolTable*> m_SymbolTableStack;
 };
 };

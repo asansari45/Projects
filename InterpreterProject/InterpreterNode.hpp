@@ -176,14 +176,16 @@ public:
     VarNode() :
         Node(),
         m_Name(),
-        m_ArraySpecifier()
+        m_ArraySpecifier(),
+        m_pSymbolTable(nullptr)
     {
     }
 
     VarNode(const VarNode& rNode) :
         Node(rNode),
         m_Name(rNode.m_Name),
-        m_ArraySpecifier(rNode.m_ArraySpecifier)
+        m_ArraySpecifier(rNode.m_ArraySpecifier),
+        m_pSymbolTable(rNode.m_pSymbolTable)
     {
     }
 
@@ -207,36 +209,44 @@ public:
     std::vector<int> GetArraySpecifier() { return m_ArraySpecifier; }
     void SetArraySpecifier(std::vector<int> arraySpecifier) { m_ArraySpecifier = arraySpecifier; }
 
-    bool IsArray(SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols)
-    {
-        if (m_ArraySpecifier.size() != 0)
-        {
-            // Refers to a specific element
-            return false;
-        }
-
-        if (pLocalSymbols != nullptr && pLocalSymbols->IsSymbolPresent(m_Name))
-        {
-            return pLocalSymbols->IsSymbolArray(m_Name);
-        }
-
-        return pGlobalSymbols->IsSymbolArray(m_Name);
-    }
-
-    std::optional<ArrayValue> GetArrayValue(SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols)
-    {
-        assert(IsArray(pGlobalSymbols, pLocalSymbols));
-        if (pLocalSymbols != nullptr && pLocalSymbols->IsSymbolPresent(m_Name))
-        {
-            return pLocalSymbols->GetArraySymbolValue(m_Name);
-        }
-
-        return pGlobalSymbols->GetArraySymbolValue(m_Name);
-    }
+    void SetSymbolTable(SymbolTable* pSymbolTable) { m_pSymbolTable = pSymbolTable; }
+    SymbolTable* GetSymbolTable() { return m_pSymbolTable; }
 
 private:
     std::string m_Name;
     std::vector<int> m_ArraySpecifier;
+    SymbolTable* m_pSymbolTable;
+};
+
+class RefNode : public Node
+{
+public:
+    RefNode() :
+        Node(),
+        m_Name()
+    {
+    }
+
+    RefNode(const RefNode& rNode) :
+        Node(rNode),
+        m_Name(rNode.m_Name)
+    {
+    }
+
+    virtual ~RefNode()
+    {
+    }
+
+    virtual Node* Clone()
+    {
+        return new RefNode(*this);
+    }
+
+    std::string GetName() { return m_Name; }
+    void SetName(std::string n) { m_Name = n; }
+
+private:
+    std::string m_Name;
 };
 
 class VarListNode : public Node
@@ -801,7 +811,8 @@ public:
     FunctionDefNode() :
         m_pNameVar(nullptr),
         m_pInputVars(nullptr),
-        m_pCode(nullptr)
+        m_pCode(nullptr),
+        m_pSymbolTable(nullptr)
     {
     }
 
@@ -813,8 +824,11 @@ public:
     {
         FunctionDefNode* pNode = new FunctionDefNode;
         pNode->SetNameVar(dynamic_cast<VarNode*>(m_pNameVar->Clone()));
-        pNode->SetInputVars(dynamic_cast<VarNode*>(m_pInputVars->CloneList()));
+        pNode->SetInputVars(m_pInputVars->CloneList());
         pNode->SetCode(m_pCode->CloneList());
+        SymbolTable* pNodesSymbolTable = pNode->GetSymbolTable();
+        SymbolTable* pSymbols = new SymbolTable(*pNodesSymbolTable);
+        pNode->SetSymbolTable(pSymbols);
 
         return pNode;
     }
@@ -854,16 +868,21 @@ public:
         return count;
     }
 
-    VarNode* GetInputVars() { return m_pInputVars; }
-    void SetInputVars(VarNode* pInputVars) { m_pInputVars = pInputVars; }
+    Node* GetInputVars() { return m_pInputVars; }
+    void SetInputVars(Node* pInputVars) { m_pInputVars = pInputVars; }
 
     Node* GetCode() { return m_pCode; }
     void SetCode(Node* pCode) { m_pCode = pCode; }
 
+    SymbolTable* GetSymbolTable() { return m_pSymbolTable; }
+    void SetSymbolTable(SymbolTable* pSymbolTable) { m_pSymbolTable = pSymbolTable; }
+
+
 private:
     VarNode* m_pNameVar;
-    VarNode* m_pInputVars;
+    Node* m_pInputVars;
     Node* m_pCode;
+    SymbolTable* m_pSymbolTable;
 };
 
 

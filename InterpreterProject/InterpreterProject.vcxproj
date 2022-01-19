@@ -156,6 +156,7 @@
     <ClCompile Include="InterpreterSymbolTable.cpp" />
     <ClCompile Include="lex.yy.cc" />
     <ClCompile Include="InterpreterContext.cpp" />
+    <ClCompile Include="InterpreterLvalues.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InterpreterErrorInterface.h" />
@@ -173,6 +174,8 @@
     <ClInclude Include="InterpreterScanner.hpp" />
     <ClInclude Include="InterpreterSymbolTable.hpp" />
     <ClInclude Include="InterpreterValue.h" />
+    <ClInclude Include="InterpreterLvalues.h" />
+    <ClInclude Include="InterpreterRvalue.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="iffile.txt" />

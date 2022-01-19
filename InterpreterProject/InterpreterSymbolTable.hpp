@@ -12,33 +12,65 @@ namespace Interpreter
 class SymbolTable
 {
 public:
-    SymbolTable();
+    struct SymbolInfo
+    {
+        SymbolInfo() :
+            m_Name(),
+            m_IsArray(false),
+            m_Value(),
+            m_ArrayValue(),
+            m_IsRef(false),
+            m_pTargetTable(nullptr),
+            m_TargetName()
+        {
+        }
+
+        SymbolInfo(const SymbolInfo& rInfo) :
+            m_Name(rInfo.m_Name),
+            m_IsArray(rInfo.m_IsArray),
+            m_Value(rInfo.m_Value),
+            m_ArrayValue(rInfo.m_ArrayValue),
+            m_IsRef(rInfo.m_IsRef),
+            m_pTargetTable(rInfo.m_pTargetTable),
+            m_TargetName(rInfo.m_TargetName)
+        {
+        }
+
+        std::string m_Name;
+        bool m_IsArray;
+        Value m_Value;
+        ArrayValue m_ArrayValue;
+        bool m_IsRef;
+        SymbolTable* m_pTargetTable;
+        std::string m_TargetName;
+    };
+    SymbolTable(const std::string name);
+    SymbolTable(SymbolTable& rProto);
     ~SymbolTable();
-    bool AddSymbol(const std::string name, Value value);
-    bool AddSymbol(const std::string name, ArrayValue value);
-    bool ChangeSymbol(const std::string name, Value value, const std::vector<int>* pElement = nullptr);
-    bool ChangeSymbol(const std::string name, ArrayValue value);
-    std::optional<std::type_index> GetSymbolType(const std::string name);
-    bool IsSymbolArray(const std::string name);
-    std::optional<std::vector<int> > GetSymbolDims(const std::string name);
-    std::optional<Value> GetSymbolValue(const std::string name, const std::vector<int>* pElement=nullptr);
-    std::optional<ArrayValue> GetArraySymbolValue(const std::string name);
-    bool IsSymbolPresent(const std::string name);
-    bool DelSymbol(const std::string symbol);
+    std::string GetName() { return m_Name; }
+
+    // Create
+    bool CreateSymbol(std::string name, SymbolInfo info);
+
+    // Read
+    std::optional<SymbolInfo> ReadSymbol(std::string name);
+    bool IsSymbolPresent(std::string name);
+
+    // Update
+    bool UpdateSymbol(std::string name, const SymbolInfo info);
+
+    // Delete
+    void DeleteSymbol(std::string name);
+
     void Dump();
     void Clear();
     static SymbolTable* CreateGlobalSymbols();
     static void DeleteGlobalSymbols(SymbolTable* pGlobalSymbols);
 
 private:
-    struct SymbolInfo
-    {
-        std::string m_Name;
-        bool m_IsArray;
-        Value m_Value;
-        ArrayValue m_ArrayValue;
-    };
-    std::map<std::string, SymbolInfo*> m_SymbolMap;
+    typedef std::map<std::string, SymbolInfo> SYMBOL_MAP;
+    SYMBOL_MAP m_SymbolMap;
+    std::string m_Name;
 };
 };
 

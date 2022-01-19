@@ -74,15 +74,43 @@ namespace Interpreter
             FunctionDefNode* p = i->second;
             sprintf_s(buf, sizeof(buf), "function %s(", p->GetNameVar()->GetName().c_str());
             char params[512];
-            for (VarNode* pNode = p->GetInputVars(); pNode; pNode=dynamic_cast<VarNode*>(pNode->GetNext()))
+            for (Node* pNode = p->GetInputVars(); pNode; pNode=dynamic_cast<VarNode*>(pNode->GetNext()))
             {
-                if (pNode->GetNext() != nullptr)
+                bool ref = false;
+                std::string name;
+                RefNode* pRefNode = dynamic_cast<RefNode*>(pNode);
+                if (pRefNode != nullptr)
                 {
-                    sprintf_s(params, sizeof(params), "%s,", pNode->GetName().c_str());
+                    ref = true;
+                    name = pRefNode->GetName();
                 }
                 else
                 {
-                    sprintf_s(params, sizeof(params), "%s", pNode->GetName().c_str());
+                    VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
+                    assert(pVarNode != nullptr);
+                    name = pVarNode->GetName();
+                }
+                if (pNode->GetNext() != nullptr)
+                {
+                    if (ref)
+                    {
+                        sprintf_s(params, sizeof(params), "&%s,", name.c_str());
+                    }
+                    else
+                    {
+                        sprintf_s(params, sizeof(params), "%s,", name.c_str());
+                    }
+                }
+                else
+                {
+                    if (ref)
+                    {
+                        sprintf_s(params, sizeof(params), "&%s", name.c_str());
+                    }
+                    else
+                    {
+                        sprintf_s(params, sizeof(params), "%s", name.c_str());
+                    }
                 }
                 strcat_s(buf, params);
             }
