@@ -15,6 +15,16 @@ namespace Interpreter
 		SymbolTable::SymbolInfo info;
 		info.m_Name = m_Name;
 
+		// No arrays specifiers when no symbol is specified.
+		if (m_ArraySpecifier.size() != 0)
+		{
+			sprintf_s(m_Buf, sizeof(m_Buf), m_pErrIf->ERROR_MISSING_SYMBOL, m_Name.c_str());
+			m_ErrInfo.m_Msg = m_Buf;
+			m_pErrIf->SetErrorFlag(true);
+			m_pErrIf->SetErrorInfo(m_ErrInfo);
+			return;
+		}
+
 		bool status;
 		if (rRvalue.IsArray())
 		{
@@ -83,8 +93,7 @@ namespace Interpreter
 			return;
 		}
 
-		info->m_ArrayValue.SetValue(m_ArraySpecifier, rRvalue.GetValue());
-		bool status = m_pSymbolTable->UpdateSymbol(m_Name, *info);
+		bool status = info->m_ArrayValue.SetValue(m_ArraySpecifier, rRvalue.GetValue());
 		if (!status)
 		{
 			// The array specifier could be wrong.
@@ -94,6 +103,9 @@ namespace Interpreter
 			m_pErrIf->SetErrorInfo(m_ErrInfo);
 			return;
 		}
+
+		status = m_pSymbolTable->UpdateSymbol(m_Name, *info);
+		assert(status);
 	}
 
 	// There is a symbol in the symbol table.  It is an array.
@@ -167,13 +179,13 @@ namespace Interpreter
 		if (!rRvalue.IsArray())
 		{
 			// rvalue is not an array
-	   		VariableLvalue lvalue(symbolInfo->m_TargetName, symbolInfo->m_pTargetTable, m_pErrIf, m_ErrInfo);
+	   		VariableLvalue lvalue(symbolInfo->m_RefName, symbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
 			lvalue.Equ(rRvalue);
 			return;
 		}
 
 		// It is an array.
-		WholeArrayLvalue lvalue(symbolInfo->m_TargetName, symbolInfo->m_pTargetTable, m_pErrIf, m_ErrInfo);
+		WholeArrayLvalue lvalue(symbolInfo->m_RefName, symbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
 		lvalue.Equ(rRvalue);
 	}
 
@@ -192,13 +204,13 @@ namespace Interpreter
 		if (!rRvalue.IsArray())
 		{
 			// rvalue is not an array
-			VariableLvalue lvalue(symbolInfo->m_TargetName, symbolInfo->m_pTargetTable, m_pErrIf, m_ErrInfo);
+			VariableLvalue lvalue(symbolInfo->m_RefName, symbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
 			lvalue.Dim(rRvalue);
 			return;
 		}
 
 		// It is an array.
-		WholeArrayLvalue lvalue(symbolInfo->m_TargetName, symbolInfo->m_pTargetTable, m_pErrIf, m_ErrInfo);
+		WholeArrayLvalue lvalue(symbolInfo->m_RefName, symbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
 		lvalue.Dim(rRvalue);
 	}
 
@@ -213,8 +225,8 @@ namespace Interpreter
 		assert(symbolInfo != std::nullopt);
 		assert(symbolInfo->m_IsRef);
 
-		ArrayElementLvalue lvalue(symbolInfo->m_TargetName, 
-								  symbolInfo->m_pTargetTable, 
+		ArrayElementLvalue lvalue(symbolInfo->m_RefName, 
+								  symbolInfo->m_pRefTable, 
 								  m_pErrIf, 
 								  m_ErrInfo,
 								  m_ArraySpecifier);

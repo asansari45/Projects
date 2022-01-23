@@ -28,8 +28,6 @@ namespace Interpreter
     }
 
     std::optional<Rvalue> BinaryFunc::GetRvalue(Node* pNode,
-                                                SymbolTable* pGlobalSymbols, 
-                                                SymbolTable* pLocalSymbols, 
                                                 ErrorInterface* pErrorInterface)
     {
         // Literals processing
@@ -47,10 +45,11 @@ namespace Interpreter
         std::string name = pVarNode->GetName();
         std::vector<int> arraySpecifier = pVarNode->GetArraySpecifier();
 
-        if (pVarNode->GetSymbolTable() != nullptr)
+        if (pVarNode->IsSymbolPresent())
         {
-            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolTable()->ReadSymbol(name);
+            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
             assert(info != std::nullopt);
+            assert(!info->m_IsRef);
             if (info->m_IsArray)
             {
                 if (arraySpecifier.size() != 0)
@@ -79,7 +78,7 @@ namespace Interpreter
             {
                 ErrorInterface::ErrorInfo err(pNode);
                 char buf[512];
-                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_INCORRECT_ARRAY_SPECIFIER, name.c_str());
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNEXPECTED_ARRAY_SPECIFIER, name.c_str());
                 err.m_Msg = buf;
                 pErrorInterface->SetErrorFlag(true);
                 pErrorInterface->SetErrorInfo(err);
@@ -101,8 +100,6 @@ namespace Interpreter
     }
 
     Lvalue* BinaryFunc::GetLvalue(Node* pNode, 
-                                  SymbolTable* pGlobalSymbols, 
-                                  SymbolTable* pLocalSymbols,
                                   Rvalue& rRvalue,
                                   ErrorInterface* pErrorInterface)
     {
@@ -113,25 +110,20 @@ namespace Interpreter
         {
             std::string name = pVarNode->GetName();
             std::vector<int> arraySpecifier = pVarNode->GetArraySpecifier();
-            SymbolTable* pSymbols = pVarNode->GetSymbolTable();
-
-            if (pSymbols == nullptr)
+            if (!pVarNode->IsSymbolPresent())
             {
-                return new NoSymbolLvalue(name, pLocalSymbols != nullptr ? pLocalSymbols : pGlobalSymbols,
-                                          pErrorInterface, errInfo);
+                return new NoSymbolLvalue(name,
+                                          arraySpecifier,
+                                          pVarNode->GetNoSymbol(),
+                                          pErrorInterface, 
+                                          errInfo);
             }
 
-            std::optional<SymbolTable::SymbolInfo> symbolInfo = pSymbols->ReadSymbol(name);
-
-            // Symbol not found
-            if (symbolInfo == std::nullopt)
-            {
-                return new NoSymbolLvalue(name, pSymbols,
-                                          pErrorInterface, errInfo);
-            }
-
+            SymbolTable::SymbolInfo symbolInfo = pVarNode->GetSymbolInfo();
+            assert(!symbolInfo.m_IsRef);
+#if 0
             // Ref checking
-            if (symbolInfo->m_IsRef)
+            if (symbolInfo.m_IsRef)
             {
                 if (arraySpecifier.size() != 0)
                 {
@@ -141,21 +133,22 @@ namespace Interpreter
 
                 return new RefLvalue(name, pSymbols, pErrorInterface, errInfo);
             }
+#endif
 
 
             // Array element checking
             if (arraySpecifier.size() != 0)
             {
-                return new ArrayElementLvalue(name, pSymbols, pErrorInterface, errInfo, arraySpecifier);
+                return new ArrayElementLvalue(symbolInfo.m_Name, symbolInfo.m_pTable, pErrorInterface, errInfo, arraySpecifier);
             }
 
             // Whole arrays
             if (rRvalue.IsArray())
             {
-                return new WholeArrayLvalue(name, pSymbols, pErrorInterface, errInfo);
+                return new WholeArrayLvalue(symbolInfo.m_Name, symbolInfo.m_pTable, pErrorInterface, errInfo);
             }
 
-            return new VariableLvalue(name, pSymbols, pErrorInterface, errInfo);
+            return new VariableLvalue(symbolInfo.m_Name, symbolInfo.m_pTable, pErrorInterface, errInfo);
         }
 
         return nullptr;
@@ -163,8 +156,7 @@ namespace Interpreter
 
     class EquFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, 
-                              ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
             // Check for variable lists.
             VarListNode* pLeftVarList = dynamic_cast<VarListNode*>(pLeft);
@@ -183,19 +175,19 @@ namespace Interpreter
 
             if (pLeftVarList != nullptr)
             {
-                ProcessVarLists(pLeftVarList, pRightVarList, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+                ProcessVarLists(pLeftVarList, pRightVarList, pErrorInterface);
                 return nullptr;
             }
 
             // Figure it if we're operating with arrays or not.
             // Either both have to represent arrays or not.
-            std::optional<Rvalue> rval = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rval = GetRvalue(pRight, pErrorInterface);
             if (rval == std::nullopt)
             {
                 return nullptr;
             }
 
-            Lvalue* pLval = GetLvalue(pLeft, pGlobalSymbols, pLocalSymbols, *rval, pErrorInterface);
+            Lvalue* pLval = GetLvalue(pLeft, *rval, pErrorInterface);
             if (pLval == nullptr)
             {
                 return nullptr;
@@ -205,8 +197,7 @@ namespace Interpreter
             return nullptr;
         }
     private:
-        void ProcessVarLists(VarListNode* pLeft, VarListNode* pRight, SymbolTable* pGlobalSymbols, 
-                             SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        void ProcessVarLists(VarListNode* pLeft, VarListNode* pRight, ErrorInterface* pErrorInterface)
         {
             // Argument count check
             if (pLeft->GetListCount() != pRight->GetListCount())
@@ -225,7 +216,7 @@ namespace Interpreter
             while (pLeftNodes != nullptr && pRightNodes != nullptr)
             {
                 // Perform the copies one by one.
-                Perform(pLeftNodes, pRightNodes, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+                Perform(pLeftNodes, pRightNodes, pErrorInterface);
                 if (pErrorInterface->IsErrorFlagSet())
                 {
                     // We're done, let's stop.
@@ -241,15 +232,15 @@ namespace Interpreter
 
     class AddFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -316,16 +307,15 @@ namespace Interpreter
 
     class SubFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, 
-                              ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -349,16 +339,15 @@ namespace Interpreter
 
     class MulFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, 
-                              ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -382,15 +371,15 @@ namespace Interpreter
 
     class DivFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -414,15 +403,15 @@ namespace Interpreter
 
     class LesFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -448,15 +437,15 @@ namespace Interpreter
 
     class LeqFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -482,15 +471,15 @@ namespace Interpreter
 
     class GrtFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -516,15 +505,15 @@ namespace Interpreter
 
     class GeqFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -550,15 +539,15 @@ namespace Interpreter
 
     class DeqFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -585,15 +574,15 @@ namespace Interpreter
 
     class NeqFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
             if (rhs == std::nullopt)
             {
                 return nullptr;
@@ -619,10 +608,10 @@ namespace Interpreter
 
     class NegFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
             assert(pRight == nullptr);
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
             if (lhs == std::nullopt)
             {
                 return nullptr;
@@ -648,7 +637,7 @@ namespace Interpreter
     // a = dim[10]
     class DimFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, 
+        virtual Node* Perform(Node* pLeft, Node* pRight,  
                               ErrorInterface* pErrorInterface)
         {
             DimNode* pDimNode = dynamic_cast<DimNode*>(pRight);
@@ -658,7 +647,7 @@ namespace Interpreter
             std::vector<int> dims;
             for (Node* pValNode = pDimNode->GetDim(); pValNode != nullptr; pValNode = pValNode->GetNext())
             {
-                std::optional<Rvalue> rval = GetRvalue(pValNode, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+                std::optional<Rvalue> rval = GetRvalue(pValNode, pErrorInterface);
                 if (rval == std::nullopt)
                 {
                     return nullptr;
@@ -689,7 +678,7 @@ namespace Interpreter
             arrayVal.SetDims(dims);
             Rvalue rValue(arrayVal);
 
-            Lvalue* pLval = GetLvalue(pLeft, pGlobalSymbols, pLocalSymbols, rValue, pErrorInterface);
+            Lvalue* pLval = GetLvalue(pLeft, rValue, pErrorInterface);
             assert(pLval != nullptr);
             pLval->Dim(rValue);
 
@@ -698,9 +687,11 @@ namespace Interpreter
         }
 
     };
+
+    // AryFunc is used for a[3,4,5]
     class AryFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols,
+        virtual Node* Perform(Node* pLeft, Node* pRight, 
             ErrorInterface* pErrorInterface)
         {
             DimNode* pDimNode = dynamic_cast<DimNode*>(pRight);
@@ -710,7 +701,7 @@ namespace Interpreter
             std::vector<int> dims;
             for (Node* pValNode = pDimNode->GetDim(); pValNode != nullptr; pValNode = pValNode->GetNext())
             {
-                std::optional<Rvalue> v = GetRvalue(pValNode, pGlobalSymbols, pLocalSymbols, pErrorInterface);
+                std::optional<Rvalue> v = GetRvalue(pValNode, pErrorInterface);
                 if (v != std::nullopt)
                 {
                     if (v->IsArray())

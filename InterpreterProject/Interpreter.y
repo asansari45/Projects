@@ -317,8 +317,8 @@ for : FOR_ LPAREN_ assignment COMMA_ expression COMMA_ assignment RPAREN_ LBRACK
 
 funcdef : FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ funclines RBRACKET_
          {
-            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
-            pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
+            std::string name = dynamic_cast<Interpreter::VarNode*>($2)->GetName();
+            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode(name);
             pNode->SetInputVars($4);
             pNode->SetCode($7);
             $$ = pNode;
@@ -326,24 +326,24 @@ funcdef : FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ funclines RB
          |
          FUNCTION_ NAME_ LPAREN_ RPAREN_ LBRACKET_ funclines RBRACKET_
          {
-            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
-            pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
+            std::string name = dynamic_cast<Interpreter::VarNode*>($2)->GetName();
+            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode(name);
             pNode->SetCode($6);
             $$ = pNode;
          }
          |
          FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ RBRACKET_
          {
-            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
-            pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
+            std::string name = dynamic_cast<Interpreter::VarNode*>($2)->GetName();
+            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode(name);
             pNode->SetInputVars($4);
             $$ = pNode;
          }
          |
          FUNCTION_ NAME_ LPAREN_ RPAREN_ LBRACKET_ RBRACKET_
          {
-            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode;
-            pNode->SetNameVar(dynamic_cast<Interpreter::VarNode*>($2));
+            std::string name = dynamic_cast<Interpreter::VarNode*>($2)->GetName();
+            Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode(name);
             $$ = pNode;
          }
          ;

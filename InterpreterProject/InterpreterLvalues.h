@@ -46,8 +46,13 @@ namespace Interpreter
 	class NoSymbolLvalue : public Lvalue
 	{
 	public:
-		NoSymbolLvalue(std::string name, SymbolTable* pSymbolTable, ErrorInterface* pErrorInterface, ErrorInterface::ErrorInfo& rErrInfo) :
-			Lvalue(name, pSymbolTable, pErrorInterface, rErrInfo)
+		NoSymbolLvalue(std::string name,
+					   std::vector<int> arraySpecifier,
+					   SymbolTable* pSymbolTable, 
+					   ErrorInterface* pErrorInterface, 
+					   ErrorInterface::ErrorInfo& rErrInfo) :
+			Lvalue(name, pSymbolTable, pErrorInterface, rErrInfo),
+			m_ArraySpecifier(arraySpecifier)
 		{
 		}
 
@@ -58,6 +63,7 @@ namespace Interpreter
 		virtual void Dim(Rvalue& rValue);
 
 	private:
+		std::vector<int> m_ArraySpecifier;
 	};
 
 	class ArrayElementLvalue : public Lvalue

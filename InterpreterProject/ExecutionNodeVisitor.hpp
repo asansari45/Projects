@@ -68,9 +68,10 @@ private:
                 return false;
             }
 
-            assert(pVarNode->GetSymbolTable() != nullptr);
-            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolTable()->ReadSymbol(pVarNode->GetName());
+            assert(pVarNode->IsSymbolPresent());
+            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
             assert(info != std::nullopt);
+            assert(!info->m_IsRef);
             return info->m_IsArray;
         }
 
@@ -89,9 +90,24 @@ private:
         VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
         if (pVarNode != nullptr)
         {
-            SymbolTable* pSymbolTable = pVarNode->GetSymbolTable();
-            std::optional<SymbolTable::SymbolInfo> info = pSymbolTable->ReadSymbol(pVarNode->GetName());
+            assert(pVarNode->IsSymbolPresent());
+            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
             assert(info != std::nullopt);
+            assert(!info->m_IsRef);
+            if (pVarNode->GetArraySpecifier().size() != 0)
+            {
+                if (!info->m_IsArray)
+                {
+                    return {};
+                }
+                return info->m_ArrayValue.GetValue(pVarNode->GetArraySpecifier());
+            }
+
+            if (info->m_IsArray)
+            {
+                return {};
+            }
+
             return info->m_Value;
         }
 
@@ -112,9 +128,11 @@ private:
         VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
         if (pVarNode != nullptr)
         {
-            SymbolTable* pSymbolTable = pVarNode->GetSymbolTable();
-            std::optional<SymbolTable::SymbolInfo> info = pSymbolTable->ReadSymbol(pVarNode->GetName());
+            assert(pVarNode->IsSymbolPresent());
+            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
             assert(info != std::nullopt);
+            assert(!info->m_IsRef);
+            assert(info->m_IsArray);
             return info->m_ArrayValue;
         }
 

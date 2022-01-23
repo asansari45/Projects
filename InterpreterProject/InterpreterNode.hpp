@@ -177,7 +177,9 @@ public:
         Node(),
         m_Name(),
         m_ArraySpecifier(),
-        m_pSymbolTable(nullptr)
+        m_SymbolPresent(false),
+        m_SymbolInfo(),
+        m_pNoSymbol(nullptr)
     {
     }
 
@@ -185,7 +187,9 @@ public:
         Node(rNode),
         m_Name(rNode.m_Name),
         m_ArraySpecifier(rNode.m_ArraySpecifier),
-        m_pSymbolTable(rNode.m_pSymbolTable)
+        m_SymbolPresent(rNode.m_SymbolPresent),
+        m_SymbolInfo(rNode.m_SymbolInfo),
+        m_pNoSymbol(rNode.m_pNoSymbol)
     {
     }
 
@@ -209,13 +213,20 @@ public:
     std::vector<int> GetArraySpecifier() { return m_ArraySpecifier; }
     void SetArraySpecifier(std::vector<int> arraySpecifier) { m_ArraySpecifier = arraySpecifier; }
 
-    void SetSymbolTable(SymbolTable* pSymbolTable) { m_pSymbolTable = pSymbolTable; }
-    SymbolTable* GetSymbolTable() { return m_pSymbolTable; }
+    void SetSymbolPresent(bool present) { m_SymbolPresent = present; }
+    bool IsSymbolPresent() { return m_SymbolPresent; }
 
+    void SetSymbolInfo(SymbolTable::SymbolInfo symbolInfo) { m_SymbolInfo = symbolInfo; }
+    SymbolTable::SymbolInfo GetSymbolInfo() { return m_SymbolInfo; }
+
+    void SetNoSymbol(SymbolTable* pNoSymbol) { m_pNoSymbol = pNoSymbol; }
+    SymbolTable* GetNoSymbol() { return m_pNoSymbol; }
 private:
     std::string m_Name;
     std::vector<int> m_ArraySpecifier;
-    SymbolTable* m_pSymbolTable;
+    bool m_SymbolPresent;
+    SymbolTable::SymbolInfo m_SymbolInfo;
+    SymbolTable* m_pNoSymbol; // Table to use for when there is no symbol present.
 };
 
 class RefNode : public Node
@@ -808,34 +819,33 @@ private:
 class FunctionDefNode : public Node
 {
 public:
-    FunctionDefNode() :
-        m_pNameVar(nullptr),
+    FunctionDefNode(std::string name) :
+        m_Name(name),
         m_pInputVars(nullptr),
         m_pCode(nullptr),
         m_pSymbolTable(nullptr)
     {
+        m_pSymbolTable = new SymbolTable(m_Name);
+        assert(m_pSymbolTable != nullptr);
     }
 
     virtual ~FunctionDefNode()
     {
+        delete m_pSymbolTable;
     }
 
     virtual Node* Clone()
     {
-        FunctionDefNode* pNode = new FunctionDefNode;
-        pNode->SetNameVar(dynamic_cast<VarNode*>(m_pNameVar->Clone()));
+        FunctionDefNode* pNode = new FunctionDefNode(m_Name);
         pNode->SetInputVars(m_pInputVars->CloneList());
         pNode->SetCode(m_pCode->CloneList());
-        SymbolTable* pNodesSymbolTable = pNode->GetSymbolTable();
-        SymbolTable* pSymbols = new SymbolTable(*pNodesSymbolTable);
-        pNode->SetSymbolTable(pSymbols);
+        pNode->SetSymbolTable(m_pSymbolTable->Clone());
 
         return pNode;
     }
 
     virtual void Free()
     {
-        m_pNameVar->Free();
         if (m_pInputVars)
         {
             m_pInputVars->FreeList();
@@ -847,6 +857,9 @@ public:
             m_pCode->FreeList();
             m_pCode = nullptr;
         }
+
+        delete m_pSymbolTable;
+        m_pSymbolTable = nullptr;
         Node::Free();
     }
 
@@ -854,9 +867,6 @@ public:
     {
         rVisitor.VisitFunctionDefNode(this);
     }
-
-    VarNode* GetNameVar() { return m_pNameVar; }
-    void SetNameVar(VarNode* pNameVar) { m_pNameVar = pNameVar; }
 
     int GetInputVarCount() 
     { 
@@ -868,6 +878,8 @@ public:
         return count;
     }
 
+    std::string GetName() { return m_Name; }
+    void SetName(std::string name) { m_Name = name; }
     Node* GetInputVars() { return m_pInputVars; }
     void SetInputVars(Node* pInputVars) { m_pInputVars = pInputVars; }
 
@@ -875,11 +887,15 @@ public:
     void SetCode(Node* pCode) { m_pCode = pCode; }
 
     SymbolTable* GetSymbolTable() { return m_pSymbolTable; }
-    void SetSymbolTable(SymbolTable* pSymbolTable) { m_pSymbolTable = pSymbolTable; }
+    void SetSymbolTable(SymbolTable* pSymbolTable) 
+    { 
+        delete m_pSymbolTable;
+        m_pSymbolTable = pSymbolTable; 
+    }
 
 
 private:
-    VarNode* m_pNameVar;
+    std::string m_Name;
     Node* m_pInputVars;
     Node* m_pCode;
     SymbolTable* m_pSymbolTable;

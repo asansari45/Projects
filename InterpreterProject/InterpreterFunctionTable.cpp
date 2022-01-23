@@ -14,7 +14,7 @@ namespace Interpreter
         return m_pInst;
     }
 
-    bool FunctionTable::Add(std::string name, FunctionDefNode* pDef)
+    bool FunctionTable::CreateFunction(std::string name, FunctionDefNode* pDef)
     {
         std::map<std::string, FunctionDefNode*>::iterator i = m_Map.find(name);
         if (i != m_Map.end())
@@ -29,10 +29,10 @@ namespace Interpreter
 
     bool FunctionTable::IsPresent(std::string name)
     {
-        return m_Map.find(name) != m_Map.end();
+        return ReadFunction(name) != nullptr;
     }
 
-    void FunctionTable::Rem(std::string name)
+    void FunctionTable::DeleteFunction(std::string name)
     {
         std::map<std::string, FunctionDefNode*>::iterator i = m_Map.find(name);
         if (i != m_Map.end())
@@ -41,7 +41,7 @@ namespace Interpreter
         }
     }
 
-    FunctionDefNode* FunctionTable::Lookup(std::string name)
+    FunctionDefNode* FunctionTable::ReadFunction(std::string name)
     {
         std::map<std::string, FunctionDefNode*>::iterator i = m_Map.find(name);
         if (i != m_Map.end())
@@ -72,9 +72,9 @@ namespace Interpreter
         {
             char buf[512];
             FunctionDefNode* p = i->second;
-            sprintf_s(buf, sizeof(buf), "function %s(", p->GetNameVar()->GetName().c_str());
+            sprintf_s(buf, sizeof(buf), "function %s(", p->GetName().c_str());
             char params[512];
-            for (Node* pNode = p->GetInputVars(); pNode; pNode=dynamic_cast<VarNode*>(pNode->GetNext()))
+            for (Node* pNode = p->GetInputVars(); pNode; pNode=pNode->GetNext())
             {
                 bool ref = false;
                 std::string name;

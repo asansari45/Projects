@@ -12,10 +12,10 @@ class FunctionTable
 {
 public:
     static FunctionTable* GetInst();
-    bool Add(std::string name, FunctionDefNode* f);
+    bool CreateFunction(std::string name, FunctionDefNode* f);
     bool IsPresent(std::string name);
-    void Rem(std::string name);
-    FunctionDefNode* Lookup(std::string name);
+    void DeleteFunction(std::string name);
+    FunctionDefNode* ReadFunction(std::string name);
     void Clear();
     void Dump();
 private:

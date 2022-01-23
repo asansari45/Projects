@@ -15,12 +15,11 @@ class ErrorInterface;
 class BinaryFunc
 {
 public:
-    virtual Node* Perform(Node* pLeft, Node* pRight, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, ErrorInterface* pErrorInterface) = 0;
+    virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface) = 0;
 
 protected:
-    std::optional<Rvalue> GetRvalue(Node * pNode, SymbolTable * pGlobalSymbols, SymbolTable * pLocalSymbols, 
-                                    ErrorInterface* pErrorInterface);
-    Lvalue* GetLvalue(Node* pNode, SymbolTable* pGlobalSymbols, SymbolTable* pLocalSymbols, Rvalue& rRvalue,
+    std::optional<Rvalue> GetRvalue(Node * pNode, ErrorInterface* pErrorInterface);
+    Lvalue* GetLvalue(Node* pNode, Rvalue& rRvalue,
                       ErrorInterface* pErrorInterface);
 };
 

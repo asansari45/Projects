@@ -36,25 +36,49 @@ namespace Interpreter
 
     void ExecutionNodeVisitor::VisitVarNode(Interpreter::VarNode* pNode)
     {
+        // Make sure the state of this var node is preserved.
+        // Make a clone and modify that state.
+        VarNode* pClone = dynamic_cast<VarNode*>(pNode->Clone());
+        assert(pClone != nullptr);
+
         // Calculate the VarNode's symbol table.
+        std::optional<SymbolTable::SymbolInfo> symbolInfo;
         if (m_FunctionCallStack.size() != 0)
         {
             SymbolTable* pSymbolTable = m_FunctionCallStack.back()->GetSymbolTable();
-            if (pSymbolTable->IsSymbolPresent(pNode->GetName()))
+            symbolInfo = pSymbolTable->ReadSymbol(pClone->GetName(), // Name
+                                                  true);            // Get the root symbol
+            if (symbolInfo != std::nullopt)
             {
-                pNode->SetSymbolTable(pSymbolTable);
+                pClone->SetSymbolPresent(true);
+                pClone->SetSymbolInfo(*symbolInfo);
             }
         }
 
-        if (pNode->GetSymbolTable() == nullptr)
+        if (!pClone->IsSymbolPresent())
         {
-            if (m_pGlobalSymbolTable->IsSymbolPresent(pNode->GetName()))
+            symbolInfo = m_pGlobalSymbolTable->ReadSymbol(pClone->GetName(), // Name
+                                                          true);             // Get the root symbol
+            if (symbolInfo != std::nullopt)
             {
-                pNode->SetSymbolTable(m_pGlobalSymbolTable);
+                pClone->SetSymbolPresent(true);
+                pClone->SetSymbolInfo(*symbolInfo);
             }
         }
 
-        m_Nodes.push_back(pNode->Clone());
+        if (!pClone->IsSymbolPresent())
+        {
+            if (m_FunctionCallStack.size() != 0)
+            {
+                pClone->SetNoSymbol(m_FunctionCallStack.back()->GetSymbolTable());
+            }
+            else
+            {
+                pClone->SetNoSymbol(m_pGlobalSymbolTable);
+            }
+        }
+
+        m_Nodes.push_back(pClone);
     }
 
     void ExecutionNodeVisitor::VisitBinaryNode(Interpreter::BinaryNode* pNode)
@@ -95,19 +119,10 @@ namespace Interpreter
             m_Nodes.pop_back();
         }
 
-        // Figure out local symbols
-        SymbolTable* pLocalSymbols = nullptr;
-        if (m_FunctionCallStack.size() != 0)
-        {
-            pLocalSymbols = m_FunctionCallStack.back()->GetSymbolTable();
-        }
-
         // rnode operator lnode
         BinaryFunc* pFunc = AlgorithmRepository::GetInst()->Lookup(pNode->GetOperator());
         Node* pResult = pFunc->Perform(pLeft, 
                                        pRight, 
-                                       m_pGlobalSymbolTable,
-                                       pLocalSymbols,
                                        this);
 
         // Done with left and right
@@ -574,39 +589,29 @@ namespace Interpreter
     void ExecutionNodeVisitor::VisitFunctionDefNode(FunctionDefNode* pNode)
     {
         // Let's create a function definition in the table.
-        bool status = FunctionTable::GetInst()->Add(pNode->GetNameVar()->GetName(),
+        bool status = FunctionTable::GetInst()->CreateFunction(pNode->GetName(),
             dynamic_cast<FunctionDefNode*>(pNode->Clone()));
         if (!status)
         {
             SetErrorFlag(true);
             ErrorInfo err(pNode);
             char buf[512];
-            sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_CREATION, pNode->GetNameVar()->GetName().c_str());
+            sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_CREATION, pNode->GetName());
             err.m_Msg = buf;
             SetErrorInfo(err);
             return;
         }
     };
 
-    static std::pair<std::string, SymbolTable*> LocateRootSymbolForReference(std::string symbol, SymbolTable* pSymbolTable)
-    {
-        std::optional<SymbolTable::SymbolInfo> info = pSymbolTable->ReadSymbol(symbol);
-        assert(info != std::nullopt);
-        while (info->m_IsRef)
-        {
-            symbol = info->m_TargetName;
-            pSymbolTable = info->m_pTargetTable;
-            info = pSymbolTable->ReadSymbol(symbol);
-            assert(info != std::nullopt);
-        }
-        return std::make_pair(symbol, pSymbolTable);
-    }
-
     void ExecutionNodeVisitor::VisitFunctionCallNode(FunctionCallNode* pCallNode)
     {
         // Look up the function definition and create a symbol table for it.
         std::string functionName = pCallNode->GetNameVar()->GetName();
-        FunctionDefNode* pDefNode = FunctionTable::GetInst()->Lookup(functionName);
+        FunctionDefNode* pDefNode = FunctionTable::GetInst()->ReadFunction(functionName);
+
+        char buf[512];
+        sprintf_s(buf, sizeof(buf), "Executing function %s", functionName.c_str());
+        Log::GetInst()->AddMessage(Log::DEBUG, buf);
 
         // Check for parameter count match
         if (pCallNode->GetInputVarCount() != pDefNode->GetInputVarCount())
@@ -629,10 +634,21 @@ namespace Interpreter
             RefNode* pRefNode = dynamic_cast<RefNode*>(pDefVarNode);
             if (pRefNode)
             {
+                pCallExprNode->Accept(*this);
+                if (IsErrorFlagSet())
+                {
+                    pLocalTable->Clear();
+                    return;
+                }
+
+                assert(m_Nodes.size() != 0);
+                Node* pTop = m_Nodes.back();
+                m_Nodes.pop_back();
+
                 // We have a reference here.  The call expression is only allowed to be
                 // a variable with no array specifier.  A reference is simply a rename
                 // for a passed in parameter.
-                VarNode* pVarNode = dynamic_cast<VarNode*>(pCallExprNode);
+                VarNode* pVarNode = dynamic_cast<VarNode*>(pTop);
                 if (pVarNode == nullptr)
                 {
                     ErrorInterface::ErrorInfo err(pCallExprNode);
@@ -641,11 +657,13 @@ namespace Interpreter
                     err.m_Msg = buf;
                     SetErrorInfo(err);
                     SetErrorFlag(true);
+                    delete pTop;
+                    pLocalTable->Clear();
                     return;
                 }
 
                 // Find the variable first in the previous table on the stack.
-                if (pVarNode->GetSymbolTable() == nullptr)
+                if (!pVarNode->IsSymbolPresent())
                 {
                     ErrorInterface::ErrorInfo err(pCallExprNode);
                     char buf[512];
@@ -653,17 +671,21 @@ namespace Interpreter
                     err.m_Msg = buf;
                     SetErrorInfo(err);
                     SetErrorFlag(true);
+                    delete pTop;
+                    pLocalTable->Clear();
                     return;
                 }
 
-                std::pair<std::string, SymbolTable*> result = LocateRootSymbolForReference(pVarNode->GetName(), 
-                                                                                           pVarNode->GetSymbolTable());
-                SymbolTable::SymbolInfo info;
-                info.m_Name = pRefNode->GetName();
-                info.m_TargetName = result.first;
-                info.m_pTargetTable = result.second;
+                std::optional<SymbolTable::SymbolInfo> referencee = pVarNode->GetSymbolInfo();
+                assert(referencee->m_IsRef == false);
 
-                bool status = pLocalTable->CreateSymbol(pRefNode->GetName(), info);
+                SymbolTable::SymbolInfo referencer;
+                referencer.m_IsRef = true;
+                referencer.m_Name = pRefNode->GetName();
+                referencer.m_RefName = referencee->m_Name;
+                referencer.m_pRefTable = referencee->m_pTable;
+
+                bool status = pLocalTable->CreateSymbol(pRefNode->GetName(), referencer);
                 if (!status)
                 {
                     ErrorInterface::ErrorInfo err(pCallExprNode);
@@ -672,6 +694,8 @@ namespace Interpreter
                     err.m_Msg = buf;
                     SetErrorInfo(err);
                     SetErrorFlag(true);
+                    delete pTop;
+                    pLocalTable->Clear();
                     return;
                 }
             }
@@ -685,6 +709,7 @@ namespace Interpreter
                 pCallExprNode->Accept(*this);
                 if (IsErrorFlagSet())
                 {
+                    pLocalTable->Clear();
                     return;
                 }
 
@@ -703,6 +728,7 @@ namespace Interpreter
                         sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_EXPRESSION, functionName.c_str());
                         err.m_Msg = buf;
                         SetErrorInfo(err);
+                        pLocalTable->Clear();
                         return;
                     }
 
@@ -722,6 +748,7 @@ namespace Interpreter
                         sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_EXPRESSION, functionName.c_str());
                         err.m_Msg = buf;
                         SetErrorInfo(err);
+                        pLocalTable->Clear();
                         return;
                     }
 
@@ -749,7 +776,7 @@ namespace Interpreter
             pFuncNode->Accept(*this);
             if (IsErrorFlagSet())
             {
-                return;
+                break;
             }
 
             if (m_Nodes.size() != 0)
@@ -764,7 +791,8 @@ namespace Interpreter
             }
         }
 
-        // We're done, let's remove and delete the symbol table.
+        // We're done, let's remove and clear the symbol table.
+        pLocalTable->Clear();
         m_FunctionCallStack.pop_back();
     };
 
@@ -785,8 +813,7 @@ namespace Interpreter
         // Get the value of the VarNode.
         std::string symbol = pVarNode->GetName();
         std::vector<int> elementSpecifier = pVarNode->GetArraySpecifier();
-        SymbolTable* pSymbols = pVarNode->GetSymbolTable();
-        if (pSymbols == nullptr)
+        if (!pVarNode->IsSymbolPresent())
         {
             SetErrorFlag(true);
             ErrorInfo err(pTop);
@@ -797,12 +824,10 @@ namespace Interpreter
             return nullptr;
         }
 
-        std::optional<SymbolTable::SymbolInfo> info = pSymbols->ReadSymbol(symbol);
-        assert(info != std::nullopt);
-
+        SymbolTable::SymbolInfo info = pVarNode->GetSymbolInfo();
         if (elementSpecifier.size() != 0)
         {
-            if (info->m_IsArray == false)
+            if (info.m_IsArray == false)
             {
                 ErrorInfo err(pTop);
                 SetErrorFlag(true);
@@ -813,7 +838,7 @@ namespace Interpreter
                 return nullptr;
             }
         
-            std::optional<Value> v = info->m_ArrayValue.GetValue(elementSpecifier);
+            std::optional<Value> v = info.m_ArrayValue.GetValue(elementSpecifier);
             if (v == std::nullopt)
             {
                 SetErrorFlag(true);
@@ -829,15 +854,15 @@ namespace Interpreter
             pValueNode->SetValue(*v);
         }
         // No element specifier
-        else if (info->m_IsArray)
+        else if (info.m_IsArray)
         {
             pValueNode = new ValueNode;
-            pValueNode->SetArrayValue(info->m_ArrayValue);
+            pValueNode->SetArrayValue(info.m_ArrayValue);
         }
         else
         {
             pValueNode = new ValueNode;
-            pValueNode->SetValue(info->m_Value);
+            pValueNode->SetValue(info.m_Value);
         }
 
         return pValueNode;
@@ -909,6 +934,10 @@ namespace Interpreter
 
     void ExecutionNodeVisitor::VisitDimNode(Interpreter::DimNode* pDimNode)
     {
+        // Leave the original DimNode intact.
+        DimNode* pClone = dynamic_cast<DimNode*>(pDimNode->Clone());
+        assert(pClone != nullptr);
+
         // Evaluate all the dimensions.
         Node* pHead = nullptr;
         Node* pCurr = nullptr;
@@ -934,9 +963,9 @@ namespace Interpreter
         }
 
         // Assign new nodes for the dimensions.
-        pDimNode->ClearDim();
-        pDimNode->AddDim(pHead);
-        m_Nodes.push_back(pDimNode->Clone());
+        pClone->ClearDim();
+        pClone->AddDim(pHead);
+        m_Nodes.push_back(pClone);
     };
 
     void ExecutionNodeVisitor::VisitPwdNode(PwdNode* pNode)
@@ -956,9 +985,42 @@ namespace Interpreter
         m_pGlobalSymbolTable->Dump();
     }
 
-    void ExecutionNodeVisitor::VisitVarListNode(VarListNode* pNode)
+    void ExecutionNodeVisitor::VisitVarListNode(VarListNode* pVarList)
     {
-        m_Nodes.push_back(pNode->Clone());
+        // Do not modify the original list.
+        VarListNode* pClone = dynamic_cast<VarListNode*>(pVarList->Clone());
+        assert(pClone != nullptr);
+
+        // Simplify the each of expressions in the VarList.
+        Node* pHead = nullptr;
+        Node* pCurr = nullptr;
+        for (Node* pNode = pClone->GetList(); pNode != nullptr; pNode = pNode->GetNext())
+        {
+            pNode->Accept(*this);
+            if (IsErrorFlagSet())
+            {
+                return;
+            }
+
+            assert(m_Nodes.size() != 0);
+            Node* pNewNode = m_Nodes.back();
+            m_Nodes.pop_back();
+
+            if (pHead == nullptr)
+            {
+                pHead = pNewNode;
+                pCurr = pNewNode;
+            }
+            else
+            {
+                pCurr->SetNext(pNewNode);
+                pCurr = pNewNode;
+            }
+        }
+
+        pClone->GetList()->FreeList();
+        pClone->SetList(pHead);
+        m_Nodes.push_back(pClone);
     }
 
     void ExecutionNodeVisitor::VisitSrandNode(SrandNode* pNode)
@@ -1024,7 +1086,7 @@ namespace Interpreter
         std::optional<SymbolTable::SymbolInfo> info;
         if (pSymbolTable)
         {
-            info = pSymbolTable->ReadSymbol(pNode->GetName());
+            info = pSymbolTable->ReadSymbol(pNode->GetName(), true);
             if (info == std::nullopt)
             {
                 info = m_pGlobalSymbolTable->ReadSymbol(pNode->GetName());

@@ -16,33 +16,36 @@ public:
     {
         SymbolInfo() :
             m_Name(),
+            m_pTable(nullptr),
             m_IsArray(false),
             m_Value(),
             m_ArrayValue(),
             m_IsRef(false),
-            m_pTargetTable(nullptr),
-            m_TargetName()
+            m_RefName(),
+            m_pRefTable(nullptr)
         {
         }
 
         SymbolInfo(const SymbolInfo& rInfo) :
             m_Name(rInfo.m_Name),
+            m_pTable(rInfo.m_pTable),
             m_IsArray(rInfo.m_IsArray),
             m_Value(rInfo.m_Value),
             m_ArrayValue(rInfo.m_ArrayValue),
             m_IsRef(rInfo.m_IsRef),
-            m_pTargetTable(rInfo.m_pTargetTable),
-            m_TargetName(rInfo.m_TargetName)
+            m_RefName(rInfo.m_RefName),
+            m_pRefTable(rInfo.m_pRefTable)
         {
         }
 
         std::string m_Name;
+        SymbolTable* m_pTable;
         bool m_IsArray;
         Value m_Value;
         ArrayValue m_ArrayValue;
         bool m_IsRef;
-        SymbolTable* m_pTargetTable;
-        std::string m_TargetName;
+        std::string m_RefName;
+        SymbolTable* m_pRefTable;
     };
     SymbolTable(const std::string name);
     SymbolTable(SymbolTable& rProto);
@@ -53,7 +56,7 @@ public:
     bool CreateSymbol(std::string name, SymbolInfo info);
 
     // Read
-    std::optional<SymbolInfo> ReadSymbol(std::string name);
+    std::optional<SymbolInfo> ReadSymbol(std::string name, bool getroot=false);
     bool IsSymbolPresent(std::string name);
 
     // Update
@@ -64,6 +67,7 @@ public:
 
     void Dump();
     void Clear();
+    SymbolTable* Clone();
     static SymbolTable* CreateGlobalSymbols();
     static void DeleteGlobalSymbols(SymbolTable* pGlobalSymbols);
 

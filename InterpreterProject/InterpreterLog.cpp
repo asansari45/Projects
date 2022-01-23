@@ -46,7 +46,12 @@ void Log::AddMessage(Type type, const std::string msg)
 {
     if (m_Type == type)
     {
-        AddMessage(msg);
+        std::string newmsg = msg;
+        if (type == DEBUG)
+        {
+            newmsg = "DEBUG:  " + msg;
+        }
+        AddMessage(newmsg);
     }
 }
 

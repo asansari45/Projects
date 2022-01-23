@@ -65,7 +65,7 @@ function StackDump(&s, &t)
 		print(i, ".  ", s[i])
 	}
 	stacksize = len(s)
-	print("STACK ITEM COUNT:  ", top)
+	print("STACK ITEM COUNT:  ", t)
 	print("STACK SIZE:        ", stacksize)
 }
 
