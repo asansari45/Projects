@@ -165,23 +165,100 @@ namespace Interpreter
 
     void ExecutionNodeVisitor::VisitHelpNode(Interpreter::HelpNode* pNode)
     {
+        VarNode* pVarNode = pNode->GetVar();
+        if (pVarNode)
+        {
+            std::string subTopic = pVarNode->GetName();
+            if (subTopic == "expr" || subTopic == "expression")
+            {
+                Log::GetInst()->AddMessage("a=b+c -- addition");
+                Log::GetInst()->AddMessage("a=b-c -- subtraction");
+                Log::GetInst()->AddMessage("a=b*c -- multiplication");
+                Log::GetInst()->AddMessage("a=b/c -- division");
+                Log::GetInst()->AddMessage("a=-b  -- negation");
+                Log::GetInst()->AddMessage("result=b<c -- less than");
+                Log::GetInst()->AddMessage("result=b>c -- greater than");
+                Log::GetInst()->AddMessage("result=b<=c -- less than or equal to");
+                Log::GetInst()->AddMessage("result=b>=c -- greater than or equal to");
+                Log::GetInst()->AddMessage("result=b==c -- is equal to");
+                Log::GetInst()->AddMessage("result=b!=c -- is not equal to");
+            }
+            else
+            {
+                ErrorInfo err(pNode);
+                char buf[256];
+                sprintf_s(buf, sizeof(buf), ERROR_INVALID_HELP_PARAMETER, subTopic.c_str());
+                err.m_Msg = buf;
+                SetErrorInfo(err);
+                SetErrorFlag(true);
+            }
+            return;
+        }
+
         Log::GetInst()->AddMessage("Interpreter HELP");
-        Log::GetInst()->AddMessage("a=5+4");
-        Log::GetInst()->AddMessage("a=5-4");
-        Log::GetInst()->AddMessage("a=5*4");
-        Log::GetInst()->AddMessage("a=4/2");
-        Log::GetInst()->AddMessage("b=5");
-        Log::GetInst()->AddMessage("a=5");
-        Log::GetInst()->AddMessage("c=a+b");
-        Log::GetInst()->AddMessage("if (a>1) {b=4 c=2} else if...else");
-        Log::GetInst()->AddMessage("for(a=0, a<10, a++){ b = b-3 }");
-        Log::GetInst()->AddMessage("while(a<10){ a = a-3 }");
-        Log::GetInst()->AddMessage("function myfunc(a,b,c){ d = 3, e=4, ...}");
-        Log::GetInst()->AddMessage("print(\"String\" a, b, c)");
-        Log::GetInst()->AddMessage("load(filename.txt)");
-        Log::GetInst()->AddMessage("clear()");
-        Log::GetInst()->AddMessage("help--prints this message");
-        Log::GetInst()->AddMessage("quit--quits");
+        Log::GetInst()->AddMessage("help()            -- prints this message");
+        Log::GetInst()->AddMessage("help(expr)        -- prints help on expressions");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("quit            -- quits");
+        Log::GetInst()->AddMessage(".vars           -- displays all global variables");
+        Log::GetInst()->AddMessage(".functions      -- display all functions with parameters");
+        Log::GetInst()->AddMessage(".pwd            -- prints the current working directory");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("b=5             -- assignment");
+        Log::GetInst()->AddMessage("a=5             -- assignment");
+        Log::GetInst()->AddMessage("a=5+4           -- assignment with expression");
+        Log::GetInst()->AddMessage("a=5-4           -- assignment with expression");
+        Log::GetInst()->AddMessage("a=5*4           -- assignment with expression");
+        Log::GetInst()->AddMessage("a=4/2           -- assignment with expression");
+        Log::GetInst()->AddMessage("c=a+b           -- assignment with expression");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("a=dim[10]       -- one-dimensional array");
+        Log::GetInst()->AddMessage("a=dim[10,10]    -- two-dimensional array");
+        Log::GetInst()->AddMessage("a=dim[10,10,10] -- three-dimensional array");
+        Log::GetInst()->AddMessage("b=c[0]+d[9,3]+e[0,8,3] -- array specifiers");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("{a,b}={0,1}     -- variable lists");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("if (a>1)        -- if statement");
+        Log::GetInst()->AddMessage("{");
+        Log::GetInst()->AddMessage("\tb=4");
+        Log::GetInst()->AddMessage("\tc=2");
+        Log::GetInst()->AddMessage("}");
+        Log::GetInst()->AddMessage("else");
+        Log::GetInst()->AddMessage("{");
+        Log::GetInst()->AddMessage("\tq=5");
+        Log::GetInst()->AddMessage("\ts=6");
+        Log::GetInst()->AddMessage("}");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("for(a=0, a<10, a++) -- for statement");
+        Log::GetInst()->AddMessage("{");
+        Log::GetInst()->AddMessage("\tb = b - 3");
+        Log::GetInst()->AddMessage("}");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("while(a<10) -- while statement");
+        Log::GetInst()->AddMessage("{");
+        Log::GetInst()->AddMessage("\tb = b - 3");
+        Log::GetInst()->AddMessage("}");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("function myfunc(a,b,c) -- function");
+        Log::GetInst()->AddMessage("{");
+        Log::GetInst()->AddMessage("\td = 3");
+        Log::GetInst()->AddMessage("\te = 4");
+        Log::GetInst()->AddMessage("\treturn(a, b, c)");
+        Log::GetInst()->AddMessage("}");
+        Log::GetInst()->AddMessage("{x,y,z}=myfunc(0,1,2) -- function with variable lists");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("function myfunc(&s)   -- function with reference parameters");
+        Log::GetInst()->AddMessage("{");
+        Log::GetInst()->AddMessage("\ts=s+1");
+        Log::GetInst()->AddMessage("}");
+        Log::GetInst()->AddMessage("a=3");
+        Log::GetInst()->AddMessage("myfunc(a)");
+        Log::GetInst()->AddMessage("");
+        Log::GetInst()->AddMessage("print(\"String\" a, b, c) -- print statement");
+        Log::GetInst()->AddMessage("// This is a one-line comment -- comments");
+        Log::GetInst()->AddMessage("load(filename.txt) -- load and execute from a file");
+        Log::GetInst()->AddMessage("clear()            -- clear all variables and functions");
     }
 
     void ExecutionNodeVisitor::VisitLoadNode(Interpreter::LoadNode* pLoadNode)

@@ -104,15 +104,15 @@ int yycolumn = 1;
     return token::RARRAY_;
 }
 
-"pwd" {
+".pwd" {
     return token::PWD_;
 }
 
-"functions" {
+".functions" {
     return token::FUNCTIONS_;
 }
 
-"vars" {
+".vars" {
     return token::VARS_;
 }
 

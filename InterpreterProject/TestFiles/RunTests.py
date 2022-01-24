@@ -243,7 +243,7 @@ class FunctionsCommandTests(unittest.TestCase):
         self.ExecuteFunctionsTest(['function foo(){}',
                                    'function bar(){}',
                                    'function goo(a,b,c){}',
-                                   'functions'],
+                                   '.functions'],
                                    ['function bar()',
                                     'function foo()',
                                     'function goo(a,b,c)'])
@@ -273,7 +273,7 @@ class VarsCommandTests(unittest.TestCase):
                                    'c=dim[10]',
                                    'd=dim[10,10]',
                                    'e=dim[20,20,20]',
-                                   'vars'],
+                                   '.vars'],
                                    ['GLOBAL Symbol Table Contents',
                                     'a',
                                     'b',

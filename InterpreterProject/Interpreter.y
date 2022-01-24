@@ -726,7 +726,14 @@ command:
         $$ = pNode;
     }
     |
-    HELP_
+    HELP_ LPAREN_ NAME_ RPAREN_
+    {
+        Interpreter::HelpNode* pNode = new Interpreter::HelpNode;
+        pNode->SetVar(dynamic_cast<Interpreter::VarNode*>($3));
+        $$ = pNode;
+    }
+    |
+    HELP_ LPAREN_ RPAREN_
     {
         Interpreter::HelpNode* pNode = new Interpreter::HelpNode;
         $$ = pNode;

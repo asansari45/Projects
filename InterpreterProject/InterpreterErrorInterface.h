@@ -28,6 +28,7 @@ namespace Interpreter
         const char* ERROR_INCORRECT_DIM = "Incorrect dimension specified.";
         const char* ERROR_FILE_DOES_NOT_EXIST = "%s file does not exist.";
         const char* ERROR_INVALID_REFERENCE_PARAMETER = "Invalid reference found for parameter %s.";
+        const char* ERROR_INVALID_HELP_PARAMETER = "Invalid help parameter %s.";
 
         ErrorInterface() : m_ErrorFlag(false),
                            m_ErrInfo()
