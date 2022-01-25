@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <fstream>
 #include "InterpreterDriver.hpp"
-#include "InterpreterSymbolTable.hpp"
+#include "InterpreterSymbolTable.h"
 #include "InterpreterContext.h"
 
 InterpreterDriver::InterpreterDriver(Interpreter::SymbolTable* pGlobalSymbols) :

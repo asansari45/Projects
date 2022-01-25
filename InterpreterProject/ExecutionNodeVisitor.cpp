@@ -3,7 +3,7 @@
 #include <filesystem>
 #include "ExecutionNodeVisitor.hpp"
 #include "InterpreterFunctionDefNode.h"
-#include "InterpreterSymbolTable.hpp"
+#include "InterpreterSymbolTable.h"
 #include "InterpreterAlgorithmRepository.h"
 #include "InterpreterDriver.hpp"
 #include "InterpreterFunctionTable.h"

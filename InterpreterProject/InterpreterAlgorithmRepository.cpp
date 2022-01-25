@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <optional>
 #include "InterpreterAlgorithmRepository.h"
-#include "InterpreterSymbolTable.hpp"
+#include "InterpreterSymbolTable.h"
 #include "InterpreterLog.h"
 #include "InterpreterContext.h"
 #include "InterpreterErrorInterface.h"

@@ -5,7 +5,7 @@
 #include "InterpreterErrorInterface.h"
 #include "InterpreterValueNode.h"
 #include "InterpreterVarNode.h"
-#include "InterpreterSymbolTable.hpp"
+#include "InterpreterSymbolTable.h"
 
 namespace Interpreter
 {

@@ -6,7 +6,7 @@
 #include "InterpreterValue.h"
 #include "InterpreterArrayValue.h"
 #include "InterpreterContext.h"
-#include "InterpreterSymbolTable.hpp"
+#include "InterpreterSymbolTable.h"
 
 namespace Interpreter
 {

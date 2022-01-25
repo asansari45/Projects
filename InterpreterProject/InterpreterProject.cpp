@@ -8,7 +8,7 @@
 #include "InterpreterDriver.hpp"
 #include "InterpreterNode.h"
 #include "ExecutionNodeVisitor.hpp"
-#include "InterpreterSymbolTable.hpp"
+#include "InterpreterSymbolTable.h"
 #include "InterpreterLog.h"
 #include "InterpreterErrorInterface.h"
 #include "InterpreterContext.h"

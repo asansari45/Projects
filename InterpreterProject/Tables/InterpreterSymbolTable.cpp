@@ -1,5 +1,5 @@
 #include <assert.h>
-#include "InterpreterSymbolTable.hpp"
+#include "InterpreterSymbolTable.h"
 #include "InterpreterLog.h"
 
 namespace Interpreter

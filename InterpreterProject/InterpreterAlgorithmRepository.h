@@ -2,7 +2,7 @@
 #include <vector>
 #include <optional>
 #include "InterpreterBinaryNode.h"
-#include "InterpreterSymbolTable.hpp"
+#include "InterpreterSymbolTable.h"
 #include "InterpreterLog.h"
 #include "InterpreterLvalues.h"
 #include "InterpreterRvalue.h"
