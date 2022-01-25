@@ -54,7 +54,6 @@ int InterpreterDriver::ParseFromFile(const std::string filename)
 
 void InterpreterDriver::Error(std::string file, int line, int column, std::string msg)
 {
-    m_ErrorInfo.SetErrorFlag(true);
     Interpreter::Context* pContext = Interpreter::contextStack.back();
 
     Interpreter::ErrorInterface::ErrorInfo err;

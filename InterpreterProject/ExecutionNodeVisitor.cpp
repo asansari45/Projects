@@ -190,7 +190,6 @@ namespace Interpreter
                 sprintf_s(buf, sizeof(buf), ERROR_INVALID_HELP_PARAMETER, subTopic.c_str());
                 err.m_Msg = buf;
                 SetErrorInfo(err);
-                SetErrorFlag(true);
             }
             return;
         }
@@ -273,7 +272,7 @@ namespace Interpreter
             char buf[512];
             sprintf_s(buf, sizeof(buf), ERROR_FILE_DOES_NOT_EXIST, filename.c_str());
             err.m_Msg = buf;
-            SetErrorFlag(true);
+            
             SetErrorInfo(err);
             return;
         }
@@ -330,7 +329,7 @@ namespace Interpreter
         pExpr->Accept(*this);
         if (m_Nodes.size() == 0)
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pIfNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT;
             SetErrorInfo(err);
@@ -341,7 +340,7 @@ namespace Interpreter
         m_Nodes.pop_back();
         if (pTop == nullptr)
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pIfNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT;
             SetErrorInfo(err);
@@ -351,7 +350,7 @@ namespace Interpreter
         // If this is an array, then fail.
         if (pTop->IsArray())
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pIfNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT;
             SetErrorInfo(err);
@@ -456,7 +455,7 @@ namespace Interpreter
         pExpr->Accept(*this);
         if (m_Nodes.size() == 0)
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pWhileNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_WHILE_STATEMENT;
             SetErrorInfo(err);
@@ -475,7 +474,7 @@ namespace Interpreter
         if (pExprResult->IsArray())
         {
             delete pExprResult;
-            SetErrorFlag(true);
+            
             ErrorInfo err(pWhileNode);
             err.m_Msg = ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -526,7 +525,7 @@ namespace Interpreter
             }
             if (m_Nodes.size() == 0)
             {
-                SetErrorFlag(true);
+                
                 ErrorInfo err(pWhileNode);
                 err.m_Msg = ERROR_INVALID_EXPRESSION_IN_WHILE_STATEMENT;
                 SetErrorInfo(err);
@@ -545,7 +544,7 @@ namespace Interpreter
             if (pExprResult->IsArray())
             {
                 delete pExprResult;
-                SetErrorFlag(true);
+                
                 ErrorInfo err(pWhileNode);
                 err.m_Msg = ERROR_ARRAY_UNEXPECTED;
                 SetErrorInfo(err);
@@ -566,7 +565,7 @@ namespace Interpreter
         pExpr->Accept(*this);
         if (m_Nodes.size() == 0)
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pForNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_FOR_STATEMENT;
             SetErrorInfo(err);
@@ -583,7 +582,7 @@ namespace Interpreter
 
         if (pExprResult->IsArray())
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pForNode);
             err.m_Msg = ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -634,7 +633,7 @@ namespace Interpreter
             }
             if (m_Nodes.size() == 0)
             {
-                SetErrorFlag(true);
+                
                 ErrorInfo err(pForNode);
                 err.m_Msg = ERROR_INVALID_EXPRESSION_IN_FOR_STATEMENT;
                 SetErrorInfo(err);
@@ -651,7 +650,7 @@ namespace Interpreter
 
             if (pExprResult->IsArray())
             {
-                SetErrorFlag(true);
+                
                 ErrorInfo err(pForNode);
                 err.m_Msg = ERROR_ARRAY_UNEXPECTED;
                 SetErrorInfo(err);
@@ -670,7 +669,7 @@ namespace Interpreter
             dynamic_cast<FunctionDefNode*>(pNode->Clone()));
         if (!status)
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pNode);
             char buf[512];
             sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_CREATION, pNode->GetName());
@@ -693,7 +692,7 @@ namespace Interpreter
         // Check for parameter count match
         if (pCallNode->GetInputVarCount() != pDefNode->GetInputVarCount())
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pCallNode);
             char buf[512];
             sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_ARGS, functionName.c_str(), pDefNode->GetInputVarCount(), pCallNode->GetInputVarCount());
@@ -733,7 +732,7 @@ namespace Interpreter
                     sprintf_s(buf, sizeof(buf), ERROR_INVALID_REFERENCE_PARAMETER, pRefNode->GetName().c_str());
                     err.m_Msg = buf;
                     SetErrorInfo(err);
-                    SetErrorFlag(true);
+                    
                     delete pTop;
                     pLocalTable->Clear();
                     return;
@@ -747,7 +746,7 @@ namespace Interpreter
                     sprintf_s(buf, sizeof(buf), ERROR_INVALID_REFERENCE_PARAMETER, pRefNode->GetName().c_str());
                     err.m_Msg = buf;
                     SetErrorInfo(err);
-                    SetErrorFlag(true);
+                    
                     delete pTop;
                     pLocalTable->Clear();
                     return;
@@ -770,7 +769,7 @@ namespace Interpreter
                     sprintf_s(buf, sizeof(buf), ERROR_INVALID_REFERENCE_PARAMETER, pRefNode->GetName().c_str());
                     err.m_Msg = buf;
                     SetErrorInfo(err);
-                    SetErrorFlag(true);
+                    
                     delete pTop;
                     pLocalTable->Clear();
                     return;
@@ -799,7 +798,7 @@ namespace Interpreter
                     std::optional<ArrayValue> v = GetRarrayValue(pTop);
                     if (v == std::nullopt)
                     {
-                        SetErrorFlag(true);
+                        
                         ErrorInfo err(pCallExprNode);
                         char buf[512];
                         sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_EXPRESSION, functionName.c_str());
@@ -819,7 +818,7 @@ namespace Interpreter
                     std::optional<Value> v = GetRvalue(pTop);
                     if (v == std::nullopt)
                     {
-                        SetErrorFlag(true);
+                        
                         ErrorInfo err(pCallExprNode);
                         char buf[512];
                         sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_EXPRESSION, functionName.c_str());
@@ -892,7 +891,7 @@ namespace Interpreter
         std::vector<int> elementSpecifier = pVarNode->GetArraySpecifier();
         if (!pVarNode->IsSymbolPresent())
         {
-            SetErrorFlag(true);
+            
             ErrorInfo err(pTop);
             char buf[256];
             sprintf_s(buf, sizeof(buf), ERROR_MISSING_SYMBOL, symbol);
@@ -907,7 +906,7 @@ namespace Interpreter
             if (info.m_IsArray == false)
             {
                 ErrorInfo err(pTop);
-                SetErrorFlag(true);
+                
                 char buf[256];
                 sprintf_s(buf, sizeof(buf), ERROR_UNEXPECTED_ARRAY_SPECIFIER, symbol);
                 err.m_Msg = buf;
@@ -918,7 +917,7 @@ namespace Interpreter
             std::optional<Value> v = info.m_ArrayValue.GetValue(elementSpecifier);
             if (v == std::nullopt)
             {
-                SetErrorFlag(true);
+                
                 ErrorInfo err(pTop);
                 char buf[256];
                 sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, symbol);
@@ -1123,7 +1122,7 @@ namespace Interpreter
 
         if (pValueNode->IsArray())
         {
-            SetErrorFlag(true);
+            
             ErrorInterface::ErrorInfo err(pValueNode);
             err.m_Msg = ErrorInterface::ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -1134,7 +1133,7 @@ namespace Interpreter
         Value v = pValueNode->GetValue();
         if (v.GetType() != typeid(int))
         {
-            SetErrorFlag(true);
+            
             ErrorInterface::ErrorInfo err(pValueNode);
             err.m_Msg = ErrorInterface::ERROR_INCORRECT_TYPE;
             SetErrorInfo(err);
@@ -1180,7 +1179,7 @@ namespace Interpreter
             char buf[512];
             sprintf_s(buf, sizeof(buf), ERROR_MISSING_SYMBOL, pNode->GetName().c_str());
             err.m_Msg = buf;
-            SetErrorFlag(true);
+            
             SetErrorInfo(err);
             return;
         }
@@ -1191,7 +1190,7 @@ namespace Interpreter
             char buf[512];
             sprintf_s(buf, sizeof(buf), ERROR_ENTIRE_ARRAY_EXPECTED, pNode->GetName().c_str());
             err.m_Msg = buf;
-            SetErrorFlag(true);
+            
             SetErrorInfo(err);
             return;
         }
@@ -1205,7 +1204,7 @@ namespace Interpreter
             char buf[512];
             sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_LEN_DIMS, pNode->GetName().c_str(), symbolDims.size()-1);
             err.m_Msg = buf;
-            SetErrorFlag(true);
+            
             SetErrorInfo(err);
             return;
         }

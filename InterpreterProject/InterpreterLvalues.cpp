@@ -20,7 +20,7 @@ namespace Interpreter
 		{
 			sprintf_s(m_Buf, sizeof(m_Buf), m_pErrIf->ERROR_MISSING_SYMBOL, m_Name.c_str());
 			m_ErrInfo.m_Msg = m_Buf;
-			m_pErrIf->SetErrorFlag(true);
+			
 			m_pErrIf->SetErrorInfo(m_ErrInfo);
 			return;
 		}
@@ -67,7 +67,7 @@ namespace Interpreter
 		{
 			sprintf_s(m_Buf, sizeof(m_Buf), m_pErrIf->ERROR_MISSING_SYMBOL, m_Name.c_str());
 			m_ErrInfo.m_Msg = m_Buf;
-			m_pErrIf->SetErrorFlag(true);
+			
 			m_pErrIf->SetErrorInfo(m_ErrInfo);
 			return;
 		}
@@ -79,7 +79,7 @@ namespace Interpreter
 		{
 			sprintf_s(m_Buf, sizeof(m_Buf), m_pErrIf->ERROR_UNEXPECTED_ARRAY_SPECIFIER, m_Name.c_str());
 			m_ErrInfo.m_Msg = m_Buf;
-			m_pErrIf->SetErrorFlag(true);
+			
 			m_pErrIf->SetErrorInfo(m_ErrInfo);
 			return;
 		}
@@ -88,7 +88,7 @@ namespace Interpreter
 		{
 			sprintf_s(m_Buf, sizeof(m_Buf), m_pErrIf->ERROR_UNEXPECTED_ARRAY_SPECIFIER, m_Name.c_str());
 			m_ErrInfo.m_Msg = m_Buf;
-			m_pErrIf->SetErrorFlag(true);
+			
 			m_pErrIf->SetErrorInfo(m_ErrInfo);
 			return;
 		}
@@ -99,7 +99,7 @@ namespace Interpreter
 			// The array specifier could be wrong.
 			sprintf_s(m_Buf, sizeof(m_Buf), m_pErrIf->ERROR_INCORRECT_ARRAY_SPECIFIER, m_Name.c_str());
 			m_ErrInfo.m_Msg = m_Buf;
-			m_pErrIf->SetErrorFlag(true);
+			
 			m_pErrIf->SetErrorInfo(m_ErrInfo);
 			return;
 		}

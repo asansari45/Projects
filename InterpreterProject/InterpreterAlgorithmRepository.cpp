@@ -61,7 +61,7 @@ namespace Interpreter
                         char buf[512];
                         sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_INCORRECT_ARRAY_SPECIFIER, name.c_str());
                         err.m_Msg = buf;
-                        pErrorInterface->SetErrorFlag(true);
+                        
                         pErrorInterface->SetErrorInfo(err);
                         return {};
                     }
@@ -80,7 +80,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNEXPECTED_ARRAY_SPECIFIER, name.c_str());
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return {};
             }
@@ -94,7 +94,7 @@ namespace Interpreter
         char buf[512];
         sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_MISSING_SYMBOL, name.c_str());
         err.m_Msg = buf;
-        pErrorInterface->SetErrorFlag(true);
+        
         pErrorInterface->SetErrorInfo(err);
         return {};
     }
@@ -164,7 +164,7 @@ namespace Interpreter
             if (pLeftVarList == nullptr && pRightVarList != nullptr || 
                 pLeftVarList != nullptr && pRightVarList == nullptr)
             {
-                pErrorInterface->SetErrorFlag(true);
+                
                 ErrorInterface::ErrorInfo err(pLeft);
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_VARLIST_BOTH_SIDES);
@@ -202,7 +202,7 @@ namespace Interpreter
             // Argument count check
             if (pLeft->GetListCount() != pRight->GetListCount())
             {
-                pErrorInterface->SetErrorFlag(true);
+                
                 ErrorInterface::ErrorInfo err(pLeft);
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_VARLIST_ARGS, pLeft->GetListCount(), pRight->GetListCount());
@@ -259,7 +259,7 @@ namespace Interpreter
                         char buf[512];
                         sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_ARRAY_OPERATION_FAILED);
                         err.m_Msg = buf;
-                        pErrorInterface->SetErrorFlag(true);
+                        
                         pErrorInterface->SetErrorInfo(err);
                         return nullptr;
                     }
@@ -273,7 +273,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_ARRAY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -285,7 +285,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_ENTIRE_ARRAY_EXPECTED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -295,7 +295,7 @@ namespace Interpreter
             {
                 ErrorInterface::ErrorInfo err(pLeft);
                 err.m_Msg = pErrorInterface->ERROR_BINARY_OPERATION_FAILED;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -328,7 +328,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -360,7 +360,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -392,7 +392,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -424,7 +424,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -458,7 +458,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -492,7 +492,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -526,7 +526,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -560,7 +560,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -595,7 +595,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -624,7 +624,7 @@ namespace Interpreter
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNARY_OPERATION_FAILED);
                 err.m_Msg = buf;
-                pErrorInterface->SetErrorFlag(true);
+                
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
@@ -658,7 +658,7 @@ namespace Interpreter
                     ErrorInterface::ErrorInfo err(pDimNode);
                     err.m_Msg = pErrorInterface->ERROR_ARRAY_UNEXPECTED;
                     pErrorInterface->SetErrorInfo(err);
-                    pErrorInterface->SetErrorFlag(true);
+                    
                     return nullptr;
                 }
 
@@ -667,7 +667,7 @@ namespace Interpreter
                     ErrorInterface::ErrorInfo err(pDimNode);
                     err.m_Msg = pErrorInterface->ERROR_INCORRECT_TYPE;
                     pErrorInterface->SetErrorInfo(err);
-                    pErrorInterface->SetErrorFlag(true);
+                    
                     return nullptr;
                 }
 
@@ -709,7 +709,7 @@ namespace Interpreter
                         ErrorInterface::ErrorInfo err(pRight);
                         err.m_Msg = pErrorInterface->ERROR_INCORRECT_DIM;
                         pErrorInterface->SetErrorInfo(err);
-                        pErrorInterface->SetErrorFlag(true);
+                        
                         return nullptr;
                     }
 
@@ -718,7 +718,7 @@ namespace Interpreter
                         ErrorInterface::ErrorInfo err(pRight);
                         err.m_Msg = pErrorInterface->ERROR_INCORRECT_DIM;
                         pErrorInterface->SetErrorInfo(err);
-                        pErrorInterface->SetErrorFlag(true);
+                        
                         return nullptr;
                     }
 

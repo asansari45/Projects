@@ -61,9 +61,8 @@ namespace Interpreter
             std::string m_Msg;
         };
         bool IsErrorFlagSet() { return m_ErrorFlag; }
-        void SetErrorFlag(bool errorFlag) { m_ErrorFlag = errorFlag; }
         ErrorInfo GetErrorInfo() { return m_ErrInfo; }
-        void SetErrorInfo(ErrorInfo err) { m_ErrInfo = err; }
+        void SetErrorInfo(ErrorInfo err) { m_ErrorFlag = true; m_ErrInfo = err; }
     private:
         bool m_ErrorFlag;
         ErrorInfo m_ErrInfo;
