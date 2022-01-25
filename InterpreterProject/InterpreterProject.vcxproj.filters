@@ -71,9 +71,6 @@
     <ClInclude Include="InterpreterParser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InterpreterNode.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InterpreterSymbolTable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

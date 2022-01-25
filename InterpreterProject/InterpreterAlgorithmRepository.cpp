@@ -6,6 +6,9 @@
 #include "InterpreterContext.h"
 #include "InterpreterErrorInterface.h"
 #include "InterpreterLvalues.h"
+#include "InterpreterVarNode.h"
+#include "InterpreterVarListNode.h"
+#include "InterpreterDimNode.h"
 
 namespace Interpreter
 {

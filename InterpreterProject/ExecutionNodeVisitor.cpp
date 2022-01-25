@@ -2,12 +2,28 @@
 #include <sstream>
 #include <filesystem>
 #include "ExecutionNodeVisitor.hpp"
-#include "InterpreterNode.hpp"
+#include "InterpreterFunctionDefNode.h"
 #include "InterpreterSymbolTable.hpp"
 #include "InterpreterAlgorithmRepository.h"
 #include "InterpreterDriver.hpp"
 #include "InterpreterFunctionTable.h"
 #include "InterpreterLog.h"
+#include "InterpreterDimNode.h"
+#include "InterpreterForNode.h"
+#include "InterpreterFunctionCallNode.h"
+#include "InterpreterHelpNode.h"
+#include "InterpreterIfNode.h"
+#include "InterpreterLenNode.h"
+#include "InterpreterLoadNode.h"
+#include "InterpreterPrintNode.h"
+#include "InterpreterStopNode.h"
+#include "InterpreterWhileNode.h"
+#include "InterpreterRandNode.h"
+#include "InterpreterRefNode.h"
+#include "InterpreterReturnNode.h"
+#include "InterpreterSrandNode.h"
+#include "InterpreterVarListNode.h"
+
 
 namespace Interpreter
 {

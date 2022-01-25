@@ -6,7 +6,7 @@
 #include <string>
 #include <io.h>
 #include "InterpreterDriver.hpp"
-#include "InterpreterNode.hpp"
+#include "InterpreterNode.h"
 #include "ExecutionNodeVisitor.hpp"
 #include "InterpreterSymbolTable.hpp"
 #include "InterpreterLog.h"

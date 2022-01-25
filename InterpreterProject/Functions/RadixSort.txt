@@ -5,7 +5,7 @@ function mod(a,b)
 	return(r)
 }
 
-function CalculateLargestDivisor(a)
+function CalculateLargestDivisor(&a)
 {
 	alen = len(a)
 	for (divisor = 1000000000, divisor != 0, divisor = divisor / 10)
@@ -21,7 +21,7 @@ function CalculateLargestDivisor(a)
 
 }
 
-function RadixSort(a)
+function RadixSort(&a)
 {
 	buckets = dim[10, len(a)]
 	bucketCount = dim[10]
@@ -55,7 +55,8 @@ function RadixSort(a)
 		}
 	}
 
-	return (a)
+	// Passed
+	return(1)
 }
 
 if (main==1)
@@ -77,11 +78,18 @@ if (main==1)
 	{
 		print(i, ".  ", array[i])
 	}
-	s = RadixSort(array)
-	print("AFTER:")
-	for (i=0, i < 10, i=i+1)
+	status = RadixSort(array)
+	if (status == 1)
 	{
-		print(i, ".  ", s[i])
+		print("AFTER:")
+		for (i=0, i < 10, i=i+1)
+		{
+			print(i, ".  ", array[i])
+		}
+	}
+	else
+	{
+		print("....FAILED")
 	}
 }
 

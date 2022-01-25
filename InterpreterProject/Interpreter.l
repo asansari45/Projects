@@ -4,7 +4,12 @@
 
 // Implementation of yyFlexScanner
 #include "InterpreterScanner.hpp"
-#include "InterpreterNode.hpp"
+#include "InterpreterHelpNode.h"
+#include "InterpreterLoadNode.h"
+#include "InterpreterQuitNode.h"
+#include "InterpreterPrintNode.h"
+#include "InterpreterValueNode.h"
+#include "InterpreterVarNode.h"
 #include "InterpreterFunctionTable.h"
 #include "InterpreterContext.h"
 

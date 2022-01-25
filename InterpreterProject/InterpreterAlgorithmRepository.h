@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <optional>
-#include "InterpreterNode.hpp"
+#include "InterpreterBinaryNode.h"
 #include "InterpreterSymbolTable.hpp"
 #include "InterpreterLog.h"
 #include "InterpreterLvalues.h"

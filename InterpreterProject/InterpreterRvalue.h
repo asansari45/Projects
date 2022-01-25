@@ -2,7 +2,7 @@
 
 #include "InterpreterValue.h"
 #include "InterpreterArrayValue.h"
-#include "InterpreterNode.hpp"
+#include "InterpreterValueNode.h"
 
 namespace Interpreter
 {

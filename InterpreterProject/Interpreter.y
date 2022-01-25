@@ -47,7 +47,32 @@ class Node;
 #include <stdio.h>
 #include <string.h>
 #include "InterpreterDriver.hpp"
-#include "InterpreterNode.hpp"
+#include "InterpreterBinaryNode.h"
+#include "InterpreterBreakNode.h"
+#include "InterpreterClearNode.h"
+#include "InterpreterDimNode.h"
+#include "InterpreterForNode.h"
+#include "InterpreterFunctionDefNode.h"
+#include "InterpreterFunctionCallNode.h"
+#include "InterpreterFunctionsNode.h"
+#include "InterpreterHelpNode.h"
+#include "InterpreterIfNode.h"
+#include "InterpreterLenNode.h"
+#include "InterpreterLoadNode.h"
+#include "InterpreterPrintNode.h"
+#include "InterpreterPwdNode.h"
+#include "InterpreterQuitNode.h"
+#include "InterpreterStopNode.h"
+#include "InterpreterValueNode.h"
+#include "InterpreterWhileNode.h"
+#include "InterpreterRandNode.h"
+#include "InterpreterRefNode.h"
+#include "InterpreterReturnNode.h"
+#include "InterpreterSrandNode.h"
+#include "InterpreterVarListNode.h"
+#include "InterpreterVarsCmdNode.h"
+
+
 
 #undef yylex
 #define yylex scanner.yylex

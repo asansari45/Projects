@@ -1,5 +1,7 @@
 #include "InterpreterFunctionTable.h"
-#include "InterpreterNode.hpp"
+#include "InterpreterFunctionDefNode.h"
+#include "InterpreterRefNode.h"
+#include "InterpreterVarNode.h"
 #include "InterpreterLog.h"
 
 namespace Interpreter

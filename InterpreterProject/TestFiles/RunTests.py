@@ -1434,5 +1434,57 @@ class ReferenceTests(unittest.TestCase):
                           'print(b,x)'],
                           ['1515'])
 
+class RadixSortTests(unittest.TestCase):
+    # class variables
+    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    FILENAME = 'TestFile.tqt'
+
+    def ExecuteTest(self, testLines, expectedOutput):
+        # Open a file and add all the test lines to it.
+        with open(self.FILENAME, 'w') as f :
+            for line in testLines:
+                f.write(line + '\n')
+
+        # Execute the file full of statements and capture the output
+        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        results = s.split('\r\n')
+        results = results[1:-1]
+        self.assertEqual(len(results), len(expectedOutput))
+        for i in range(len(results)):
+            self.assertEqual(results[i], expectedOutput[i])
+
+    def test_radix_sort(self):
+        self.ExecuteTest(['clear()',
+                          'load(..\Functions\RadixSort.txt)',
+                          'array=dim[10]',
+                          'array[0]=5400',
+                          'array[1]=405',
+                          'array[2]=2',
+                          'array[3]=3000',
+                          'array[4]=6',
+                          'array[5]=5',
+                          'array[6]=4',
+                          'array[7]=3',
+                          'array[8]=400',
+                          'array[9]=300',
+                          'status=RadixSort(array)',
+                          'print(status)',
+                          'for (i = 0, i < 10, i=i+1)',
+                          '{',
+                          '    print(array[i])',
+                          '}'],
+                          ['Parsing from file:  ..\Functions\RadixSort.txt',
+                           '1',
+                           '2',
+                           '3',
+                           '4',
+                           '5',
+                           '6',
+                           '300',
+                           '400',
+                           '405',
+                           '3000',
+                           '5400'])
+
 if __name__ == '__main__':
     unittest.main()

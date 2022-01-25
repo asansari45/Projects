@@ -119,7 +119,7 @@
       <PreprocessorDefinitions>__STDC_VERSION__=200000</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>..\FlexBison;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@
       <PreprocessorDefinitions>__STDC_VERSION__=200000</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>..\FlexBison;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -168,7 +168,6 @@
     <ClInclude Include="InterpreterDriver.hpp" />
     <ClInclude Include="InterpreterLex.hpp" />
     <ClInclude Include="InterpreterLog.h" />
-    <ClInclude Include="InterpreterNode.hpp" />
     <ClInclude Include="InterpreterNodeVisitor.hpp" />
     <ClInclude Include="InterpreterParser.hpp" />
     <ClInclude Include="InterpreterScanner.hpp" />

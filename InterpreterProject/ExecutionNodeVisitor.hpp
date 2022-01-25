@@ -3,7 +3,8 @@
 #include <optional>
 #include "InterpreterNodeVisitor.hpp"
 #include "InterpreterErrorInterface.h"
-#include "InterpreterNode.hpp"
+#include "InterpreterValueNode.h"
+#include "InterpreterVarNode.h"
 #include "InterpreterSymbolTable.hpp"
 
 namespace Interpreter
