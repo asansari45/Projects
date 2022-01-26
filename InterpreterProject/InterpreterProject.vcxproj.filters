@@ -21,13 +21,7 @@
     <ClCompile Include="lex.yy.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="InterpreterDriver.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InterpreterParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InterpreterContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Tables\InterpreterFunctionTable.cpp">
@@ -49,6 +43,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Algorithm\InterpreterAlgorithmRepository.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\InterpreterContext.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Driver\InterpreterDriver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -109,14 +109,14 @@
     </Text>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Interpreter.y">
-      <Filter>Source Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="Interpreter.l">
-      <Filter>Source Files</Filter>
-    </CustomBuild>
+    <None Include="TestFiles\RunTests.py" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="TestFiles\RunTests.py" />
+    <CustomBuild Include="Grammar\Interpreter.y">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Grammar\Interpreter.l">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
   </ItemGroup>
 </Project>

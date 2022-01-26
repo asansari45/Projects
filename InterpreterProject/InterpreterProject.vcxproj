@@ -119,7 +119,7 @@
       <PreprocessorDefinitions>__STDC_VERSION__=200000</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Tables;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Visitors;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Values;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Log;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Algorithm;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Tables;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Visitors;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Values;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Log;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Algorithm;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Driver;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@
       <PreprocessorDefinitions>__STDC_VERSION__=200000</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Tables;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Visitors;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Values;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Log;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Algorithm;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Tables;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Visitors;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Values;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Log;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Algorithm;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Driver;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,11 +146,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Algorithm\InterpreterAlgorithmRepository.cpp" />
-    <ClCompile Include="InterpreterDriver.cpp" />
+    <ClCompile Include="Driver\InterpreterContext.cpp" />
+    <ClCompile Include="Driver\InterpreterDriver.cpp" />
     <ClCompile Include="InterpreterParser.cpp" />
     <ClCompile Include="InterpreterProject.cpp" />
     <ClCompile Include="lex.yy.cc" />
-    <ClCompile Include="InterpreterContext.cpp" />
     <ClCompile Include="Log\InterpreterLog.cpp" />
     <ClCompile Include="Tables\InterpreterFunctionTable.cpp" />
     <ClCompile Include="Tables\InterpreterSymbolTable.cpp" />
@@ -181,26 +181,20 @@
     <Text Include="README.txt" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Interpreter.l">
+    <CustomBuild Include="Grammar\Interpreter.l">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\asansari\FlexBison\win_flex.exe --c++ --header-file=InterpreterLex.hpp Interpreter.l</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">InterpreterLex.hpp;lex.yy.cc</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\FlexBison\win_flex.exe --nounistd Interpreter.l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\FlexBison\win_flex.exe --nounistd Grammar\Interpreter.l</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">lex.yy.cc</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\FlexBison\win_flex.exe --nounistd Interpreter.l</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\FlexBison\win_flex.exe --nounistd Grammar\Interpreter.l</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">lex.yy.cc</Outputs>
     </CustomBuild>
-    <CustomBuild Include="Interpreter.y">
+    <CustomBuild Include="Grammar\Interpreter.y">
       <FileType>Document</FileType>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Users\asansari\FlexBison\win_bison.exe --debug --defines=InterpreterParser.hpp --output=InterpreterParser.cpp Interpreter.y</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">InterpreterParser.cpp; InterpreterParser.hpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\FlexBison\win_bison --defines=InterpreterParser.hpp --output=InterpreterParser.cpp Interpreter.y</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">..\FlexBison\win_bison.exe --defines=InterpreterParser.hpp --output=InterpreterParser.cpp Grammar\Interpreter.y</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">InterpreterParser.cpp</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\FlexBison\win_bison --defines=InterpreterParser.hpp --output=InterpreterParser.cpp Interpreter.y</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">..\FlexBison\win_bison.exe --defines=InterpreterParser.hpp --output=InterpreterParser.cpp Grammar\Interpreter.y</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">InterpreterParser.cpp</Outputs>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="TestFiles\RunTests.py" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
