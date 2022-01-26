@@ -27,9 +27,6 @@
     <ClCompile Include="InterpreterParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="InterpreterAlgorithmRepository.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InterpreterContext.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -49,6 +46,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Log\InterpreterLog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Algorithm\InterpreterAlgorithmRepository.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
