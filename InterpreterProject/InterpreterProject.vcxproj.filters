@@ -30,16 +30,10 @@
     <ClCompile Include="InterpreterAlgorithmRepository.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="InterpreterArrayValue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InterpreterLog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InterpreterContext.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InterpreterLvalues.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Tables\InterpreterFunctionTable.cpp">
@@ -49,6 +43,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Visitors\InterpreterExecutionNodeVisitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Values\InterpreterArrayValue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Values\InterpreterLvalues.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
