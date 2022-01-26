@@ -27,9 +27,6 @@
     <ClCompile Include="InterpreterParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ExecutionNodeVisitor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InterpreterAlgorithmRepository.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,11 +48,11 @@
     <ClCompile Include="Tables\InterpreterSymbolTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Visitors\InterpreterExecutionNodeVisitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ExecutionNodeVisitor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InterpreterNodeVisitor.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

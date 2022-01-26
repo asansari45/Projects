@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <sstream>
 #include <filesystem>
-#include "ExecutionNodeVisitor.hpp"
+#include "InterpreterExecutionNodeVisitor.h"
 #include "InterpreterFunctionDefNode.h"
 #include "InterpreterSymbolTable.h"
 #include "InterpreterAlgorithmRepository.h"
