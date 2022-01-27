@@ -101,12 +101,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="README.txt" />
-    <Text Include="inputfile.txt">
-      <Filter>Source Files</Filter>
-    </Text>
-    <Text Include="iffile.txt">
-      <Filter>Source Files</Filter>
-    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="TestFiles\RunTests.py" />

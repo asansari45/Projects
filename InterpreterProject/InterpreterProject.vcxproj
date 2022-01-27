@@ -176,8 +176,6 @@
     <ClInclude Include="InterpreterRvalue.h" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="iffile.txt" />
-    <Text Include="inputfile.txt" />
     <Text Include="README.txt" />
   </ItemGroup>
   <ItemGroup>

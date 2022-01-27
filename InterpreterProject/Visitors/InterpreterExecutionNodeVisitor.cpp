@@ -312,16 +312,18 @@ namespace Interpreter
             Interpreter::Log::GetInst()->AddMessage(buf);
         }
 
-        // We just parsed a set of nodes from the file.  Insert the parsed nodes after the Load Node.
-        Interpreter::Node* pNext = pLoadNode->GetNext();
-        Interpreter::Node* pNode = driver.GetResult();
-        pLoadNode->SetNext(pNode);
-
-        // Go to the end of the parsed nodes and insert the pNext.
-        if (pNode != nullptr)
+        // We just parsed a set of nodes from the file.
+        // Execute the nodes using the context that we currently have.
+        for (Interpreter::Node* pNode = driver.GetResult(); pNode != nullptr; pNode = pNode->GetNext())
         {
-            for (; pNode->GetNext(); pNode = pNode->GetNext());
-            pNode->SetNext(pNext);
+            pNode->Accept(*this);
+            if (IsErrorFlagSet())
+            {
+                driver.GetResult()->FreeList();
+                delete contextStack.back();
+                contextStack.pop_back();
+                return;
+            }
         }
 
         delete contextStack.back();
