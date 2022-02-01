@@ -16,6 +16,23 @@ namespace Interpreter
 
         virtual ~ForNode()
         {
+            if (m_pInit)
+            {
+                m_pInit->Free();
+                m_pInit = nullptr;
+            }
+
+            if (m_pExpr)
+            {
+                m_pExpr->Free();
+                m_pExpr = nullptr;
+            }
+
+            if (m_pThen)
+            {
+                m_pThen->FreeList();
+                m_pThen = nullptr;
+            }
         }
 
         virtual Node* Clone()
@@ -45,23 +62,6 @@ namespace Interpreter
 
         virtual void Free()
         {
-            if (m_pInit)
-            {
-                m_pInit->Free();
-                m_pInit = nullptr;
-            }
-
-            if (m_pExpr)
-            {
-                m_pExpr->Free();
-                m_pExpr = nullptr;
-            }
-
-            if (m_pThen)
-            {
-                m_pThen->FreeList();
-                m_pThen = nullptr;
-            }
             Node::Free();
         }
 

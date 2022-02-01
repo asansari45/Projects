@@ -15,6 +15,10 @@ namespace Interpreter
 
         virtual ~SrandNode()
         {
+            if (m_pExpr)
+            {
+                m_pExpr->Free();
+            }
         }
 
         virtual Node* Clone()
@@ -24,10 +28,6 @@ namespace Interpreter
 
         virtual void Free()
         {
-            if (m_pExpr)
-            {
-                m_pExpr->Free();
-            }
             Node::Free();
         }
 

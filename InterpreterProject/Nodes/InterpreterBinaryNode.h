@@ -41,6 +41,18 @@ namespace Interpreter
 
         virtual ~BinaryNode()
         {
+            // delete left child and right children first
+            if (m_pLeft)
+            {
+                m_pLeft->Free();
+                m_pLeft = nullptr;
+            }
+
+            if (m_pRight)
+            {
+                m_pRight->Free();
+                m_pRight = nullptr;
+            }
         }
 
         virtual Node* Clone()
@@ -61,18 +73,6 @@ namespace Interpreter
 
         virtual void Free()
         {
-            // delete left child and right children first
-            if (m_pLeft)
-            {
-                m_pLeft->Free();
-                m_pLeft = nullptr;
-            }
-
-            if (m_pRight)
-            {
-                m_pRight->Free();
-                m_pRight = nullptr;
-            }
             Node::Free();
         }
 

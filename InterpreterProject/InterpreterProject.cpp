@@ -5,13 +5,18 @@
 #include <map>
 #include <string>
 #include <io.h>
+#include "InterpreterAlgorithmRepository.h"
 #include "InterpreterDriver.hpp"
 #include "InterpreterNode.h"
 #include "InterpreterExecutionNodeVisitor.h"
+#include "InterpreterFunctionTable.h"
 #include "InterpreterSymbolTable.h"
 #include "InterpreterLog.h"
 #include "InterpreterErrorInterface.h"
 #include "InterpreterContext.h"
+#include "InterpreterQuitNode.h"
+
+#include "DebugMemory/DebugMemory.h"
 
 void ProcessError(Interpreter::ErrorInterface::ErrorInfo err, bool interactive)
 {
@@ -33,7 +38,7 @@ void ProcessError(Interpreter::ErrorInterface::ErrorInfo err, bool interactive)
     }
 }
 
-void ExecuteNodes(InterpreterDriver& driver, bool interactive)
+bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
 {
     Interpreter::ErrorInterface err = driver.GetErrorInfo();
     if (err.IsErrorFlagSet())
@@ -44,12 +49,21 @@ void ExecuteNodes(InterpreterDriver& driver, bool interactive)
         {
             pNode->FreeList();
         }
-        return;
+        return false;
     }
 
     Interpreter::Node* pNode = driver.GetResult();
     while (pNode != nullptr)
     {
+        // If we see the quit node, we're done.
+        Interpreter::QuitNode* pQuitNode = dynamic_cast<Interpreter::QuitNode*>(pNode);
+        if (pQuitNode != nullptr)
+        {
+            // Do not continue
+            pNode->FreeList();
+            return false;
+        }
+
         Interpreter::ExecutionNodeVisitor nodeVisitor(driver.GetGlobalSymbols());
         pNode->Accept(nodeVisitor);
 
@@ -78,6 +92,9 @@ void ExecuteNodes(InterpreterDriver& driver, bool interactive)
         pNode->Free();
         pNode = pNext;
     }
+
+    // Continue
+    return true;
 }
 
 int PerformInteractive()
@@ -102,9 +119,14 @@ int PerformInteractive()
         InterpreterDriver driver(pGlobalSymbols);
         driver.Parse(input);
 
-        ExecuteNodes(driver, true);
+        bool cont = ExecuteNodes(driver, true);
         delete Interpreter::contextStack.back();
         Interpreter::contextStack.pop_back();
+
+        if (!cont)
+        {
+            break;
+        }
 
         // Prompt
         Interpreter::Log::GetInst()->AddNoNewlineMessage(">");
@@ -112,7 +134,7 @@ int PerformInteractive()
     }
 
     Interpreter::SymbolTable::DeleteGlobalSymbols(pGlobalSymbols);
-
+    Interpreter::FunctionTable::Shutdown();
     return 0;
 }
 
@@ -144,6 +166,8 @@ int PerformFromFile(const std::string filename)
     delete Interpreter::contextStack.back();
     Interpreter::contextStack.pop_back();
 
+    Interpreter::SymbolTable::DeleteGlobalSymbols(pGlobalSymbols);
+    Interpreter::FunctionTable::Shutdown();
     return true;
 }
 
@@ -151,6 +175,7 @@ int main(int argc, char* argv[])
 {
     bool interactive = false;
     bool file = false;
+    bool memleak = false;
     std::string filename;
     for (int i = 0; i < argc; i++)
     {
@@ -176,13 +201,21 @@ int main(int argc, char* argv[])
 
     if (interactive)
     {
-        return PerformInteractive();
+        PerformInteractive();
     }
 
     if (file)
     {
-        return PerformFromFile(filename);
+        PerformFromFile(filename);
     }
+
+    Interpreter::Log::Shutdown();
+    Interpreter::AlgorithmRepository::Shutdown();
+
+#if defined(DEBUG_MEMORY)
+    PrintStatistics();
+#endif
+
 
     return 0;
 }

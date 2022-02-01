@@ -12,6 +12,7 @@ class FunctionTable
 {
 public:
     static FunctionTable* GetInst();
+    static void Shutdown();
     bool CreateFunction(std::string name, FunctionDefNode* f);
     bool IsPresent(std::string name);
     void DeleteFunction(std::string name);

@@ -9,6 +9,7 @@
 #include "InterpreterVarNode.h"
 #include "InterpreterVarListNode.h"
 #include "InterpreterDimNode.h"
+#include "DebugMemory/DebugMemory.h"
 
 namespace Interpreter
 {
@@ -23,6 +24,16 @@ namespace Interpreter
             assert(m_pInst != nullptr);
         }
         return m_pInst;
+    }
+
+    void AlgorithmRepository::Shutdown()
+    {
+        for (int i = 0; i <= BinaryNode::ARY; i++)
+        {
+            delete m_pFunctionTable[i];
+        }
+
+        delete m_pInst;
     }
 
     BinaryFunc* AlgorithmRepository::Lookup(BinaryNode::Operator oper)
@@ -137,8 +148,6 @@ namespace Interpreter
                 return new RefLvalue(name, pSymbols, pErrorInterface, errInfo);
             }
 #endif
-
-
             // Array element checking
             if (arraySpecifier.size() != 0)
             {
@@ -167,7 +176,6 @@ namespace Interpreter
             if (pLeftVarList == nullptr && pRightVarList != nullptr || 
                 pLeftVarList != nullptr && pRightVarList == nullptr)
             {
-                
                 ErrorInterface::ErrorInfo err(pLeft);
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_VARLIST_BOTH_SIDES);
@@ -197,6 +205,7 @@ namespace Interpreter
             }
 
             pLval->Equ(*rval);
+            delete pLval;
             return nullptr;
         }
     private:
@@ -205,7 +214,6 @@ namespace Interpreter
             // Argument count check
             if (pLeft->GetListCount() != pRight->GetListCount())
             {
-                
                 ErrorInterface::ErrorInfo err(pLeft);
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_VARLIST_ARGS, pLeft->GetListCount(), pRight->GetListCount());
@@ -684,6 +692,7 @@ namespace Interpreter
             Lvalue* pLval = GetLvalue(pLeft, rValue, pErrorInterface);
             assert(pLval != nullptr);
             pLval->Dim(rValue);
+            delete pLval;
 
             // No Result
             return nullptr;

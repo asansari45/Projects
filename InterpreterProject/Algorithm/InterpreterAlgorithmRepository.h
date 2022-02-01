@@ -27,6 +27,7 @@ class AlgorithmRepository
 {
 public:
     static AlgorithmRepository* GetInst();
+    static void Shutdown();
     BinaryFunc* Lookup(BinaryNode::Operator oper);
 
 private:

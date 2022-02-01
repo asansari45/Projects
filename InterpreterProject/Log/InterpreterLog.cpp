@@ -3,6 +3,7 @@
 #include <assert.h>
 #include "InterpreterLog.h"
 #include "InterpreterContext.h"
+#include "DebugMemory/DebugMemory.h"
 
 namespace Interpreter
 {
@@ -77,6 +78,16 @@ Log* Log::GetInst()
     }
 
     return m_pInst;
+}
+
+void Log::Shutdown()
+{
+    if (m_pInst != nullptr)
+    {
+        fclose(m_pInst->m_pFile);
+        delete m_pInst;
+        m_pInst = nullptr;
+    }
 }
 
 void Log::AddNoNewlineMessage(Type type, const std::string msg)

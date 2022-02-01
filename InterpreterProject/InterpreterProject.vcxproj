@@ -116,7 +116,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>__STDC_VERSION__=200000</PreprocessorDefinitions>
+      <PreprocessorDefinitions>__STDC_VERSION__=200000;DEBUG_MEMORY=1</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Tables;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Visitors;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Values;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Log;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Algorithm;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Driver;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -146,12 +146,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Algorithm\InterpreterAlgorithmRepository.cpp" />
+    <ClCompile Include="DebugMemory\DebugMemory.cpp" />
     <ClCompile Include="Driver\InterpreterContext.cpp" />
     <ClCompile Include="Driver\InterpreterDriver.cpp" />
     <ClCompile Include="InterpreterParser.cpp" />
     <ClCompile Include="InterpreterProject.cpp" />
     <ClCompile Include="lex.yy.cc" />
     <ClCompile Include="Log\InterpreterLog.cpp" />
+    <ClCompile Include="Nodes\InterpreterFunctionDefNode.cpp" />
+    <ClCompile Include="Nodes\InterpreterNode.cpp" />
+    <ClCompile Include="Nodes\InterpreterReturnNode.cpp" />
     <ClCompile Include="Tables\InterpreterFunctionTable.cpp" />
     <ClCompile Include="Tables\InterpreterSymbolTable.cpp" />
     <ClCompile Include="Values\InterpreterArrayValue.cpp" />

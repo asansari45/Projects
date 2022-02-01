@@ -16,6 +16,16 @@ namespace Interpreter
 
         virtual ~FunctionCallNode()
         {
+            if (m_pNameVar)
+            {
+                m_pNameVar->Free();
+            }
+
+            if (m_pInputVars)
+            {
+                m_pInputVars->FreeList();
+                m_pInputVars = nullptr;
+            }
         }
 
         virtual Node* Clone()
@@ -28,16 +38,6 @@ namespace Interpreter
 
         virtual void Free()
         {
-            if (m_pNameVar)
-            {
-                m_pNameVar->Free();
-            }
-
-            if (m_pInputVars)
-            {
-                m_pInputVars->FreeList();
-                m_pInputVars = nullptr;
-            }
             Node::Free();
         }
 

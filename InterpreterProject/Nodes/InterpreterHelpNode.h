@@ -14,6 +14,7 @@ namespace Interpreter
 
         virtual ~HelpNode()
         {
+            delete m_pVarNode;
         }
 
         virtual Node* Clone()

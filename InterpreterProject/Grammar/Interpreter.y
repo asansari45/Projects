@@ -72,7 +72,7 @@ class Node;
 #include "InterpreterVarListNode.h"
 #include "InterpreterVarsCmdNode.h"
 
-
+#include "DebugMemory/DebugMemory.h"
 
 #undef yylex
 #define yylex scanner.yylex
@@ -119,13 +119,13 @@ class Node;
 %token LEN_
 %token BREAK_
 %token AMPERSAND_
+%token QUIT_
+%token PRINT_
+%token LOAD_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
 %token <m_pNode> FILENAME_
 %token <m_pNode> HELP_
-%token <m_pNode> QUIT_
-%token <m_pNode> LOAD_
-%token <m_pNode> PRINT_
 %nterm <m_pNode> expression
 %nterm <m_pNode> assignment
 %nterm <m_pNode> command
@@ -343,6 +343,7 @@ for : FOR_ LPAREN_ assignment COMMA_ expression COMMA_ assignment RPAREN_ LBRACK
 funcdef : FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ funclines RBRACKET_
          {
             std::string name = dynamic_cast<Interpreter::VarNode*>($2)->GetName();
+            delete $2;
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode(name);
             pNode->SetInputVars($4);
             pNode->SetCode($7);
@@ -352,6 +353,7 @@ funcdef : FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ funclines RB
          FUNCTION_ NAME_ LPAREN_ RPAREN_ LBRACKET_ funclines RBRACKET_
          {
             std::string name = dynamic_cast<Interpreter::VarNode*>($2)->GetName();
+            delete $2;
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode(name);
             pNode->SetCode($6);
             $$ = pNode;
@@ -360,6 +362,7 @@ funcdef : FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ funclines RB
          FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ RBRACKET_
          {
             std::string name = dynamic_cast<Interpreter::VarNode*>($2)->GetName();
+            delete $2;
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode(name);
             pNode->SetInputVars($4);
             $$ = pNode;
@@ -368,6 +371,7 @@ funcdef : FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ funclines RB
          FUNCTION_ NAME_ LPAREN_ RPAREN_ LBRACKET_ RBRACKET_
          {
             std::string name = dynamic_cast<Interpreter::VarNode*>($2)->GetName();
+            delete $2;
             Interpreter::FunctionDefNode* pNode = new Interpreter::FunctionDefNode(name);
             $$ = pNode;
          }

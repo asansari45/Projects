@@ -25,6 +25,8 @@ namespace Interpreter
 
         virtual ~DimNode()
         {
+            m_pDim->FreeList();
+            m_pDim = nullptr;
         }
 
         virtual void Accept(Interpreter::NodeVisitor& rVisitor)

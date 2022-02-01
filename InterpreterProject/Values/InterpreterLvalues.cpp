@@ -2,6 +2,8 @@
 #include "InterpreterRvalue.h"
 #include "InterpreterErrorInterface.h"
 
+#include "DebugMemory/DebugMemory.h"
+
 namespace Interpreter
 {
 	// There is no symbol for the given rvalue in the symbol table.

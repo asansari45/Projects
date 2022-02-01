@@ -14,6 +14,10 @@ namespace Interpreter
 
         virtual ~LoadNode()
         {
+            if (m_pChild)
+            {
+                m_pChild->Free();
+            }
         }
 
         virtual Node* Clone()
@@ -23,10 +27,6 @@ namespace Interpreter
 
         virtual void Free()
         {
-            if (m_pChild)
-            {
-                m_pChild->Free();
-            }
             Node::Free();
         }
 

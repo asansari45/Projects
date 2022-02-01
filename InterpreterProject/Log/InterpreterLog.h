@@ -42,6 +42,7 @@ public:
 
     // Gets the singleton
     static Log* GetInst();
+    static void Shutdown();
 
 private:
     const char* DEFAULT_FILENAME = "InterpreterLog.log";

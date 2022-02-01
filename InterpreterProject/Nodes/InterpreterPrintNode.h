@@ -14,6 +14,11 @@ namespace Interpreter
 
         virtual ~PrintNode()
         {
+            if (m_pChild)
+            {
+                m_pChild->FreeList();
+                m_pChild = nullptr;
+            }
         }
 
         virtual Node* Clone()
@@ -28,11 +33,6 @@ namespace Interpreter
 
         virtual void Free()
         {
-            if (m_pChild)
-            {
-                m_pChild->FreeList();
-                m_pChild = nullptr;
-            }
             Node::Free();
         }
 

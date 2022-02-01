@@ -4,6 +4,7 @@
 #include "InterpreterDriver.hpp"
 #include "InterpreterSymbolTable.h"
 #include "InterpreterContext.h"
+#include "DebugMemory/DebugMemory.h"
 
 InterpreterDriver::InterpreterDriver(Interpreter::SymbolTable* pGlobalSymbols) :
     m_pParser(nullptr),

@@ -7,11 +7,11 @@
 #include "InterpreterHelpNode.h"
 #include "InterpreterLoadNode.h"
 #include "InterpreterQuitNode.h"
-#include "InterpreterPrintNode.h"
 #include "InterpreterValueNode.h"
 #include "InterpreterVarNode.h"
 #include "InterpreterFunctionTable.h"
 #include "InterpreterContext.h"
+#include "DebugMemory/DebugMemory.h"
 
 #undef  YY_DECL
 #define YY_DECL int InterpreterScanner::yylex( yy::InterpreterParser::semantic_type * const lval, yy::InterpreterParser::location_type *location )
@@ -46,8 +46,6 @@ int yycolumn = 1;
 }
 
 "quit" {
-            Interpreter::Node* pNode = new Interpreter::QuitNode;
-            m_pYylval->m_pNode = pNode;
             return token::QUIT_;
 }
 
@@ -58,14 +56,10 @@ int yycolumn = 1;
 }
 
 "load" {
-            Interpreter::Node* pNode = new Interpreter::LoadNode;
-            m_pYylval->m_pNode = pNode;
             return token::LOAD_;
 }
 
 "print" {
-            Interpreter::Node* pNode = new Interpreter::PrintNode;
-            m_pYylval->m_pNode = pNode;
             return token::PRINT_;
 }
 

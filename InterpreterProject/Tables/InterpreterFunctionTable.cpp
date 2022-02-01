@@ -4,6 +4,8 @@
 #include "InterpreterVarNode.h"
 #include "InterpreterLog.h"
 
+#include "DebugMemory/DebugMemory.h"
+
 namespace Interpreter
 {
     FunctionTable* FunctionTable::m_pInst = nullptr;
@@ -14,6 +16,15 @@ namespace Interpreter
             m_pInst = new FunctionTable;
         }
         return m_pInst;
+    }
+
+    void FunctionTable::Shutdown()
+    {
+        if (m_pInst != nullptr)
+        {
+            m_pInst->Clear();
+            delete m_pInst;
+        }
     }
 
     bool FunctionTable::CreateFunction(std::string name, FunctionDefNode* pDef)
@@ -39,6 +50,7 @@ namespace Interpreter
         std::map<std::string, FunctionDefNode*>::iterator i = m_Map.find(name);
         if (i != m_Map.end())
         {
+            delete i->second;
             m_Map.erase(i);
         }
     }

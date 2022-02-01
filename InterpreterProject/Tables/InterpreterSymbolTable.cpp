@@ -2,6 +2,8 @@
 #include "InterpreterSymbolTable.h"
 #include "InterpreterLog.h"
 
+#include "DebugMemory/DebugMemory.h"
+
 namespace Interpreter
 {
 

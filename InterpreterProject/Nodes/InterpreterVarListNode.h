@@ -20,6 +20,10 @@ namespace Interpreter
 
         virtual ~VarListNode()
         {
+            if (m_pList != nullptr)
+            {
+                m_pList->FreeList();
+            }
         }
 
         virtual Node* Clone()

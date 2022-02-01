@@ -8,6 +8,7 @@ class FileBasedTests(unittest.TestCase) :
     # These are class variables in python.
     FILELOC = r'.'
     EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+    LOGFILE = r'InterpreterLog.log'
     _tstfiles = []
 
     @classmethod
@@ -33,6 +34,11 @@ class FileBasedTests(unittest.TestCase) :
         self.assertTrue(testsFailed == 0)
         return [testsPassed,testsFailed]
 
+    def ProcessLogForUnfreedMemory(self):
+        with open(self.LOGFILE, 'r') as f:
+            for line in f:
+                self.assertTrue('Unfreed Memory' not in line)
+
     def test_files(self):
         # iterate through files and execute test.
         totalTestsPassed = 0
@@ -43,6 +49,7 @@ class FileBasedTests(unittest.TestCase) :
             [testsPassed, testsFailed] = self.ProcessTestOutput(f,s)
             totalTestsPassed += testsPassed
             totalTestsFailed += testsFailed
+            self.ProcessLogForUnfreedMemory()
     
         print('Total Tests Passed:  %d' % totalTestsPassed)
         print('Total Tests Failed:  %d' % totalTestsFailed)
@@ -272,14 +279,14 @@ class VarsCommandTests(unittest.TestCase):
                                    'b=3',
                                    'c=dim[10]',
                                    'd=dim[10,10]',
-                                   'e=dim[20,20,20]',
+                                   'e=dim[5,5,5]',
                                    '.vars'],
                                    ['GLOBAL Symbol Table Contents',
                                     'a',
                                     'b',
                                     'c=dim[10]',
                                     'd=dim[10,10]',
-                                    'e=dim[20,20,20]',
+                                    'e=dim[5,5,5]',
                                     'main'])
 
 class EquTests(unittest.TestCase):
@@ -625,36 +632,36 @@ class LenTests(unittest.TestCase):
         self.ExecuteTest(['clear()',
                           'a=dim[10]',
                           'b=dim[11,12]',
-                          'c=dim[13,14,15]',
+                          'c=dim[3,4,5]',
                           'qa=len(a)',
                           'qb=len(b)',
                           'qc=len(c)',
                           'print(qa,qb,qc)'],
-                          ['101113'])
+                          ['10113'])
         self.ExecuteTest(['clear()',
                           'a=dim[10]',
                           'b=dim[11,12]',
-                          'c=dim[13,14,15]',
+                          'c=dim[3,4,5]',
                           'qa=len(a,0)',
                           'qb=len(b,0)',
                           'qc=len(c,0)',
                           'print(qa,qb,qc)'],
-                          ['101113'])
+                          ['10113'])
         self.ExecuteTest(['clear()',
                           'a=dim[10]',
                           'b=dim[11,12]',
-                          'c=dim[13,14,15]',
+                          'c=dim[3,4,5]',
                           'qb=len(b,1)',
                           'qc=len(c,1)',
                           'print(qb,qc)'],
-                          ['1214'])
+                          ['124'])
         self.ExecuteTest(['clear()',
                           'a=dim[10]',
                           'b=dim[11,12]',
-                          'c=dim[13,14,15]',
+                          'c=dim[3,4,5]',
                           'qc=len(c,2)',
                           'print(qc)'],
-                          ['15'])
+                          ['5'])
      
 class ReturnTests(unittest.TestCase):
     # class variables

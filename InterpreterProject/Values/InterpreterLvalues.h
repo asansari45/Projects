@@ -15,6 +15,10 @@ namespace Interpreter
 	{
 	public:
 
+		virtual ~Lvalue()
+		{
+		}
+
 		// Perform the equals operation a=b
 		virtual void Equ(Rvalue& rRvalue) = 0;
 
@@ -28,10 +32,6 @@ namespace Interpreter
 			m_pSymbolTable(pSymbolTable),
 			m_pErrIf(pErrIf),
 			m_ErrInfo(rErrInfo)
-		{
-		}
-
-		virtual ~Lvalue()
 		{
 		}
 

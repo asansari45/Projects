@@ -24,6 +24,7 @@
 #include "InterpreterSrandNode.h"
 #include "InterpreterVarListNode.h"
 
+#include "DebugMemory/DebugMemory.h"
 
 namespace Interpreter
 {
@@ -161,8 +162,10 @@ namespace Interpreter
             std::optional<Value> value;
             if (m_Nodes.size() != 0)
             {
-                value = GetRvalue(m_Nodes.back());
+                Node* pTop = m_Nodes.back();
+                value = GetRvalue(pTop);
                 m_Nodes.pop_back();
+                delete pTop;
             }
 
             if (value != std::nullopt)
@@ -176,7 +179,8 @@ namespace Interpreter
 
     void ExecutionNodeVisitor::VisitQuitNode(Interpreter::QuitNode* pNode)
     {
-        exit(0);
+        // Should not get here.
+        assert(false);
     }
 
     void ExecutionNodeVisitor::VisitHelpNode(Interpreter::HelpNode* pNode)
@@ -326,6 +330,9 @@ namespace Interpreter
             }
         }
 
+        // done with the nodes
+        driver.GetResult()->FreeList();
+
         delete contextStack.back();
         contextStack.pop_back();
     }
@@ -347,7 +354,6 @@ namespace Interpreter
         pExpr->Accept(*this);
         if (m_Nodes.size() == 0)
         {
-            
             ErrorInfo err(pIfNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT;
             SetErrorInfo(err);
@@ -358,7 +364,6 @@ namespace Interpreter
         m_Nodes.pop_back();
         if (pTop == nullptr)
         {
-            
             ErrorInfo err(pIfNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT;
             SetErrorInfo(err);
@@ -368,7 +373,7 @@ namespace Interpreter
         // If this is an array, then fail.
         if (pTop->IsArray())
         {
-            
+            delete pTop;
             ErrorInfo err(pIfNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT;
             SetErrorInfo(err);
@@ -377,6 +382,9 @@ namespace Interpreter
 
         if (pTop->GetValue().IfEval())
         {
+            // Done with top
+            delete pTop;
+
             // Just execute the then statements and leave.
             for (Node* pExecute = pIfNode->GetThen(); pExecute != nullptr; pExecute = pExecute->GetNext())
             {
@@ -404,6 +412,7 @@ namespace Interpreter
             return true;
         }
 
+        delete pTop;
         return false;
     }
 
@@ -473,7 +482,6 @@ namespace Interpreter
         pExpr->Accept(*this);
         if (m_Nodes.size() == 0)
         {
-            
             ErrorInfo err(pWhileNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_WHILE_STATEMENT;
             SetErrorInfo(err);
@@ -483,6 +491,9 @@ namespace Interpreter
         Node* pTop = m_Nodes.back();
         m_Nodes.pop_back();
         ValueNode* pExprResult = GetTopOfStackValue(pTop);
+
+        // Done with top
+        delete pTop;
         if (pExprResult == nullptr)
         {
             return;
@@ -492,7 +503,6 @@ namespace Interpreter
         if (pExprResult->IsArray())
         {
             delete pExprResult;
-            
             ErrorInfo err(pWhileNode);
             err.m_Msg = ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -541,9 +551,9 @@ namespace Interpreter
             {
                 return;
             }
+
             if (m_Nodes.size() == 0)
             {
-                
                 ErrorInfo err(pWhileNode);
                 err.m_Msg = ERROR_INVALID_EXPRESSION_IN_WHILE_STATEMENT;
                 SetErrorInfo(err);
@@ -553,6 +563,9 @@ namespace Interpreter
             Node* pTop = m_Nodes.back();
             m_Nodes.pop_back();
             pExprResult = GetTopOfStackValue(pTop);
+
+            // Done with top
+            delete pTop;
             if (pExprResult == nullptr)
             {
                 return;
@@ -583,7 +596,6 @@ namespace Interpreter
         pExpr->Accept(*this);
         if (m_Nodes.size() == 0)
         {
-            
             ErrorInfo err(pForNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_FOR_STATEMENT;
             SetErrorInfo(err);
@@ -593,6 +605,9 @@ namespace Interpreter
         Node* pTop = m_Nodes.back();
         m_Nodes.pop_back();
         ValueNode* pExprResult = GetTopOfStackValue(pTop);
+
+        // Done with top
+        delete pTop;
         if (pExprResult == nullptr)
         {
             return;
@@ -600,7 +615,7 @@ namespace Interpreter
 
         if (pExprResult->IsArray())
         {
-            
+            delete pExprResult;
             ErrorInfo err(pForNode);
             err.m_Msg = ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -649,9 +664,9 @@ namespace Interpreter
             {
                 return;
             }
+
             if (m_Nodes.size() == 0)
             {
-                
                 ErrorInfo err(pForNode);
                 err.m_Msg = ERROR_INVALID_EXPRESSION_IN_FOR_STATEMENT;
                 SetErrorInfo(err);
@@ -661,6 +676,10 @@ namespace Interpreter
             pTop = m_Nodes.back();
             m_Nodes.pop_back();
             ValueNode* pExprResult = GetTopOfStackValue(pTop);
+
+            // Done with top
+            delete pTop;
+
             if (pExprResult == nullptr)
             {
                 return;
@@ -668,7 +687,7 @@ namespace Interpreter
 
             if (pExprResult->IsArray())
             {
-                
+                delete pExprResult;
                 ErrorInfo err(pForNode);
                 err.m_Msg = ERROR_ARRAY_UNEXPECTED;
                 SetErrorInfo(err);
@@ -970,7 +989,7 @@ namespace Interpreter
         // Evaluate all expressions, convert everything to value nodes.
         ValueNode* pHead = nullptr;
         ValueNode* pCurr = nullptr;
-        for (Node* pExpr = pReturnNode->GetExpr(); pExpr; pExpr = pExpr->GetNext())
+        for (Node* pExpr = pReturnNode->GetExpr(); pExpr != nullptr; pExpr = pExpr->GetNext())
         {
             // Visit the expression.
             pExpr->Accept(*this);
@@ -990,6 +1009,7 @@ namespace Interpreter
             m_Nodes.pop_back();
 
             ValueNode* pValueNode = GetTopOfStackValue(pTop);
+            delete pTop;
             if (pValueNode == nullptr)
             {
                 return;
