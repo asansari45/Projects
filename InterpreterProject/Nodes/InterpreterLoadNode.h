@@ -1,5 +1,5 @@
 #pragma once
-#include "InterpreterNode.h"
+#include "InterpreterLoadNode.h"
 
 namespace Interpreter
 {

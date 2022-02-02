@@ -7,81 +7,11 @@ namespace Interpreter
     class IfNode : public Node
     {
     public:
-        IfNode() :
-            m_pExpr(nullptr),
-            m_pThen(nullptr),
-            m_pElif(nullptr),
-            m_pElse(nullptr)
-        {
-        }
-
-        virtual ~IfNode()
-        {
-            if (m_pExpr)
-            {
-                m_pExpr->Free();
-                m_pExpr = nullptr;
-            }
-
-            if (m_pElse)
-            {
-                m_pElse->FreeList();
-                m_pElse = nullptr;
-            }
-
-            if (m_pElif)
-            {
-                m_pElif->FreeList();
-                m_pElif = nullptr;
-            }
-
-            if (m_pThen)
-            {
-                m_pThen->FreeList();
-                m_pThen = nullptr;
-            }
-        }
-
-        virtual Node* Clone()
-        {
-            IfNode* pNode = new IfNode;
-
-            // One node to clone.
-            if (m_pExpr != nullptr)
-            {
-                pNode->SetExpr(m_pExpr->Clone());
-            }
-
-            if (m_pThen != nullptr)
-            {
-                pNode->SetThen(m_pThen->CloneList());
-            }
-
-            // Several nodes to clone.
-            if (m_pElif != nullptr)
-            {
-                pNode->SetElif(dynamic_cast<Interpreter::IfNode*>(m_pElif->CloneList()));
-            }
-
-            // Several nodes to clone.
-            if (m_pElse != nullptr)
-            {
-                pNode->SetElse(m_pElse->CloneList());
-            }
-
-            return pNode;
-        }
-
-        virtual void Free()
-        {
-            Node::Free();
-        }
-
-        virtual void Accept(Interpreter::NodeVisitor& rVisitor)
-        {
-            rVisitor.VisitIfNode(this);
-        }
-
+        IfNode();
+        virtual ~IfNode();
+        virtual Node* Clone();
+        virtual void Free();
+        virtual void Accept(Interpreter::NodeVisitor& rVisitor);
         Node* GetExpr() { return m_pExpr; }
         void SetExpr(Node* pExpr) { m_pExpr = pExpr; }
 

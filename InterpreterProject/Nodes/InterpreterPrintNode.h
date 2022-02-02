@@ -7,40 +7,11 @@ namespace Interpreter
     class PrintNode : public Node
     {
     public:
-        PrintNode() :
-            m_pChild(nullptr)
-        {
-        }
-
-        virtual ~PrintNode()
-        {
-            if (m_pChild)
-            {
-                m_pChild->FreeList();
-                m_pChild = nullptr;
-            }
-        }
-
-        virtual Node* Clone()
-        {
-            PrintNode* pNode = new PrintNode;
-            if (m_pChild)
-            {
-                pNode->SetChild(m_pChild->CloneList());
-            }
-            return pNode;
-        }
-
-        virtual void Free()
-        {
-            Node::Free();
-        }
-
-        virtual void Accept(Interpreter::NodeVisitor& rVisitor)
-        {
-            rVisitor.VisitPrintNode(this);
-        }
-
+        PrintNode();
+        virtual ~PrintNode();
+        virtual Node* Clone();
+        virtual void Free();
+        virtual void Accept(Interpreter::NodeVisitor& rVisitor);
         Node* GetChild() { return m_pChild; }
         void SetChild(Node* pChild) { m_pChild = pChild; }
     private:
