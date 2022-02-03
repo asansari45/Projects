@@ -180,6 +180,7 @@
     <ClCompile Include="Tables\InterpreterSymbolTable.cpp" />
     <ClCompile Include="Values\InterpreterArrayValue.cpp" />
     <ClCompile Include="Values\InterpreterLvalues.cpp" />
+    <ClCompile Include="Values\InterpreterValue.cpp" />
     <ClCompile Include="Visitors\InterpreterExecutionNodeVisitor.cpp" />
   </ItemGroup>
   <ItemGroup>

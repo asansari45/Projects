@@ -7,39 +7,15 @@ namespace Interpreter
     class VarNode : public Node
     {
     public:
-        VarNode() :
-            Node(),
-            m_Name(),
-            m_ArraySpecifier(),
-            m_SymbolPresent(false),
-            m_SymbolInfo(),
-            m_pNoSymbol(nullptr)
-        {
-        }
+        VarNode();
 
-        VarNode(const VarNode& rNode) :
-            Node(rNode),
-            m_Name(rNode.m_Name),
-            m_ArraySpecifier(rNode.m_ArraySpecifier),
-            m_SymbolPresent(rNode.m_SymbolPresent),
-            m_SymbolInfo(rNode.m_SymbolInfo),
-            m_pNoSymbol(rNode.m_pNoSymbol)
-        {
-        }
+        VarNode(const VarNode& rNode);
 
-        virtual ~VarNode()
-        {
-        }
+        virtual ~VarNode();
 
-        virtual Node* Clone()
-        {
-            return new VarNode(*this);
-        }
+        virtual Node* Clone();
 
-        virtual void Accept(Interpreter::NodeVisitor& rVisitor)
-        {
-            rVisitor.VisitVarNode(this);
-        }
+        virtual void Accept(Interpreter::NodeVisitor& rVisitor);
 
         std::string GetName() { return m_Name; }
         void SetName(std::string n) { m_Name = n; }

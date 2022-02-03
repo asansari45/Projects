@@ -2,7 +2,6 @@
 
 namespace Interpreter
 {
-
     VarNode::VarNode() :
         Node(),
         m_Name(),

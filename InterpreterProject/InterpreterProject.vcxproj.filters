@@ -123,6 +123,9 @@
     <ClCompile Include="Nodes\InterpreterWhileNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Values\InterpreterValue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InterpreterNodeVisitor.hpp">

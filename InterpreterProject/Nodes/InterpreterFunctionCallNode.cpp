@@ -41,7 +41,7 @@ namespace Interpreter
         rVisitor.VisitFunctionCallNode(this);
     }
 
-    int FunctionCalNode::GetInputVarCount()
+    int FunctionCallNode::GetInputVarCount()
     {
         int count = 0;
         for (Interpreter::Node* pNode = m_pInputVars; pNode; pNode = pNode->GetNext())

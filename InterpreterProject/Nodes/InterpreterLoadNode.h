@@ -1,5 +1,5 @@
 #pragma once
-#include "InterpreterLoadNode.h"
+#include "InterpreterNode.h"
 
 namespace Interpreter
 {
@@ -7,33 +7,15 @@ namespace Interpreter
     class LoadNode : public Node
     {
     public:
-        LoadNode() :
-            m_pChild(nullptr)
-        {
-        }
+        LoadNode();
 
-        virtual ~LoadNode()
-        {
-            if (m_pChild)
-            {
-                m_pChild->Free();
-            }
-        }
+        virtual ~LoadNode();
 
-        virtual Node* Clone()
-        {
-            return new LoadNode;
-        }
+        virtual Node* Clone();
 
-        virtual void Free()
-        {
-            Node::Free();
-        }
+        virtual void Free();
 
-        virtual void Accept(Interpreter::NodeVisitor& rVisitor)
-        {
-            rVisitor.VisitLoadNode(this);
-        }
+        virtual void Accept(Interpreter::NodeVisitor& rVisitor);
 
         VarNode* GetChild() { return m_pChild; }
         void SetChild(VarNode* pChild) { m_pChild = pChild; }

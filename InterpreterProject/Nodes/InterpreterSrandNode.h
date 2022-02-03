@@ -7,29 +7,13 @@ namespace Interpreter
     class SrandNode : public Node
     {
     public:
-        SrandNode() :
-            Node(),
-            m_pExpr(nullptr)
-        {
-        }
+        SrandNode();
 
-        virtual ~SrandNode()
-        {
-            if (m_pExpr)
-            {
-                m_pExpr->Free();
-            }
-        }
+        virtual ~SrandNode();
 
-        virtual Node* Clone()
-        {
-            return new SrandNode;
-        }
+        virtual Node* Clone();
 
-        virtual void Free()
-        {
-            Node::Free();
-        }
+        virtual void Free();
 
         void SetExpr(Node* pExpr)
         {
@@ -41,10 +25,7 @@ namespace Interpreter
             return m_pExpr;
         }
 
-        virtual void Accept(Interpreter::NodeVisitor& rVisitor)
-        {
-            rVisitor.VisitSrandNode(this);
-        }
+        virtual void Accept(Interpreter::NodeVisitor& rVisitor);
     private:
         Node* m_pExpr;
     };

@@ -1,4 +1,5 @@
 #include "InterpreterLoadNode.h"
+#include "InterpreterVarNode.h"
 
 namespace Interpreter
 {

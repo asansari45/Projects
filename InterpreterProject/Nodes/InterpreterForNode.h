@@ -7,68 +7,14 @@ namespace Interpreter
     class ForNode : public Node
     {
     public:
-        ForNode() :
-            m_pInit(nullptr),
-            m_pExpr(nullptr),
-            m_pThen(nullptr)
-        {
-        }
+        ForNode();
 
-        virtual ~ForNode()
-        {
-            if (m_pInit)
-            {
-                m_pInit->Free();
-                m_pInit = nullptr;
-            }
+        virtual ~ForNode();
 
-            if (m_pExpr)
-            {
-                m_pExpr->Free();
-                m_pExpr = nullptr;
-            }
+        virtual Node* Clone();
+        virtual void Free();
 
-            if (m_pThen)
-            {
-                m_pThen->FreeList();
-                m_pThen = nullptr;
-            }
-        }
-
-        virtual Node* Clone()
-        {
-            ForNode* pNode = new ForNode;
-
-            // One node to clone.
-            if (m_pInit != nullptr)
-            {
-                pNode->SetInit(m_pInit->Clone());
-            }
-
-            // One node to clone.
-            if (m_pExpr != nullptr)
-            {
-                pNode->SetExpr(m_pExpr->Clone());
-            }
-
-            // Several nodes to clone.
-            if (m_pThen != nullptr)
-            {
-                pNode->SetThen(m_pThen->CloneList());
-            }
-
-            return pNode;
-        }
-
-        virtual void Free()
-        {
-            Node::Free();
-        }
-
-        virtual void Accept(Interpreter::NodeVisitor& rVisitor)
-        {
-            rVisitor.VisitForNode(this);
-        }
+        virtual void Accept(Interpreter::NodeVisitor& rVisitor);
 
         Node* GetInit() { return m_pInit; }
         void SetInit(Node* pExpr) { m_pInit = pExpr; }
