@@ -16,7 +16,7 @@ ArrayValue::ArrayValue(std::vector<int>& rDims) :
     m_Values()
 {
     // Create a flat array.
-    int elemCount = rDims[1];
+    int elemCount = rDims[0];
     for (size_t i = 1; i < rDims.size(); i++)
     {
         elemCount *= rDims[i];
