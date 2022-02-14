@@ -215,12 +215,6 @@ class ErrorTests(unittest.TestCase) :
 
         self.ExecuteErrorTest(['a=dim[9]', 
                                'b=dim[9]',
-                               'b[1] = 3.1415927',
-                               'c=a+b'],
-                               ['LINE:  4, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'])
-
-        self.ExecuteErrorTest(['a=dim[9]', 
-                               'b=dim[9]',
                                'b[1] = \"gadzooks\"',
                                'c=a+b'],
                                ['LINE:  4, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'])

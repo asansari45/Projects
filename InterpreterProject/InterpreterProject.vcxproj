@@ -185,7 +185,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InterpreterErrorInterface.h" />
-    <ClInclude Include="InterpreterArrayValue.h" />
     <ClInclude Include="InterpreterContext.h" />
     <ClInclude Include="InterpreterFunctionTable.h" />
     <ClInclude Include="InterpreterAlgorithmRepository.h" />

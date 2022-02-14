@@ -4,7 +4,6 @@
 
 // Implementation of yyFlexScanner
 #include "InterpreterScanner.hpp"
-#include "InterpreterHelpNode.h"
 #include "InterpreterLoadNode.h"
 #include "InterpreterQuitNode.h"
 #include "InterpreterValueNode.h"
@@ -50,8 +49,6 @@ int yycolumn = 1;
 }
 
 "help" {
-            Interpreter::Node* pNode = new Interpreter::HelpNode;
-            m_pYylval->m_pNode = pNode;
             return token::HELP_;
 }
 

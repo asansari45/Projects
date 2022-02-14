@@ -2,7 +2,8 @@
 
 namespace Interpreter
 {
-    HelpNode::HelpNode()
+    HelpNode::HelpNode():
+        m_pVarNode(nullptr)
     {
     }
 

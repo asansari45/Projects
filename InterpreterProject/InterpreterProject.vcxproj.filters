@@ -155,9 +155,6 @@
     <ClInclude Include="InterpreterValue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InterpreterArrayValue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InterpreterLog.h">
       <Filter>Header Files</Filter>
     </ClInclude>

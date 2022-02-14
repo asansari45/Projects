@@ -154,23 +154,23 @@ void SymbolTable::Dump()
             std::vector<int> dims = p.m_ArrayValue.GetDims();
             if (dims.size() == 3)
             {
-                sprintf_s(buf, sizeof(buf), "%s=dim[%d,%d,%d]", p.m_Name.c_str(), dims[0], dims[1], dims[2]);
+                sprintf_s(buf, sizeof(buf), "%s=dim[%d,%d,%d]  %s", p.m_Name.c_str(), dims[0], dims[1], dims[2], p.m_ArrayValue.GetRepresentation().c_str());
                 Log::GetInst()->AddMessage(buf);
             }
             else if (dims.size() == 2)
             {
-                sprintf_s(buf, sizeof(buf), "%s=dim[%d,%d]", p.m_Name.c_str(), dims[0], dims[1]);
+                sprintf_s(buf, sizeof(buf), "%s=dim[%d,%d]  %s", p.m_Name.c_str(), dims[0], dims[1], p.m_ArrayValue.GetRepresentation().c_str());
                 Log::GetInst()->AddMessage(buf);
             }
             else if (dims.size() == 1)
             {
-                sprintf_s(buf, sizeof(buf), "%s=dim[%d]", p.m_Name.c_str(), dims[0]);
+                sprintf_s(buf, sizeof(buf), "%s=dim[%d]  %s", p.m_Name.c_str(), dims[0], p.m_ArrayValue.GetRepresentation().c_str());
                 Log::GetInst()->AddMessage(buf);
             }
         }
         else
         {
-            sprintf_s(buf, sizeof(buf), "%s", p.m_Name.c_str());
+            sprintf_s(buf, sizeof(buf), "%s  %s", p.m_Name.c_str(), p.m_Value.GetRepresentation().c_str());
             Log::GetInst()->AddMessage(buf);
         }
     }

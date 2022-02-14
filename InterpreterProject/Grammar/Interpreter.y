@@ -11,7 +11,7 @@
 
 // This example uses genuine C++ objects as semantic values, therefore, we require the variant-based storage of 
 // semantic values. To make sure we properly use it, we enable assertions. To fully benefit from type-safety and 
-// more natural definition of “symbol”, we enable api.token.constructor.
+// more natural definition of ï¿½symbolï¿½, we enable api.token.constructor.
 
 // %define api.token.constructor
 // %define api.value.type variant
@@ -122,10 +122,10 @@ class Node;
 %token QUIT_
 %token PRINT_
 %token LOAD_
+%token HELP_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
 %token <m_pNode> FILENAME_
-%token <m_pNode> HELP_
 %nterm <m_pNode> expression
 %nterm <m_pNode> assignment
 %nterm <m_pNode> command

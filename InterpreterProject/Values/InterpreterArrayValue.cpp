@@ -5,61 +5,164 @@
 namespace Interpreter
 {
 
-ArrayValue::ArrayValue() :
+ArrayValue::ArrayValue():
     m_Dims(),
-    m_Values()
+    m_pInts(nullptr),
+    m_pFloats(nullptr),
+    m_pStrings(nullptr)
 {
 }
 
-ArrayValue::ArrayValue(std::vector<int>& rDims) :
-    m_Dims(rDims),
-    m_Values()
+ArrayValue::ArrayValue(const ArrayValue& p):
+    m_Dims(p.m_Dims),
+    m_pInts(nullptr),
+    m_pFloats(nullptr),
+    m_pStrings(nullptr)
 {
-    // Create a flat array.
-    int elemCount = rDims[0];
-    for (size_t i = 1; i < rDims.size(); i++)
+    if (p.m_pInts != nullptr)
     {
-        elemCount *= rDims[i];
+        m_pInts = new int[GetElementCount()];
+        assert(m_pInts != nullptr);
+        std::memcpy(m_pInts, const_cast<ArrayValue&>(p).GetInts(), GetElementCount() * sizeof(int));
     }
 
-    // Fill with default values.
-    for (int i = 0; i < elemCount; i++)
+    if (p.m_pFloats != nullptr)
     {
-        Value v;
-        m_Values.push_back(v);
+        m_pFloats = new float[GetElementCount()];
+        assert(m_pFloats != nullptr);
+        std::memcpy(m_pFloats, const_cast<ArrayValue&>(p).GetFloats(), GetElementCount() * sizeof(float));
+    }
+
+    if (p.m_pStrings != nullptr)
+    {
+        m_pStrings = new std::string[GetElementCount()];
+        assert(m_pStrings != nullptr);
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            m_pStrings[i] = const_cast<ArrayValue&>(p).GetStrings()[i];
+        }
     }
 }
 
 ArrayValue::~ArrayValue()
 {
+    delete [] m_pInts;
+    delete [] m_pFloats;
+    delete [] m_pStrings;
 }
 
 std::optional<Value> ArrayValue::GetValue(std::vector<int> element)
 {
     std::optional<int> index = ConvertElementIndex(element);
-    if (index != std::nullopt)
+    if (index == std::nullopt)
     {
-        return m_Values[index.value()];
+        return {};
     }
 
-    return {};
-}
+    Value v;
+    if (m_pInts != nullptr)
+    {
+        v.SetIntValue(m_pInts[*index]);
+    }
+    else if (m_pFloats != nullptr)
+    {
+        v.SetFloatValue(m_pFloats[*index]);
+    }
+    else if (m_pStrings != nullptr)
+    {
+        v.SetStringValue(m_pStrings[*index]);
+    }
+    else
+    {
+        return {};
+    }
 
-std::vector<Value> ArrayValue::GetValues()
-{
-    return m_Values;
+    return v;
 }
 
 bool ArrayValue::SetValue(std::vector<int> element, Value v)
 {
     std::optional<int> index = ConvertElementIndex(element);
-    if (index != std::nullopt)
+    if (index == std::nullopt)
     {
-        m_Values[index.value()] = v;
+        return false;
+    }
+
+    if (v.GetType() == typeid(int))
+    {
+        if (m_pInts != nullptr)
+        {
+            m_pInts[*index] = v.GetIntValue();
+            return true;
+        }
+        
+        if (m_pFloats != nullptr)
+        {
+            m_pFloats[*index] = static_cast<float>(v.GetIntValue());
+            return true;
+        }
+
+        assert(m_pStrings != nullptr);
+        delete [] m_pStrings;
+        m_pStrings = nullptr;
+
+        m_pInts = new int[GetElementCount()];
+        assert(m_pInts != nullptr);
+        m_pInts[*index] = v.GetIntValue();
+        return true;
+   }
+
+    if (v.GetType() == typeid(float))
+    {
+        if (m_pInts != nullptr)
+        {
+            // Convert ints over to floats.
+            m_pFloats = new float[GetElementCount()];
+            AssignArrays(m_pFloats, m_pInts, GetElementCount());
+            delete [] m_pInts;
+            m_pInts = nullptr;
+            m_pFloats[*index] = v.GetFloatValue();
+            return true;
+        }
+
+        if (m_pFloats != nullptr)
+        {
+            m_pFloats[*index] = v.GetFloatValue();
+            return true;
+        }
+
+        assert(m_pStrings != nullptr);
+        delete [] m_pStrings;
+        m_pStrings = nullptr;
+
+        m_pFloats = new float[GetElementCount()];
+        assert(m_pFloats != nullptr);
+        m_pFloats[*index] = v.GetFloatValue();
         return true;
     }
 
-    return false;
+    assert(v.GetType() == typeid(std::string));
+    if (m_pStrings != nullptr)
+    {
+        m_pStrings[*index] = v.GetStringValue();
+        return true;
+    }
+
+    if (m_pInts != nullptr)
+    {
+        delete [] m_pInts;
+        m_pInts = nullptr;
+        m_pStrings = new std::string[GetElementCount()];
+        m_pStrings[*index] = v.GetStringValue();
+        return true;
+    }
+
+    assert(m_pFloats != nullptr);
+    delete [] m_pFloats;
+    m_pFloats = nullptr;
+    m_pStrings = new std::string[GetElementCount()];
+    m_pStrings[*index] = v.GetStringValue();
+    return true;
 }
 
 // Only 3 dimensions are allowed.  2-dimensions are just rows concatenated together.
@@ -126,21 +229,35 @@ std::optional<int> ArrayValue::ConvertElementIndex(std::vector<int> element)
 
 void ArrayValue::SetDims(std::vector<int> d)
 {
-    // Create a flat array.
+    // Create a flat array of ints
     m_Dims = d;
-    int elemCount = m_Dims[0];
-    for (size_t i = 1; i < m_Dims.size(); i++)
+    delete [] m_pInts;
+    m_pInts = nullptr;
+
+    delete [] m_pFloats;
+    m_pFloats = nullptr;
+
+    delete [] m_pStrings;
+    m_pStrings = nullptr;
+
+    m_pInts = new int[GetElementCount()];
+    assert(m_pInts != nullptr);
+    std::memset(m_pInts, 0, sizeof(int)*GetElementCount());
+}
+
+std::type_index ArrayValue::GetType()
+{
+    if (m_pInts != nullptr)
     {
-        elemCount *= m_Dims[i];
+        return typeid(int);
     }
 
-    // Fill with default values.
-    m_Values.clear();
-    for (int i = 0; i < elemCount; i++)
+    if ( m_pFloats != nullptr)
     {
-        Value v;
-        m_Values.push_back(v);
+        return typeid(float);
     }
+
+    return typeid(std::string);
 }
 
 // Add 2 arrays together.
@@ -152,12 +269,51 @@ bool ArrayValue::Add(ArrayValue& v)
         return false;
     }
 
-    // All the checks passed. Let's add each element one by one.
-    std::vector<Value> otherValues = v.GetValues();
-    for (auto i = 0; i < m_Values.size(); i++)
+    std::type_index ourType = GetType();
+    std::type_index theirType = v.GetType();
+    if (ourType == typeid(int))
     {
-        status = m_Values[i].Add(otherValues[i]);
-        assert(status);
+        if (theirType == typeid(int))
+        {
+            AddArrays(m_pInts, v.GetInts(), m_pInts, GetElementCount());
+            return true;
+        }
+
+        if (theirType == typeid(float))
+        {
+            // Convert results to be all floats.
+            m_pFloats = new float[GetElementCount()];
+            assert(m_pFloats != nullptr);
+            AddArrays(m_pInts, v.GetFloats(), m_pFloats, GetElementCount());
+            delete [] m_pInts;
+            m_pInts = nullptr;
+            return true;
+        }
+
+        return false;
+    }
+
+    if (ourType == typeid(float))
+    {
+        if (theirType == typeid(int))
+        {
+            AddArrays(m_pFloats, v.GetInts(), m_pFloats, GetElementCount());
+            return true;
+        }
+
+        if (theirType == typeid(float))
+        {
+            AddArrays(m_pFloats, v.GetFloats(), m_pFloats, GetElementCount());
+            return true;
+        }
+
+        return false;
+    }
+
+    assert(ourType == typeid(std::string));
+    if (theirType == typeid(std::string))
+    {
+        AddArrays(m_pStrings, v.GetStrings(), m_pStrings, GetElementCount());
     }
 
     return true;
@@ -172,16 +328,112 @@ bool ArrayValue::LikenessChecks(ArrayValue& v)
     }
 
     // The type of each element must match.
-    std::vector<Value> otherValues = v.GetValues();
-    for (auto i = 0; i < m_Values.size(); i++)
+    std::type_index ourType = GetType();
+    std::type_index theirType = v.GetType();
+    if (ourType == typeid(int))
     {
-        if (m_Values[i].GetType() != otherValues[i].GetType())
+        if (theirType == typeid(std::string))
         {
             return false;
         }
+
+        return true;
+    }
+
+    if (ourType == typeid(float))
+    {
+        if (theirType == typeid(std::string))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    assert(ourType == typeid(std::string));
+    if (theirType == typeid(int) || theirType == typeid(float))
+    {
+        return false;
     }
 
     return true;
+}
+
+int ArrayValue::GetElementCount()
+{
+    int count = 1;
+    for (auto i = 0; i < m_Dims.size(); i++)
+    {
+        count *= m_Dims[i];
+    }
+
+    return count;
+}
+// For debug purposes
+std::string ArrayValue::GetRepresentation()
+{
+    assert(m_Dims.size() <= 3);
+    std::vector<int> element;
+    std::string s = "[";
+    for (size_t d = 0; d < m_Dims.size(); d++)
+    {
+        if (d != m_Dims.size() - 1)
+        {
+            s += "0,";
+        }
+        else
+        {
+            s += "0";
+        }
+        element.push_back(0);
+    }
+
+    const int ELEMENT_COUNT = 10;
+    char buf[256];
+    sprintf_s(buf, sizeof(buf), "%s...%d]:  ", s.c_str(), ELEMENT_COUNT-1);
+    s = buf;
+
+    int maxElementCount = m_Dims.back();
+    for (int i = 0; i < maxElementCount && i < ELEMENT_COUNT; i++)
+    {
+        element[m_Dims.size() - 1] = i;
+        std::optional<Value> v = GetValue(element);
+        assert(v != std::nullopt);
+        s += v->GetRepresentation() + " ";
+    }
+    s += "...";
+    return s;
+}
+
+ArrayValue& ArrayValue::operator=(const ArrayValue& o)
+{
+    delete [] m_pInts;
+    m_pInts = nullptr;
+    delete [] m_pFloats;
+    m_pFloats = nullptr;
+    delete [] m_pStrings;
+    m_pStrings = nullptr;
+
+    m_Dims = const_cast<ArrayValue&>(o).GetDims();
+    if (const_cast<ArrayValue&>(o).GetInts())
+    {
+        m_pInts = new int[GetElementCount()];
+        AssignArrays(m_pInts, const_cast<ArrayValue&>(o).GetInts(), GetElementCount());
+    }
+
+    if (const_cast<ArrayValue&>(o).GetFloats())
+    {
+        m_pFloats = new float[GetElementCount()];
+        AssignArrays(m_pFloats, const_cast<ArrayValue&>(o).GetFloats(), GetElementCount());
+    }
+
+    if (const_cast<ArrayValue&>(o).GetStrings())
+    {
+        m_pStrings = new std::string[GetElementCount()];
+        AssignArrays(m_pStrings, const_cast<ArrayValue&>(o).GetStrings(), GetElementCount());
+    }
+
+    return *this;
 }
 
 }

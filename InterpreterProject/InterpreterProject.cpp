@@ -49,6 +49,13 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
         {
             pNode->FreeList();
         }
+
+        // If we're interactive, we want to keep going...
+        if (interactive)
+        {
+            return true;
+        }
+
         return false;
     }
 
