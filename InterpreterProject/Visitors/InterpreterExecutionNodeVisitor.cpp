@@ -215,10 +215,10 @@ namespace Interpreter
         }
 
         Log::GetInst()->AddMessage("Interpreter HELP");
-        Log::GetInst()->AddMessage("help()            -- prints this message");
-        Log::GetInst()->AddMessage("help(expr)        -- prints help on expressions");
+        Log::GetInst()->AddMessage(".help()            -- prints this message");
+        Log::GetInst()->AddMessage(".help(expr)        -- prints help on expressions");
         Log::GetInst()->AddMessage("");
-        Log::GetInst()->AddMessage("quit            -- quits");
+        Log::GetInst()->AddMessage(".quit            -- quits");
         Log::GetInst()->AddMessage(".vars           -- displays all global variables");
         Log::GetInst()->AddMessage(".functions      -- display all functions with parameters");
         Log::GetInst()->AddMessage(".pwd            -- prints the current working directory");

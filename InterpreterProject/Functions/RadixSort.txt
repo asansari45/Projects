@@ -8,17 +8,20 @@ function mod(a,b)
 function CalculateLargestDivisor(&a)
 {
 	alen = len(a)
-	for (divisor = 1000000000, divisor != 0, divisor = divisor / 10)
+	max = a[0]
+	for (i=0, i < alen, i=i+1)
 	{
-		for (i = 0, i < alen, i=i+1 )
+		if (a[i] > max)
 		{
-			if (a[i]/divisor > 0)
-			{
-				return(divisor)
-			}
+			max = a[i]
 		}
 	}
 
+	for (divisor = 1, divisor < max, divisor = divisor * 10)
+	{
+	}
+
+	return(divisor / 10)
 }
 
 function RadixSort(&a)

@@ -276,12 +276,12 @@ class VarsCommandTests(unittest.TestCase):
                                    'e=dim[5,5,5]',
                                    '.vars'],
                                    ['GLOBAL Symbol Table Contents',
-                                    'a',
-                                    'b',
-                                    'c=dim[10]',
-                                    'd=dim[10,10]',
-                                    'e=dim[5,5,5]',
-                                    'main'])
+                                    'a  1',
+                                    'b  3',
+                                    'c=dim[10]  [0...9]:  0 0 0 0 0 0 0 0 0 0 ...',
+                                    'd=dim[10,10]  [0,0...9]:  0 0 0 0 0 0 0 0 0 0 ...',
+                                    'e=dim[5,5,5]  [0,0,0...9]:  0 0 0 0 0 ...',
+                                    'main  0'])
 
 class EquTests(unittest.TestCase):
     # class variables

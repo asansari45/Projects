@@ -338,6 +338,15 @@ for : FOR_ LPAREN_ assignment COMMA_ expression COMMA_ assignment RPAREN_ LBRACK
         pLines->SetNext($7);
         $$ = pNode;
     }
+    |
+    FOR_ LPAREN_ assignment COMMA_ expression COMMA_ assignment RPAREN_ LBRACKET_ RBRACKET_
+    {
+        Interpreter::ForNode* pNode = new Interpreter::ForNode;
+        pNode->SetInit($3);
+        pNode->SetExpr($5);
+        pNode->SetThen($7);
+        $$ = pNode;
+    }
     ;
 
 funcdef : FUNCTION_ NAME_ LPAREN_ func_param_list RPAREN_ LBRACKET_ funclines RBRACKET_

@@ -44,11 +44,11 @@ int yycolumn = 1;
         return token::COMMA_;
 }
 
-"quit" {
+".quit" {
             return token::QUIT_;
 }
 
-"help" {
+".help" {
             return token::HELP_;
 }
 
