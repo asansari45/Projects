@@ -4,7 +4,7 @@
 #include <iostream>
 #include <map>
 #include <string>
-#include <io.h>
+#include <chrono>
 #include "InterpreterAlgorithmRepository.h"
 #include "InterpreterDriver.hpp"
 #include "InterpreterNode.h"
@@ -17,6 +17,8 @@
 #include "InterpreterQuitNode.h"
 
 #include "DebugMemory/DebugMemory.h"
+
+// #define METRICS 0
 
 void ProcessError(Interpreter::ErrorInterface::ErrorInfo err, bool interactive)
 {
@@ -167,8 +169,26 @@ int PerformFromFile(const std::string filename)
     pContext->SetColumn(1);
     Interpreter::contextStack.push_back(pContext);
 
+#if defined(METRICS)
+    auto t1 = std::chrono::high_resolution_clock::now();
+#endif
     driver.ParseFromFile(filename);
+
+#if defined(METRICS)
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1);
+    printf("Time spent parsing:  %d msec\n", ms_int);
+
+    t1 = std::chrono::high_resolution_clock::now();
+#endif
+
     ExecuteNodes(driver, false);
+
+#if defined(METRICS)
+    t2 = std::chrono::high_resolution_clock::now();
+    ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(t2 - t1);
+    printf("Time spent executing:  %d msec\n", ms_int);
+#endif
 
     delete Interpreter::contextStack.back();
     Interpreter::contextStack.pop_back();

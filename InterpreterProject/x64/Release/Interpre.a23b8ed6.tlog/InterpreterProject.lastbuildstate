@@ -1,2 +1,2 @@
-PlatformToolSet=v142:VCToolArchitecture=Native32Bit:VCToolsVersion=14.29.30133:VCServicingVersionMFC=14.29.30136:VCServicingVersionATL=14.29.30136:VCServicingVersionCrtHeaders=14.29.30136:TargetPlatformVersion=10.0.19041.0:VcpkgTriplet=x64-windows:
-Release|x64|C:\Users\asansari\OneDrive - Rockwell Automation, Inc\Visual Studio Projects\InterpreterProject\|
+PlatformToolSet=v143:VCToolArchitecture=Native64Bit:VCToolsVersion=14.30.30705:TargetPlatformVersion=10.0.19041.0:
+Release|x64|C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\|

@@ -722,6 +722,17 @@ namespace Interpreter
         std::string functionName = pCallNode->GetNameVar()->GetName();
         FunctionDefNode* pDefNode = FunctionTable::GetInst()->ReadFunction(functionName);
 
+        // If the function isn't found, then error.
+        if (pDefNode == nullptr)
+        {
+            ErrorInfo err(pCallNode);
+            char buf[512];
+            sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_NOT_FOUND, functionName.c_str());
+            err.m_Msg = buf;
+            SetErrorInfo(err);
+            return;
+        }
+
         char buf[512];
         sprintf_s(buf, sizeof(buf), "Executing function %s", functionName.c_str());
         Log::GetInst()->AddMessage(Log::DEBUG, buf);
@@ -729,7 +740,6 @@ namespace Interpreter
         // Check for parameter count match
         if (pCallNode->GetInputVarCount() != pDefNode->GetInputVarCount())
         {
-            
             ErrorInfo err(pCallNode);
             char buf[512];
             sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_ARGS, functionName.c_str(), pDefNode->GetInputVarCount(), pCallNode->GetInputVarCount());

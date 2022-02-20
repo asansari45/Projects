@@ -1,4 +1,4 @@
-^C:\USERS\ASANSARI\ONEDRIVE - ROCKWELL AUTOMATION, INC\VISUAL STUDIO PROJECTS\INTERPRETERPROJECT\INTERPRETER.L
-c:\Users\asansari\FlexBison\win_flex.exe --nounistd Interpreter.l
-^C:\USERS\ASANSARI\ONEDRIVE - ROCKWELL AUTOMATION, INC\VISUAL STUDIO PROJECTS\INTERPRETERPROJECT\INTERPRETER.Y
-c:\Users\asansari\FlexBison\win_bison --defines=InterpreterParser.hpp --output=InterpreterParser.cpp Interpreter.y
+^C:\USERS\ASANS\VISUAL STUDIO PROJECTS\PROJECTS\INTERPRETERPROJECT\GRAMMAR\INTERPRETER.L
+..\FlexBison\win_flex.exe --nounistd Grammar\Interpreter.l
+^C:\USERS\ASANS\VISUAL STUDIO PROJECTS\PROJECTS\INTERPRETERPROJECT\GRAMMAR\INTERPRETER.Y
+..\FlexBison\win_bison.exe --defines=InterpreterParser.hpp --output=InterpreterParser.cpp Grammar\Interpreter.y

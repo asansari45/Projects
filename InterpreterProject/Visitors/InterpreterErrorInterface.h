@@ -18,6 +18,7 @@ namespace Interpreter
         const char* ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT = "Invalid expression in if statement.";
         const char* ERROR_INVALID_EXPRESSION_IN_WHILE_STATEMENT = "Invalid expression in while statement.";
         const char* ERROR_INVALID_EXPRESSION_IN_FOR_STATEMENT = "Invalid expression in for statement.";
+        const char* ERROR_FUNCTION_NOT_FOUND = "%s function is not found.";
         const char* ERROR_FUNCTION_CREATION = "%s function could not be created.  Duplicate symbol may be present.";
         const char* ERROR_FUNCTION_ARGS = "%s function has %d arguments.  Called with %d arguments.";
         const char* ERROR_FUNCTION_EXPRESSION = "%s function has an invalid expression for an argument.";

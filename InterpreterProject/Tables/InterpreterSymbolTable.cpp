@@ -4,6 +4,8 @@
 
 #include "DebugMemory/DebugMemory.h"
 
+#undef SYMTABLE_DEBUG
+
 namespace Interpreter
 {
 
@@ -50,6 +52,7 @@ static void FillDebugBuf(SymbolTable::SymbolInfo info, char* buf, int len)
 
 bool SymbolTable::CreateSymbol(std::string name, SymbolInfo info)
 {
+#if defined(SYMTABLE_DEBUG)
     char sinfo[256];
     FillDebugBuf(info, sinfo, sizeof(sinfo));
 
@@ -57,6 +60,7 @@ bool SymbolTable::CreateSymbol(std::string name, SymbolInfo info)
     sprintf_s(buf, sizeof(buf), "SymbolTable %s:  CreateSymbol name=%s %s", m_Name.c_str(), name.c_str(), sinfo);
 
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
+#endif
 
     if (m_SymbolMap.find(name) == m_SymbolMap.end())
     {
@@ -71,9 +75,11 @@ bool SymbolTable::CreateSymbol(std::string name, SymbolInfo info)
 
 std::optional<SymbolTable::SymbolInfo> SymbolTable::ReadSymbol(std::string name, bool getroot)
 {
+#if defined(SYMTABLE_DEBUG)
     char buf[512];
     sprintf_s(buf, sizeof(buf), "SymbolTable %s:  ReadSymbol name=%s", m_Name.c_str(), name.c_str());
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
+#endif
 
     SYMBOL_MAP::iterator i = m_SymbolMap.find(name);
     if (i != m_SymbolMap.end())
@@ -100,11 +106,13 @@ bool SymbolTable::IsSymbolPresent(std::string name)
 
 bool SymbolTable::UpdateSymbol(std::string name, SymbolInfo info)
 {
+#if defined(SYMTABLE_DEBUG)
     char buf[512];
     sprintf_s(buf, sizeof(buf), "SymbolTable %s:  UpdateSymbol name=%s", m_Name.c_str(), name.c_str());
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
     FillDebugBuf(info, buf, sizeof(buf));
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
+#endif
 
     SYMBOL_MAP::iterator i = m_SymbolMap.find(name);
     if (i != m_SymbolMap.end())
@@ -120,9 +128,11 @@ bool SymbolTable::UpdateSymbol(std::string name, SymbolInfo info)
 
 void SymbolTable::DeleteSymbol(std::string name)
 {
+#if defined(SYMTABLE_DEBUG)
     char buf[512];
     sprintf_s(buf, sizeof(buf), "SymbolTable %s:  DeleteSymbol name=%s", m_Name.c_str(), name.c_str());
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
+#endif
 
     SYMBOL_MAP::iterator i = m_SymbolMap.find(name);
     if (i != m_SymbolMap.end())
@@ -178,9 +188,12 @@ void SymbolTable::Dump()
 
 void SymbolTable::Clear()
 {
+#if defined(SYMTABLE_DEBUG)
     char buf[512];
     sprintf_s(buf, sizeof(buf), "SymbolTable %s:  CLEAR", m_Name.c_str());
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
+#endif
+
     m_SymbolMap.clear();
 }
 

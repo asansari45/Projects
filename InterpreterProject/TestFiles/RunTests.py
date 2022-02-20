@@ -2,12 +2,14 @@ import os
 import subprocess
 import unittest
 
+# EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+EXEFILE = r'..\x64\Release\InterpreterProject.exe'
+
 class FileBasedTests(unittest.TestCase) :
 
     # Set up in the class method.
     # These are class variables in python.
     FILELOC = r'.'
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
     LOGFILE = r'InterpreterLog.log'
     _tstfiles = []
 
@@ -45,7 +47,7 @@ class FileBasedTests(unittest.TestCase) :
         totalTestsFailed = 0
         for f in self._tstfiles:
             print('Running Test File:  %s' % f)
-            s = subprocess.run([self.EXEFILE, '--file', f], capture_output=True).stdout.decode('utf-8')
+            s = subprocess.run([EXEFILE, '--file', f], capture_output=True).stdout.decode('utf-8')
             [testsPassed, testsFailed] = self.ProcessTestOutput(f,s)
             totalTestsPassed += testsPassed
             totalTestsFailed += testsFailed
@@ -54,60 +56,80 @@ class FileBasedTests(unittest.TestCase) :
         print('Total Tests Passed:  %d' % totalTestsPassed)
         print('Total Tests Failed:  %d' % totalTestsFailed)
 
-    
-class ErrorTests(unittest.TestCase) :
-
+class TestExecutor :
     # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
     FILENAME = 'TestFile.tqt'
 
-    def ExecuteErrorTest(self, testLines, expectedErrors):
+    def __init__(self, test, testLines, expectedOutputLines, prefixFile=False):
+        self._test = test
+        self._testLines = testLines
+        self._expectedOutputLines = expectedOutputLines
+        self._prefixFile = prefixFile
+    
+    def Execute(self, dbg=False):
+
         # Open a file and add all the test lines to it.
         with open(self.FILENAME, 'w') as f :
-            for line in testLines:
+            for line in self._testLines:
                 f.write(line + '\n')
 
         # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
+        s = subprocess.run([EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
         s = s.strip()
-        lines = s.split('\n')
-        actualErrors = lines[1:]
+        lines = s.split('\r\n')
+        actualOutputLines = lines[1:]
 
-        # Add the file to the error
-        errorPrefix = 'FILE:  %s, ' % self.FILENAME
+        if dbg:
+            print('Actual Output:')
+            print('\t' + s)
 
-        if type(expectedErrors) is not list:
-            expectedErrors = [expectedErrors]
+        # Add the file to the prefix
+        prefix = ''
+        if self._prefixFile :
+            prefix = 'FILE:  %s, ' % self.FILENAME
 
-        # Compare the Errors
-        self.assertEqual(len(actualErrors),len(expectedErrors))
-        for i in range(len(actualErrors)):
-            actualError = actualErrors[i]
-            expectedError = errorPrefix + expectedErrors[i]
+        if type(self._expectedOutputLines) is not list:
+            self._expectedOutputLines = [self._expectedOutputLines]
+
+        # Compare the output
+        self._test.assertEqual(len(actualOutputLines),len(self._expectedOutputLines))
+        for i in range(len(actualOutputLines)):
+            actualOutputLine = actualOutputLines[i]
+            expectedOutputLine = prefix + self._expectedOutputLines[i]
             # print('actual=    (%s)' % actualError)
             # print('expected=  (%s)' % expectedError)
-            self.assertEqual(actualError, expectedError)
+            self._test.assertEqual(actualOutputLine, expectedOutputLine)
+
+
+class ErrorTests(unittest.TestCase) :
+
+    def ExecuteErrorTest(self, testLines, expectedErrors):
+        TestExecutor(self, testLines, expectedErrors, True).Execute()
 
     # Perform a set of tests that make sure the interpreter reports an error
     # These tests execute all the error conditions.
     # ERROR_MISSING_SYMBOL
     def test_missing_symbol(self):
-        self.ExecuteErrorTest(['a=b'], 'LINE:  1, COLUMN:  4  b is not defined.')
+        # self.ExecuteErrorTest(['a=b'], 'LINE:  1, COLUMN:  4  b is not defined.')
+        TestExecutor(self, ['a=b'], 'LINE:  1, COLUMN:  4  b is not defined.', True).Execute()
 
     # ERROR_INCORRECT_ARRAY_SPECIFIER
     # Incorrect number of dimensions, out of bounds, etc...
     def test_incorrect_array_specifier_as_lval(self):
-        self.ExecuteErrorTest(['a=dim[10]', 
-                               'a[10]=0'], 
-                               'LINE:  2, COLUMN:  2  a contains an incorrect array specifier.')
+        TestExecutor(self, ['a=dim[10]', 
+                            'a[10]=0'], 
+                            'LINE:  2, COLUMN:  2  a contains an incorrect array specifier.',
+                            True).Execute()
 
-        self.ExecuteErrorTest(['a=dim[10]', 
-                               'a[0,0]=0'], 
-                               'LINE:  2, COLUMN:  2  a contains an incorrect array specifier.')
+        TestExecutor(self, ['a=dim[10]', 
+                            'a[0,0]=0'], 
+                            'LINE:  2, COLUMN:  2  a contains an incorrect array specifier.',
+                            True).Execute()
 
-        self.ExecuteErrorTest(['a=dim[10]', 
-                               'a[0,0,0]=0'], 
-                               'LINE:  2, COLUMN:  2  a contains an incorrect array specifier.')
+        TestExecutor(self, ['a=dim[10]', 
+                            'a[0,0,0]=0'], 
+                            'LINE:  2, COLUMN:  2  a contains an incorrect array specifier.',
+                            True).Execute()
 
         self.ExecuteErrorTest(['a=dim[10]',
                                'b=10',
@@ -220,101 +242,39 @@ class ErrorTests(unittest.TestCase) :
                                ['LINE:  4, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'])
 
 class FunctionsCommandTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
-    def ExecuteFunctionsTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
-
-
 
     def test_functions_command(self):
-        self.ExecuteFunctionsTest(['function foo(){}',
-                                   'function bar(){}',
-                                   'function goo(a,b,c){}',
-                                   '.functions'],
-                                   ['function bar()',
-                                    'function foo()',
-                                    'function goo(a,b,c)'])
+        TestExecutor(self, ['function foo(){}',
+                            'function bar(){}',
+                            'function goo(a,b,c){}',
+                            '.functions'],
+                           ['function bar()',
+                            'function foo()',
+                            'function goo(a,b,c)'], False).Execute()
 
 class VarsCommandTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
-    def ExecuteFunctionsTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
-
     def test_functions_command(self):
-        self.ExecuteFunctionsTest(['a=1',
-                                   'b=3',
-                                   'c=dim[10]',
-                                   'd=dim[10,10]',
-                                   'e=dim[5,5,5]',
-                                   '.vars'],
-                                   ['GLOBAL Symbol Table Contents',
-                                    'a  1',
-                                    'b  3',
-                                    'c=dim[10]  [0...9]:  0 0 0 0 0 0 0 0 0 0 ...',
-                                    'd=dim[10,10]  [0,0...9]:  0 0 0 0 0 0 0 0 0 0 ...',
-                                    'e=dim[5,5,5]  [0,0,0...9]:  0 0 0 0 0 ...',
-                                    'main  0'])
+        TestExecutor(self, ['a=1',
+                            'b=3',
+                            'c=dim[10]',
+                            'd=dim[10,10]',
+                            'e=dim[5,5,5]',
+                            '.vars'],
+                            ['GLOBAL Symbol Table Contents',
+                            'a  1',
+                            'b  3',
+                            'c=dim[10]  [0...9]:  0 0 0 0 0 0 0 0 0 0 ...',
+                            'd=dim[10,10]  [0,0...9]:  0 0 0 0 0 0 0 0 0 0 ...',
+                            'e=dim[5,5,5]  [0,0,0...9]:  0 0 0 0 0 ...',
+                            'main  0'], False).Execute()
 
 class EquTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+        TestExecutor(self, testLines, expectedOutput, False).Execute()
 
     def ExecuteErrorTest(self, testLines, expectedError):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        actualError = results[1].strip()
-        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
-        self.assertEqual(actualError, expectedError)
-
+        TestExecutor(self, testLines, expectedError, True).Execute()
+        
     # lval is an entire array
     def test_equ_lval_array(self):
         self.ExecuteTest(['clear()',
@@ -423,36 +383,11 @@ class EquTests(unittest.TestCase):
                          'LINE:  2, COLUMN:  4  b is not defined.')
 
 class VarListTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
     def ExecuteErrorTest(self, testLines, expectedError):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        actualError = results[1].strip()
-        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
-        self.assertEqual(actualError, expectedError)
+        TestExecutor(self, testLines, expectedError, True).Execute()
 
     # Single element
     def test_var_list_single(self):
@@ -533,23 +468,8 @@ class VarListTests(unittest.TestCase):
                          ['123'])
 
 class SrandRandTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
     def test_srand_rand(self):
         self.ExecuteTest(['clear()',
@@ -574,36 +494,11 @@ class SrandRandTests(unittest.TestCase):
                           '23075'])
 
 class LenTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
     def ExecuteErrorTest(self, testLines, expectedError):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        actualError = results[1].strip()
-        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
-        self.assertEqual(actualError, expectedError)
+        TestExecutor(self, testLines, expectedError, True).Execute()
 
     def test_len_errors(self):
         self.ExecuteErrorTest(['clear()',
@@ -658,36 +553,12 @@ class LenTests(unittest.TestCase):
                           ['5'])
      
 class ReturnTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
     def ExecuteErrorTest(self, testLines, expectedError):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
+        TestExecutor(self, testLines, expectedError, True).Execute()
 
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        actualError = results[1].strip()
-        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
-        self.assertEqual(actualError, expectedError)
 
     def test_function_return(self):
         self.ExecuteTest(['clear()',
@@ -1014,36 +885,12 @@ class ReturnTests(unittest.TestCase):
                           ['202'])
 
 class BreakTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
-
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
     def ExecuteErrorTest(self, testLines, expectedError):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
+        TestExecutor(self, testLines, expectedError, True).Execute()
 
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        actualError = results[1].strip()
-        expectedError = 'FILE:  %s, ' % self.FILENAME + expectedError
-        self.assertEqual(actualError, expectedError)
 
     def test_function_break(self):
         self.ExecuteTest(['clear()',
@@ -1081,23 +928,12 @@ class BreakTests(unittest.TestCase):
                           ['7'])
 
 class StackFunctionsTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+    def ExecuteErrorTest(self, testLines, expectedError):
+        TestExecutor(self, testLines, expectedError, True).Execute()
+
 
     def test_stack_init(self):
         self.ExecuteTest(['clear()',
@@ -1305,23 +1141,12 @@ class StackFunctionsTests(unittest.TestCase):
                            '0'])
 
 class ReferenceTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+    def ExecuteErrorTest(self, testLines, expectedError):
+        TestExecutor(self, testLines, expectedError, True).Execute()
+
 
     def test_simple_references(self):
         # simple variable
@@ -1436,23 +1261,12 @@ class ReferenceTests(unittest.TestCase):
                           ['1515'])
 
 class RadixSortTests(unittest.TestCase):
-    # class variables
-    EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-    FILENAME = 'TestFile.tqt'
-
     def ExecuteTest(self, testLines, expectedOutput):
-        # Open a file and add all the test lines to it.
-        with open(self.FILENAME, 'w') as f :
-            for line in testLines:
-                f.write(line + '\n')
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
-        # Execute the file full of statements and capture the output
-        s = subprocess.run([self.EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
-        results = s.split('\r\n')
-        results = results[1:-1]
-        self.assertEqual(len(results), len(expectedOutput))
-        for i in range(len(results)):
-            self.assertEqual(results[i], expectedOutput[i])
+    def ExecuteErrorTest(self, testLines, expectedError):
+        TestExecutor(self, testLines, expectedError, True).Execute()
+
 
     def test_radix_sort(self):
         self.ExecuteTest(['clear()',
@@ -1486,6 +1300,23 @@ class RadixSortTests(unittest.TestCase):
                            '405',
                            '3000',
                            '5400'])
+
+class PerformanceTests(unittest.TestCase):
+    def ExecuteTest(self, testLines, expectedOutput):
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def ExecuteErrorTest(self, testLines, expectedError):
+        TestExecutor(self, testLines, expectedError, True).Execute()
+
+
+    def test_performance(self):
+        commands = ['clear()']
+        commands += 'x=0'
+        commands.extend(['x=x+1'] * 1000)
+        commands.extend(['print(x)'])
+        self.ExecuteTest(commands,
+                          ['1000'])
+
 
 if __name__ == '__main__':
     unittest.main()
