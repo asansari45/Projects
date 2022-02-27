@@ -5,16 +5,16 @@
 #include <map>
 #include <string>
 #include <chrono>
-#include "InterpreterAlgorithmRepository.h"
-#include "InterpreterDriver.hpp"
-#include "InterpreterNode.h"
-#include "InterpreterExecutionNodeVisitor.h"
-#include "InterpreterFunctionTable.h"
-#include "InterpreterSymbolTable.h"
-#include "InterpreterLog.h"
-#include "InterpreterErrorInterface.h"
-#include "InterpreterContext.h"
-#include "InterpreterQuitNode.h"
+#include "Algorithm/InterpreterAlgorithmRepository.h"
+#include "Driver/InterpreterDriver.hpp"
+#include "Driver/InterpreterContext.h"
+#include "Log/InterpreterLog.h"
+#include "Nodes/InterpreterNode.h"
+#include "Nodes/InterpreterQuitNode.h"
+#include "Tables/InterpreterFunctionTable.h"
+#include "Tables/InterpreterSymbolTable.h"
+#include "Visitors/InterpreterExecutionNodeVisitor.h"
+#include "Visitors/InterpreterErrorInterface.h"
 
 #include "DebugMemory/DebugMemory.h"
 
@@ -84,17 +84,6 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
             // We're finished and done.
             pNode->FreeList();
             break;
-        }
-
-        if (pNode->GetNext() == nullptr)
-        {
-            std::optional<Interpreter:: Value> v = nodeVisitor.GetResult();
-            if (v != std::nullopt)
-            {
-                char buf[512];
-                sprintf_s(buf, sizeof(buf), "=%s", v.value().GetRepresentation().c_str());
-                Interpreter::Log::GetInst()->AddMessage(buf);
-            }
         }
 
         Interpreter::Node* pNext = pNode->GetNext();

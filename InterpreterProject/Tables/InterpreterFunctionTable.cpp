@@ -1,8 +1,8 @@
 #include "InterpreterFunctionTable.h"
-#include "InterpreterFunctionDefNode.h"
-#include "InterpreterRefNode.h"
-#include "InterpreterVarNode.h"
-#include "InterpreterLog.h"
+#include "Nodes/InterpreterFunctionDefNode.h"
+#include "Nodes/InterpreterRefNode.h"
+#include "Nodes/InterpreterVarNode.h"
+#include "Log/InterpreterLog.h"
 
 #include "DebugMemory/DebugMemory.h"
 

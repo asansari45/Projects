@@ -1,14 +1,14 @@
 #include <assert.h>
 #include <optional>
 #include "InterpreterAlgorithmRepository.h"
-#include "InterpreterSymbolTable.h"
-#include "InterpreterLog.h"
-#include "InterpreterContext.h"
-#include "InterpreterErrorInterface.h"
-#include "InterpreterLvalues.h"
-#include "InterpreterVarNode.h"
-#include "InterpreterVarListNode.h"
-#include "InterpreterDimNode.h"
+#include "Tables/InterpreterSymbolTable.h"
+#include "Log/InterpreterLog.h"
+#include "Driver/InterpreterContext.h"
+#include "Visitors/InterpreterErrorInterface.h"
+#include "Values/InterpreterLvalues.h"
+#include "Nodes/InterpreterVarNode.h"
+#include "Nodes/InterpreterVarListNode.h"
+#include "Nodes/InterpreterDimNode.h"
 #include "DebugMemory/DebugMemory.h"
 
 namespace Interpreter
@@ -64,7 +64,17 @@ namespace Interpreter
             std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
             assert(info != std::nullopt);
             assert(!info->m_IsRef);
-            if (info->m_IsArray)
+            if (info->m_Type == SymbolTable::SymbolInfo::FILE)
+            {
+                ErrorInterface::ErrorInfo err(pNode);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNEXPECTED_FILENAME, name.c_str());
+                err.m_Msg = buf;
+                pErrorInterface->SetErrorInfo(err);
+                return {};
+            }
+
+            if (info->m_Type == SymbolTable::SymbolInfo::ARRAY)
             {
                 if (arraySpecifier.size() != 0)
                 {
@@ -155,7 +165,7 @@ namespace Interpreter
             }
 
             // Whole arrays
-            if (rRvalue.IsArray())
+            if (rRvalue.GetType() == SymbolTable::SymbolInfo::ARRAY)
             {
                 return new WholeArrayLvalue(symbolInfo.m_Name, symbolInfo.m_pTable, pErrorInterface, errInfo);
             }
@@ -258,9 +268,9 @@ namespace Interpreter
             }
 
             // If one side is an array, the other must be as well.
-            if (lhs->IsArray())
+            if (lhs->GetType() == SymbolTable::SymbolInfo::ARRAY)
             {
-                if (rhs->IsArray())
+                if (rhs->GetType() == SymbolTable::SymbolInfo::ARRAY)
                 {
                     // The dimensions must match.
                     bool status = lhs->GetArrayValue().Add(rhs->GetArrayValue());
@@ -289,7 +299,7 @@ namespace Interpreter
                 return nullptr;
             }
 
-            if (rhs->IsArray())
+            if (rhs->GetType() == SymbolTable::SymbolInfo::ARRAY)
             {
                 // lhs is not an array, error.
                 ErrorInterface::ErrorInfo err(pLeft);
@@ -664,7 +674,7 @@ namespace Interpreter
                     return nullptr;
                 }
 
-                if (rval->IsArray())
+                if (rval->GetType() == SymbolTable::SymbolInfo::ARRAY)
                 {
                     ErrorInterface::ErrorInfo err(pDimNode);
                     err.m_Msg = pErrorInterface->ERROR_ARRAY_UNEXPECTED;
@@ -716,7 +726,7 @@ namespace Interpreter
                 std::optional<Rvalue> v = GetRvalue(pValNode, pErrorInterface);
                 if (v != std::nullopt)
                 {
-                    if (v->IsArray())
+                    if (v->GetType() == SymbolTable::SymbolInfo::ARRAY)
                     {
                         ErrorInterface::ErrorInfo err(pRight);
                         err.m_Msg = pErrorInterface->ERROR_INCORRECT_DIM;

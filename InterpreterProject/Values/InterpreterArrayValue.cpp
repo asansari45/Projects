@@ -1,6 +1,6 @@
 #include <assert.h>
 #include "InterpreterArrayValue.h"
-#include "InterpreterLog.h"
+#include "Log/InterpreterLog.h"
 
 namespace Interpreter
 {

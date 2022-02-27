@@ -30,6 +30,7 @@ class SrandNode;
 class RandNode;
 class LenNode;
 class BreakNode;
+class FileNode;
 
 class NodeVisitor
 {
@@ -105,6 +106,9 @@ public:
     {
     }
     virtual void VisitBreakNode(BreakNode* pNode)
+    {
+    }
+    virtual void VisitFileNode(FileNode* pNode)
     {
     }
 };

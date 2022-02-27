@@ -119,7 +119,7 @@
       <PreprocessorDefinitions>__STDC_VERSION__=200000;DEBUG_MEMORY=1</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Tables;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Visitors;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Values;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Log;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Algorithm;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Driver;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@
       <PreprocessorDefinitions>__STDC_VERSION__=200000</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Nodes;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Tables;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Visitors;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Values;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Log;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Algorithm;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject\Driver;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\FlexBison;C:\Users\asans\Visual Studio Projects\Projects\InterpreterProject;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,6 +149,7 @@
     <ClCompile Include="DebugMemory\DebugMemory.cpp" />
     <ClCompile Include="Driver\InterpreterContext.cpp" />
     <ClCompile Include="Driver\InterpreterDriver.cpp" />
+    <ClCompile Include="File\InterpreterFile.cpp" />
     <ClCompile Include="InterpreterParser.cpp" />
     <ClCompile Include="InterpreterProject.cpp" />
     <ClCompile Include="lex.yy.cc" />

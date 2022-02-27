@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "InterpreterNode.h"
+#include "Nodes/InterpreterNode.h"
 
 namespace Interpreter
 {
@@ -13,6 +13,7 @@ namespace Interpreter
         const char* ERROR_ARRAY_OPERATION_FAILED = "Array operation failed on array.  Wrong dimensions or element values of different types.";
         const char* ERROR_ARRAY_UNEXPECTED = "Array unexpected here.";
         const char* ERROR_ENTIRE_ARRAY_EXPECTED = "Expected entire array.";
+        const char* ERROR_ARRAY_SPECIFIER_EXPECTED = "Expected array specifier here.";
         const char* ERROR_BINARY_OPERATION_FAILED = "Binary operation failed.";
         const char* ERROR_UNARY_OPERATION_FAILED  = "Unary operation failed.";
         const char* ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT = "Invalid expression in if statement.";
@@ -28,8 +29,13 @@ namespace Interpreter
         const char* ERROR_INCORRECT_LEN_DIMS = "Valid dimensions for %s are 0-%d.";
         const char* ERROR_INCORRECT_DIM = "Incorrect dimension specified.";
         const char* ERROR_FILE_DOES_NOT_EXIST = "%s file does not exist.";
+        const char* ERROR_FILE_OPERATION_FAILED = "File operation failed.";
         const char* ERROR_INVALID_REFERENCE_PARAMETER = "Invalid reference found for parameter %s.";
         const char* ERROR_INVALID_HELP_PARAMETER = "Invalid help parameter %s.";
+        const char* ERROR_FILE_OPEN_ERROR = "Error opening file %s.";
+        const char* ERROR_UNEXPECTED_FILENAME = "Unexpected file name here:  %s.";
+        const char* ERROR_FILE_NOT_FOUND = "File not found:  %s.";
+        const char* ERROR_INVALID_PRINT_PARAMETER = "Print argument %d is invalid.";
 
         ErrorInterface() : m_ErrorFlag(false),
                            m_ErrInfo()

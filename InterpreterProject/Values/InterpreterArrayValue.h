@@ -34,8 +34,11 @@ public:
     std::string GetRepresentation();
 
     int* GetInts(){ return m_pInts; }
+    void SetInts(int* pInts){ delete [] m_pInts; m_pInts = pInts; }
     float* GetFloats(){ return m_pFloats; }
+    void SetFloats(float* pFloats){ delete [] m_pFloats; m_pFloats = pFloats; }
     std::string* GetStrings(){ return m_pStrings; }
+    void SetStrings(std::string* pStrings){ delete [] m_pStrings; m_pStrings = pStrings; }
 
 private:
     // Convert element index to flag index

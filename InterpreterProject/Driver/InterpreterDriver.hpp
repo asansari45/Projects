@@ -2,7 +2,7 @@
 // This class defines the entire Interpreter, both parsing and tokenizing.
 #include "InterpreterScanner.hpp" 
 #include "InterpreterParser.hpp"
-#include "InterpreterErrorInterface.h"
+#include "Visitors/InterpreterErrorInterface.h"
 
 // Give Flex the prototype of yylex we want ...
 // # define YY_DECL \

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <cstdarg>
 #include <assert.h>
-#include "InterpreterLog.h"
-#include "InterpreterContext.h"
+#include "Log/InterpreterLog.h"
+#include "Driver/InterpreterContext.h"
 #include "DebugMemory/DebugMemory.h"
 
 namespace Interpreter

@@ -21,7 +21,6 @@ namespace Interpreter
         float GetFloatValue() { return m_FloatValue; }
         void SetStringValue(std::string value) { m_Type = typeid(std::string); m_StringValue = value; }
         std::string GetStringValue() { return m_StringValue; }
-
         std::string GetRepresentation();
         bool IfEval();
         bool Add(Value& p);

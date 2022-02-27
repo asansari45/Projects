@@ -1,6 +1,6 @@
 #include <assert.h>
 #include "InterpreterSymbolTable.h"
-#include "InterpreterLog.h"
+#include "Log/InterpreterLog.h"
 
 #include "DebugMemory/DebugMemory.h"
 
@@ -37,16 +37,21 @@ static void FillDebugBuf(SymbolTable::SymbolInfo info, char* buf, int len)
     else
     {
         std::string s;
-        if (info.m_IsArray)
+        if (info.m_Type == SymbolTable::SymbolInfo::ARRAY)
         {
-            s = info.m_ArrayValue.GetRepresentation();
+            s = "Type=ARRAY " + info.m_ArrayValue.GetRepresentation();
+        }
+        else if (info.m_Type == SymbolTable::SymbolInfo::ATOMIC)
+        {
+            s = "Type=ATOMIC " + info.m_Value.GetRepresentation();
         }
         else
         {
-            s = info.m_Value.GetRepresentation();
+            assert(info.m_Type == SymbolTable::SymbolInfo::FILE);
+            s = "TYPE=FILE";
         }
 
-        sprintf_s(buf, len, "INFO isArray=%d %s", info.m_IsArray, s.c_str());
+        sprintf_s(buf, len, "%s", s.c_str());
     }
 }
 
@@ -159,7 +164,7 @@ void SymbolTable::Dump()
                                                            p.m_RefName.c_str());
             Log::GetInst()->AddMessage(buf);
         }
-        else if (p.m_IsArray)
+        else if (p.m_Type == SymbolInfo::ARRAY)
         {
             std::vector<int> dims = p.m_ArrayValue.GetDims();
             if (dims.size() == 3)

@@ -2,58 +2,62 @@
 
 #include "InterpreterValue.h"
 #include "InterpreterArrayValue.h"
-#include "InterpreterValueNode.h"
+#include "Nodes/InterpreterValueNode.h"
+#include "Tables/InterpreterSymbolTable.h"
+#include "File/InterpreterFile.h"
 
 namespace Interpreter
 {
-	class ArrayValue;
+    class Rvalue
+    {
+    public:
+        Rvalue(ArrayValue& rArrayValue) :
+            m_Type(SymbolTable::SymbolInfo::ARRAY),
+            m_Value(),
+            m_ArrayValue(rArrayValue),
+            m_File()
+        {
+        }
 
-	class Rvalue
-	{
-	public:
-		Rvalue(ArrayValue& rArrayValue) :
-			m_IsArray(true),
-			m_Value(),
-			m_ArrayValue(rArrayValue)
-		{
-		}
+        Rvalue(Value& rValue) :
+            m_Type(SymbolTable::SymbolInfo::ATOMIC),
+            m_Value(rValue),
+            m_ArrayValue(),
+            m_File()
+        {
+        }
 
-		Rvalue(Value& rValue) :
-			m_IsArray(false),
-			m_Value(rValue),
-			m_ArrayValue()
-		{
-		}
+        Rvalue(File* pFile) :
+            m_Type(SymbolTable::SymbolInfo::FILE),
+            m_Value(),
+            m_ArrayValue(),
+            m_File()
+        {
+        }
 
-		Rvalue(ValueNode* pValueNode) :
-			m_IsArray(false),
-			m_Value(),
-			m_ArrayValue()
-		{
-			if (pValueNode->IsArray())
-			{
-				m_IsArray = true;
-				m_ArrayValue = pValueNode->GetArrayValue();
-			}
-			else
-			{
-				m_Value = pValueNode->GetValue();
-			}
-		}
+        Rvalue(ValueNode* pValueNode) :
+            m_Type(pValueNode->GetType()),
+            m_Value(pValueNode->GetValue()),
+            m_ArrayValue(pValueNode->GetArrayValue()),
+            m_File(pValueNode->GetFile())
+        {
+        }
 
-		~Rvalue()
-		{
-		}
+        ~Rvalue()
+        {
+        }
 
-		bool IsArray() const { return m_IsArray; }
-		ArrayValue& GetArrayValue() { return m_ArrayValue; }
-		Value& GetValue() { return m_Value; }
+        SymbolTable::SymbolInfo::SymbolType GetType() const { return m_Type; }
+        ArrayValue& GetArrayValue() { return m_ArrayValue; }
+        Value& GetValue() { return m_Value; }
+        std::string GetFile() { return m_File; }
 
-	private:
-		bool m_IsArray;
-		Value m_Value;
-		ArrayValue m_ArrayValue;
-	};
+    private:
+        SymbolTable::SymbolInfo::SymbolType m_Type;
+        Value m_Value;
+        ArrayValue m_ArrayValue;
+        std::string m_File;
+    };
 }
 
 

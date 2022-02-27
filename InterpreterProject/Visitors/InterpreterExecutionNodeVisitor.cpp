@@ -2,27 +2,29 @@
 #include <sstream>
 #include <filesystem>
 #include "InterpreterExecutionNodeVisitor.h"
-#include "InterpreterFunctionDefNode.h"
-#include "InterpreterSymbolTable.h"
-#include "InterpreterAlgorithmRepository.h"
-#include "InterpreterDriver.hpp"
-#include "InterpreterFunctionTable.h"
-#include "InterpreterLog.h"
-#include "InterpreterDimNode.h"
-#include "InterpreterForNode.h"
-#include "InterpreterFunctionCallNode.h"
-#include "InterpreterHelpNode.h"
-#include "InterpreterIfNode.h"
-#include "InterpreterLenNode.h"
-#include "InterpreterLoadNode.h"
-#include "InterpreterPrintNode.h"
-#include "InterpreterStopNode.h"
-#include "InterpreterWhileNode.h"
-#include "InterpreterRandNode.h"
-#include "InterpreterRefNode.h"
-#include "InterpreterReturnNode.h"
-#include "InterpreterSrandNode.h"
-#include "InterpreterVarListNode.h"
+#include "Algorithm/InterpreterAlgorithmRepository.h"
+#include "Driver/InterpreterDriver.hpp"
+#include "File/InterpreterFile.h"
+#include "Log/InterpreterLog.h"
+#include "Nodes/InterpreterFunctionDefNode.h"
+#include "Nodes/InterpreterDimNode.h"
+#include "Nodes/InterpreterForNode.h"
+#include "Nodes/InterpreterFunctionCallNode.h"
+#include "Nodes/InterpreterHelpNode.h"
+#include "Nodes/InterpreterIfNode.h"
+#include "Nodes/InterpreterLenNode.h"
+#include "Nodes/InterpreterLoadNode.h"
+#include "Nodes/InterpreterPrintNode.h"
+#include "Nodes/InterpreterStopNode.h"
+#include "Nodes/InterpreterWhileNode.h"
+#include "Nodes/InterpreterRandNode.h"
+#include "Nodes/InterpreterRefNode.h"
+#include "Nodes/InterpreterReturnNode.h"
+#include "Nodes/InterpreterSrandNode.h"
+#include "Nodes/InterpreterVarListNode.h"
+#include "Nodes/InterpreterFileNode.h"
+#include "Tables/InterpreterSymbolTable.h"
+#include "Tables/InterpreterFunctionTable.h"
 
 #include "DebugMemory/DebugMemory.h"
 
@@ -156,6 +158,7 @@ namespace Interpreter
     void ExecutionNodeVisitor::VisitPrintNode(Interpreter::PrintNode* pNode)
     {
         std::string s;
+        int argCount = 0;
         for (Interpreter::Node* pChild = pNode->GetChild(); pChild != nullptr; pChild = pChild->GetNext())
         {
             pChild->Accept(*this);
@@ -163,17 +166,28 @@ namespace Interpreter
             if (m_Nodes.size() != 0)
             {
                 Node* pTop = m_Nodes.back();
-                value = GetRvalue(pTop);
                 m_Nodes.pop_back();
+                ValueNode* pValueNode = GetTopOfStackValue(pTop);
                 delete pTop;
-            }
+                if (pValueNode == nullptr)
+                {
+                    return;
+                }
 
-            if (value != std::nullopt)
-            {
-                std::string repr = value.value().GetRepresentation();
-                s += repr;
+                if (pValueNode->GetType() != SymbolTable::SymbolInfo::ATOMIC)
+                {
+                    delete pValueNode;
+                    char buf[512];
+                    sprintf_s(buf, ERROR_INVALID_PRINT_PARAMETER, argCount + 1);
+                    ErrorInfo err(pChild);
+                    SetErrorInfo(err);
+                    return;
+                }
+
+                s += pValueNode->GetValue().GetRepresentation();
             }
         }
+        
         Log::GetInst()->AddMessage(s);
     }
 
@@ -371,7 +385,7 @@ namespace Interpreter
         }
 
         // If this is an array, then fail.
-        if (pTop->IsArray())
+        if (pTop->GetType() != SymbolTable::SymbolInfo::ATOMIC)
         {
             delete pTop;
             ErrorInfo err(pIfNode);
@@ -500,7 +514,7 @@ namespace Interpreter
         }
 
         // If it's an entire array, error.
-        if (pExprResult->IsArray())
+        if (pExprResult->GetType() != SymbolTable::SymbolInfo::ATOMIC)
         {
             delete pExprResult;
             ErrorInfo err(pWhileNode);
@@ -572,7 +586,7 @@ namespace Interpreter
             }
 
             // If it's an entire array, error.
-            if (pExprResult->IsArray())
+            if (pExprResult->GetType() != SymbolTable::SymbolInfo::ATOMIC)
             {
                 delete pExprResult;
                 
@@ -613,7 +627,7 @@ namespace Interpreter
             return;
         }
 
-        if (pExprResult->IsArray())
+        if (pExprResult->GetType() != SymbolTable::SymbolInfo::ATOMIC)
         {
             delete pExprResult;
             ErrorInfo err(pForNode);
@@ -685,7 +699,7 @@ namespace Interpreter
                 return;
             }
 
-            if (pExprResult->IsArray())
+            if (pExprResult->GetType() != SymbolTable::SymbolInfo::ATOMIC)
             {
                 delete pExprResult;
                 ErrorInfo err(pForNode);
@@ -839,45 +853,37 @@ namespace Interpreter
                 Node* pTop = m_Nodes.back();
                 m_Nodes.pop_back();
 
-                // Check if array
-                if (IsArray(pTop))
+                ValueNode* pValueNode = GetTopOfStackValue(pTop);
+                delete pTop;
+                if (pValueNode == nullptr)
                 {
-                    std::optional<ArrayValue> v = GetRarrayValue(pTop);
-                    if (v == std::nullopt)
-                    {
-                        
-                        ErrorInfo err(pCallExprNode);
-                        char buf[512];
-                        sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_EXPRESSION, functionName.c_str());
-                        err.m_Msg = buf;
-                        SetErrorInfo(err);
-                        pLocalTable->Clear();
-                        return;
-                    }
-
+                    pLocalTable->Clear();
+                    return;
+                }
+                
+                // Check if array
+                if (pValueNode->GetType() == SymbolTable::SymbolInfo::ARRAY)
+                {
+                    SymbolTable::SymbolInfo info;
+                    info.m_Type = pValueNode->GetType();
+                    info.m_Name = symbol;
+                    info.m_ArrayValue = pValueNode->GetArrayValue();
+                    pLocalTable->CreateSymbol(symbol, info);
+                }
+                else if (pValueNode->GetType() == SymbolTable::SymbolInfo::ATOMIC)
+                {
                     SymbolTable::SymbolInfo info;
                     info.m_Name = symbol;
-                    info.m_ArrayValue = *v;
+                    info.m_Value = pValueNode->GetValue();
                     pLocalTable->CreateSymbol(symbol, info);
                 }
                 else
                 {
-                    std::optional<Value> v = GetRvalue(pTop);
-                    if (v == std::nullopt)
-                    {
-                        
-                        ErrorInfo err(pCallExprNode);
-                        char buf[512];
-                        sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_EXPRESSION, functionName.c_str());
-                        err.m_Msg = buf;
-                        SetErrorInfo(err);
-                        pLocalTable->Clear();
-                        return;
-                    }
-
+                    assert(pValueNode->GetType() == SymbolTable::SymbolInfo::FILE);
                     SymbolTable::SymbolInfo info;
+                    info.m_Type = pValueNode->GetType();
                     info.m_Name = symbol;
-                    info.m_Value = *v;
+                    info.m_Filename = pValueNode->GetFile();
                     pLocalTable->CreateSymbol(symbol, info);
                 }
 
@@ -950,7 +956,7 @@ namespace Interpreter
         SymbolTable::SymbolInfo info = pVarNode->GetSymbolInfo();
         if (elementSpecifier.size() != 0)
         {
-            if (info.m_IsArray == false)
+            if (info.m_Type == SymbolTable::SymbolInfo::ARRAY)
             {
                 ErrorInfo err(pTop);
                 
@@ -977,7 +983,7 @@ namespace Interpreter
             pValueNode->SetValue(*v);
         }
         // No element specifier
-        else if (info.m_IsArray)
+        else if (info.m_Type == SymbolTable::SymbolInfo::ARRAY)
         {
             pValueNode = new ValueNode;
             pValueNode->SetArrayValue(info.m_ArrayValue);
@@ -1168,9 +1174,8 @@ namespace Interpreter
             return;
         }
 
-        if (pValueNode->IsArray())
+        if (pValueNode->GetType() != SymbolTable::SymbolInfo::ATOMIC)
         {
-            
             ErrorInterface::ErrorInfo err(pValueNode);
             err.m_Msg = ErrorInterface::ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -1232,7 +1237,7 @@ namespace Interpreter
             return;
         }
 
-        if (!info->m_IsArray)
+        if (info->m_Type != SymbolTable::SymbolInfo::ARRAY)
         {
             ErrorInterface::ErrorInfo err(pNode);
             char buf[512];
@@ -1270,5 +1275,184 @@ namespace Interpreter
         StopNode* pStopNode = new StopNode(StopNode::BREAK);
         m_Nodes.push_back(pStopNode);
     }
+
+    void ExecutionNodeVisitor::VisitFileNode(FileNode* pNode)
+    {
+        std::string name = pNode->GetName();
+        if (pNode->GetCommand() == FileNode::OPEN)
+        {
+            File* pFile = File::Open(name, pNode->GetMode());
+            if (pFile == nullptr)
+            {
+                ErrorInterface::ErrorInfo err(pNode);
+                char buf[512];
+                sprintf_s(buf, ERROR_FILE_OPEN_ERROR, name.c_str());
+                err.m_Msg = buf;
+                SetErrorInfo(err);
+                return;
+            }
+
+            return;
+        }
+
+        if (pNode->GetCommand() == FileNode::READ)
+        {
+            std::string name = pNode->GetName();
+            File* pFile = File::Get(name);
+            if (pFile == nullptr)
+            {
+                ErrorInfo err(pNode);
+                char buf[512];
+                sprintf_s(buf, ERROR_FILE_NOT_FOUND, name.c_str());
+                err.m_Msg = buf;
+                SetErrorInfo(err);
+                return;
+            }
+
+            // Read an integer, float, string, and arrays from the file.
+            // Must be a variable we're reading into, it must exist, and be an array,
+            // of ints, or floats.
+            Node* pReadWriteNode = pNode->GetNode();
+            assert(pReadWriteNode != nullptr);
+
+            VarNode* pVarNode = dynamic_cast<VarNode*>(pReadWriteNode);
+            assert(pVarNode != nullptr);
+            std::string symbolName = pVarNode->GetName();
+            SymbolTable* pSymbolTable = m_FunctionCallStack.size() != 0 ? m_FunctionCallStack.back()->GetSymbolTable() : nullptr;
+            std::optional<SymbolTable::SymbolInfo> info;
+            if (pSymbolTable)
+            {
+                info = pSymbolTable->ReadSymbol(symbolName, true);
+                if (info == std::nullopt)
+                {
+                    info = m_pGlobalSymbolTable->ReadSymbol(symbolName);
+                }
+            }
+            else
+            {
+                pSymbolTable = m_pGlobalSymbolTable;
+                info = m_pGlobalSymbolTable->ReadSymbol(symbolName);
+            }
+
+            if (info == std::nullopt)
+            {
+                ErrorInfo err(pNode);
+                char buf[512];
+                sprintf_s(buf, ERROR_MISSING_SYMBOL, symbolName.c_str());
+                SetErrorInfo(err);
+                return;
+            }
+            
+            SymbolTable::SymbolInfo::SymbolType symType;
+            Value v;
+            ArrayValue arrValue;
+            bool status = pFile->Read(symType, v, arrValue);
+            if (!status)
+            {
+                ErrorInfo err(pNode);
+                err.m_Msg = ERROR_FILE_OPERATION_FAILED;
+                SetErrorInfo(err);
+                return;
+            }
+
+            if (symType == SymbolTable::SymbolInfo::ARRAY)
+            {
+                // Information from file is an entire array.
+                if (pVarNode->GetArraySpecifier().size() != 0)
+                {
+                    ErrorInfo err(pNode);
+                    char buf[512];
+                    sprintf_s(buf, ERROR_UNEXPECTED_ARRAY_SPECIFIER, symbolName.c_str());
+                    err.m_Msg = buf;
+                    SetErrorInfo(err);
+                    return;
+                }
+
+                info->m_Type = symType;
+                info->m_ArrayValue = arrValue;
+                status = pSymbolTable->UpdateSymbol(symbolName, *info);
+                assert(status);
+                return;
+            }
+
+            if (symType == SymbolTable::SymbolInfo::ATOMIC)
+            {
+                // Information in file is a single int, float, or string
+                std::vector<int> arraySpecifier = pVarNode->GetArraySpecifier();
+                if (info->m_Type == SymbolTable::SymbolInfo::ARRAY)
+                {
+                    // The symbol is an array, the value is atomic.
+                    // Should be a array specifier.
+                    if (arraySpecifier.size() == 0)
+                    {
+                        ErrorInfo err(pNode);
+                        char buf[512];
+                        sprintf_s(buf, ERROR_ARRAY_SPECIFIER_EXPECTED, symbolName.c_str());
+                        err.m_Msg = buf;
+                        SetErrorInfo(err);
+                        return;
+                    }
+
+                    status = info->m_ArrayValue.SetValue(arraySpecifier, v);
+                    if (!status)
+                    {
+                        ErrorInfo err(pNode);
+                        char buf[512];
+                        sprintf_s(buf, ERROR_ARRAY_OPERATION_FAILED, symbolName.c_str());
+                        err.m_Msg = buf;
+                        SetErrorInfo(err);
+                        return;
+                    }
+
+                    status = pSymbolTable->UpdateSymbol(symbolName, *info);
+                    assert(status);
+                    return;
+                }
+
+                if (info->m_Type == SymbolTable::SymbolInfo::ATOMIC)
+                {
+                    if (arraySpecifier.size() != 0)
+                    {
+                        ErrorInfo err(pNode);
+                        char buf[512];
+                        sprintf_s(buf, ERROR_UNEXPECTED_ARRAY_SPECIFIER, symbolName.c_str());
+                        err.m_Msg = buf;
+                        SetErrorInfo(err);
+                        return;
+                    }
+
+                    info->m_Value = v;
+                    status = pSymbolTable->UpdateSymbol(symbolName, *info);
+                    assert(status);
+                    return;
+                }
+
+                ErrorInfo err(pNode);
+                err.m_Msg = ERROR_FILE_OPERATION_FAILED;
+                SetErrorInfo(err);
+                return;
+            }
+        }
+
+        if (pNode->GetCommand() == FileNode::WRITE)
+        {
+            std::string name = pNode->GetName();
+            File* pFile = File::Get(name);
+            if (pFile == nullptr)
+            {
+                ErrorInfo err(pNode);
+                char buf[512];
+                sprintf_s(buf, ERROR_FILE_NOT_FOUND, name.c_str());
+                err.m_Msg = buf;
+                SetErrorInfo(err);
+                return;
+            }
+
+            // The node may be an expression that represents a value to write down.
+            Node* pWriteNode = pNode->GetNode();
+            if (pWriteNode == nullptr)
+        }
+    }
+
 };
 
