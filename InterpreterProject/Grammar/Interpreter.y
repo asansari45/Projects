@@ -71,6 +71,8 @@ class Node;
 #include "Nodes/InterpreterSrandNode.h"
 #include "Nodes/InterpreterVarListNode.h"
 #include "Nodes/InterpreterVarsCmdNode.h"
+#include "Nodes/InterpreterFileNode.h"
+
 
 #include "DebugMemory/DebugMemory.h"
 
@@ -123,6 +125,11 @@ class Node;
 %token PRINT_
 %token LOAD_
 %token HELP_
+%token FOPEN_
+%token FEOF_
+%token FREAD_
+%token FWRITE_
+%token FCLOSE_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
 %token <m_pNode> FILENAME_
@@ -160,6 +167,7 @@ class Node;
 %nterm <m_pNode> func_param_comma
 %nterm <m_pNode> func_param_list
 %nterm <m_pNode> func_param_comma_list
+%nterm <m_pNode> fileio
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
@@ -214,6 +222,8 @@ line:
     break
     |
     return
+    |
+    fileio
     ;
 
 funclines : funclines funcline
@@ -249,6 +259,8 @@ funcline :
     srand
     |
     break
+    |
+    fileio
     ;
 
 srand :
@@ -841,6 +853,82 @@ break:
     BREAK_
     {
         $$ = new Interpreter::BreakNode;
+    }
+    ;
+
+fileio:
+    NAME_ EQUALS_ FOPEN_ LPAREN_ STRING_ COMMA_ STRING_ RPAREN_
+    {
+        std::string varname = dynamic_cast<Interpreter::VarNode*>($1)->GetName();
+        delete $1;
+
+        std::string filename = dynamic_cast<Interpreter::ValueNode*>($5)->GetValue().GetStringValue();
+        delete $5;
+
+        std::string mode = dynamic_cast<Interpreter::ValueNode*>($7)->GetValue().GetStringValue();
+        delete $7;
+
+        Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
+        assert(pFileNode != nullptr);
+        pFileNode->SetVarname(varname);
+        pFileNode->SetFilename(filename);
+        pFileNode->SetMode(mode);
+        pFileNode->SetCommand(Interpreter::FileNode::OPEN);
+        $$ = pFileNode;
+    }
+    |
+    FCLOSE_ LPAREN_ NAME_ RPAREN_
+    {
+        std::string varname = dynamic_cast<Interpreter::VarNode*>($3)->GetName();
+        delete $3;
+
+        Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
+        assert(pFileNode != nullptr);
+
+        pFileNode->SetCommand(Interpreter::FileNode::CLOSE);
+        pFileNode->SetVarname(varname);
+        $$ = pFileNode;
+    }
+    |
+    FEOF_ LPAREN_ NAME_ RPAREN_
+    {
+        std::string varname = dynamic_cast<Interpreter::VarNode*>($3)->GetName();
+        delete $3;
+
+        Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
+        assert(pFileNode != nullptr);
+
+        pFileNode->SetCommand(Interpreter::FileNode::END_OF_FILE);
+        pFileNode->SetVarname(varname);
+        $$ = pFileNode;
+    }
+    |
+    FREAD_ LPAREN_ NAME_ COMMA_ NAME_ RPAREN_
+    {
+        std::string varname = dynamic_cast<Interpreter::VarNode*>($3)->GetName();
+        delete $3;
+
+        Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
+        assert(pFileNode != nullptr);
+
+        pFileNode->SetCommand(Interpreter::FileNode::READ);
+        pFileNode->SetVarname(varname);
+        pFileNode->SetNode($5);
+        $$ = pFileNode;
+    }
+    |
+    FWRITE_ LPAREN_ NAME_ COMMA_ expression RPAREN_
+    {
+        std::string varname = dynamic_cast<Interpreter::VarNode*>($3)->GetName();
+        delete $3;
+
+        Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
+        assert(pFileNode != nullptr);
+
+        pFileNode->SetCommand(Interpreter::FileNode::WRITE);
+        pFileNode->SetVarname(varname);
+        pFileNode->SetNode($5);
+        $$ = pFileNode;
     }
     ;
 

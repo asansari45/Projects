@@ -132,6 +132,22 @@ int yycolumn = 1;
     return token::BREAK_;
 }
 
+"fopen" {
+    return token::FOPEN_;
+}
+
+"fwrite" {
+    return token::FWRITE_;
+}
+
+"fread" {
+    return token::FREAD_;
+}
+
+"fclose" {
+    return token::FCLOSE_;
+}
+
 "&" {
     return token::AMPERSAND_;
 }

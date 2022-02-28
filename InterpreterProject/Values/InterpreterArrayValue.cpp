@@ -80,6 +80,34 @@ std::optional<Value> ArrayValue::GetValue(std::vector<int> element)
     return v;
 }
 
+std::optional<Value> ArrayValue::GetValue(int element)
+{
+    if (element >= GetElementCount())
+    {
+        return {};
+    }
+
+    Value v;
+    if (m_pInts != nullptr)
+    {
+        v.SetIntValue(m_pInts[element]);
+    }
+    else if (m_pFloats != nullptr)
+    {
+        v.SetFloatValue(m_pFloats[element]);
+    }
+    else if (m_pStrings != nullptr)
+    {
+        v.SetStringValue(m_pStrings[element]);
+    }
+    else
+    {
+        return {};
+    }
+
+    return v;
+}
+
 bool ArrayValue::SetValue(std::vector<int> element, Value v)
 {
     std::optional<int> index = ConvertElementIndex(element);
@@ -372,6 +400,22 @@ int ArrayValue::GetElementCount()
 // For debug purposes
 std::string ArrayValue::GetRepresentation()
 {
+    const int ELEMENT_COUNT = 10;
+    std::string s;
+
+    int maxElementCount = GetElementCount();
+    for (int i = 0; i < maxElementCount && i < ELEMENT_COUNT; i++)
+    {
+        std::optional<Value> v = GetValue(i);
+        assert(v != std::nullopt);
+        s += v->GetRepresentation() + " ";
+    }
+    s += "...";
+    return s;
+}
+
+std::string ArrayValue::GetDimsRepresentation()
+{
     assert(m_Dims.size() <= 3);
     std::vector<int> element;
     std::string s = "[";
@@ -388,20 +432,7 @@ std::string ArrayValue::GetRepresentation()
         element.push_back(0);
     }
 
-    const int ELEMENT_COUNT = 10;
-    char buf[256];
-    sprintf_s(buf, sizeof(buf), "%s...%d]:  ", s.c_str(), ELEMENT_COUNT-1);
-    s = buf;
-
-    int maxElementCount = m_Dims.back();
-    for (int i = 0; i < maxElementCount && i < ELEMENT_COUNT; i++)
-    {
-        element[m_Dims.size() - 1] = i;
-        std::optional<Value> v = GetValue(element);
-        assert(v != std::nullopt);
-        s += v->GetRepresentation() + " ";
-    }
-    s += "...";
+    s += "]";
     return s;
 }
 

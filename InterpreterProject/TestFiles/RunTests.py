@@ -2,8 +2,8 @@ import os
 import subprocess
 import unittest
 
-# EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-EXEFILE = r'..\x64\Release\InterpreterProject.exe'
+EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+# EXEFILE = r'..\x64\Release\InterpreterProject.exe'
 
 class FileBasedTests(unittest.TestCase) :
 
@@ -1308,7 +1308,6 @@ class PerformanceTests(unittest.TestCase):
     def ExecuteErrorTest(self, testLines, expectedError):
         TestExecutor(self, testLines, expectedError, True).Execute()
 
-
     def test_performance(self):
         commands = ['clear()']
         commands += 'x=0'
@@ -1317,6 +1316,21 @@ class PerformanceTests(unittest.TestCase):
         self.ExecuteTest(commands,
                           ['1000'])
 
+class FileIoTests(unittest.TestCase):
+
+    def test_fopen_fclose(self):
+        testLines = ['clear()', 
+                     'a=4',
+                     'f=fopen(\"diver.bin\", \"w\")',
+                     'fwrite(f, a)',
+                     'fclose(f)',
+                     'clear()',
+                     'f=fopen(\"diver.bin\", \"r\")',
+                     'fread(f,b)',
+                     'fclose(f)',
+                     'print(b)']
+        expectedLines = ['4']
+        TestExecutor(self, testLines, expectedLines).Execute(dbg=True)
 
 if __name__ == '__main__':
     unittest.main()

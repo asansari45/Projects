@@ -6,19 +6,19 @@ namespace Interpreter
 
 File::FILEMAP File::m_FileMap;
 
-std::optional<File*> File::Open(std::string name, std::string fileName, std::string mode)
+File* File::Open(std::string name, std::string fileName, std::string mode)
 {
     if (m_FileMap.find(name) != m_FileMap.end())
     {
         // already have that one.
-        return {};
+        return nullptr;
     }
 
     FILE* pFile = nullptr;
     fopen_s(&pFile, fileName.c_str(), mode.c_str());
     if (pFile == nullptr)
     {
-        return {};
+        return nullptr;
     }
 
     File* pRetFile = new File(name, pFile);
@@ -27,7 +27,7 @@ std::optional<File*> File::Open(std::string name, std::string fileName, std::str
     return pRetFile;
 }
 
-std::optional<File*> File::Get(std::string name)
+File* File::Get(std::string name)
 {
     FILEMAP::iterator i = m_FileMap.find(name);
     if (i != m_FileMap.end())
@@ -35,7 +35,7 @@ std::optional<File*> File::Get(std::string name)
         return i->second;
     }
 
-    return {};
+    return nullptr;
 }
 
 void File::Close()
@@ -343,6 +343,11 @@ bool File::Read(SymbolTable::SymbolInfo::SymbolType& rType, Value& rValue, Array
     }
 
     return false;
+}
+
+bool File::Eof()
+{
+    return feof(m_pFile) != 0;
 }
 
 }

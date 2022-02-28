@@ -46,6 +46,13 @@ private:
     ValueNode* GetTopOfStackValue(Node* pTop);
         
     bool ExecuteIfNode(IfNode* pIfNode);
+
+    // File operations
+    void DoFileOpen(FileNode* pNode);
+    void DoFileRead(FileNode* pNode);
+    void DoFileWrite(FileNode* pNode);
+    void DoFileClose(FileNode* pNode);
+    void DoFileEof(FileNode* pNode);
     
     // All nodes are clones of the original tree.
     std::vector<Node*> m_Nodes;

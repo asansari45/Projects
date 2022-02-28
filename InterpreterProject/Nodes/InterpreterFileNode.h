@@ -24,11 +24,11 @@ namespace Interpreter
 
         FileNode(const FileNode& rProto) :
             m_Command(rProto.m_Command),
-            m_Name(rProto.m_Name),
+            m_Varname(rProto.m_Varname),
+            m_Filename(rProto.m_Filename),
             m_Mode(rProto.m_Mode),
             m_pFile(rProto.m_pFile),
-            m_pVarNode(nullptr),
-            m_pValueNode(nullptr)
+            m_pNode(nullptr)
         {
         }
 
@@ -42,8 +42,10 @@ namespace Interpreter
 
         Command GetCommand(){ return m_Command; }
         void SetCommand(Command c){ m_Command = c; }
-        std::string GetName(){ return m_Name; }
-        void SetName(std::string name){ m_Name = name; }
+        std::string GetVarname(){ return m_Varname; }
+        void SetVarname(std::string varname){ m_Varname = varname; }
+        std::string GetFilename(){ return m_Filename; }
+        void SetFilename(std::string filename){ m_Filename = filename; }
         void SetMode(std::string mode){ m_Mode = mode; }
         std::string GetMode(){ return m_Mode; }
         void SetFile(File* pFile){ m_pFile = pFile; }
@@ -55,7 +57,8 @@ namespace Interpreter
         
     private:
         Command m_Command;
-        std::string m_Name;
+        std::string m_Varname;
+        std::string m_Filename;
         std::string m_Mode;
         File* m_pFile;
 

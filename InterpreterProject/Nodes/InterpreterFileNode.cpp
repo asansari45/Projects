@@ -6,7 +6,8 @@ namespace Interpreter
 
 FileNode::FileNode():
     m_Command(UNKNOWN),
-    m_Name(),
+    m_Varname(),
+    m_Filename(),
     m_Mode(),
     m_pFile(nullptr),
     m_pNode(nullptr)
@@ -17,6 +18,11 @@ FileNode::~FileNode()
 {
     delete m_pNode;
     m_pNode = nullptr;
+}
+
+void FileNode::Free()
+{
+    delete this;
 }
 
 Node* FileNode::Clone()

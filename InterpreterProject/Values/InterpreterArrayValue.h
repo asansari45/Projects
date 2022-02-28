@@ -31,6 +31,7 @@ public:
     bool Add(ArrayValue& v);
 
     // For debug purposes
+    std::string GetDimsRepresentation();
     std::string GetRepresentation();
 
     int* GetInts(){ return m_pInts; }
@@ -41,6 +42,8 @@ public:
     void SetStrings(std::string* pStrings){ delete [] m_pStrings; m_pStrings = pStrings; }
 
 private:
+    std::optional<Value> GetValue(int element);
+
     // Convert element index to flag index
     std::optional<int> ConvertElementIndex(std::vector<int> element);
 

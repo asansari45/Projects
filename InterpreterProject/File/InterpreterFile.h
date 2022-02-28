@@ -12,8 +12,8 @@ namespace Interpreter
     class File
     {
     public:
-        static std::optional<File*> Open(std::string name, std::string fileName, std::string mode);
-        static std::optional<File*> Get(std::string name);
+        static File* Open(std::string name, std::string fileName, std::string mode);
+        static File* Get(std::string name);
         void Close();
         bool Write(Value v);
         bool Write(ArrayValue v);
