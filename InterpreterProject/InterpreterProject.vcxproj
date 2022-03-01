@@ -149,6 +149,7 @@
     <ClCompile Include="DebugMemory\DebugMemory.cpp" />
     <ClCompile Include="Driver\InterpreterContext.cpp" />
     <ClCompile Include="Driver\InterpreterDriver.cpp" />
+    <ClCompile Include="File\InterpreterFile.cpp" />
     <ClCompile Include="InterpreterParser.cpp" />
     <ClCompile Include="InterpreterProject.cpp" />
     <ClCompile Include="lex.yy.cc" />
