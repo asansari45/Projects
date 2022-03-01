@@ -5,16 +5,16 @@
 #include <map>
 #include <string>
 #include <chrono>
-#include "InterpreterAlgorithmRepository.h"
-#include "InterpreterDriver.hpp"
-#include "InterpreterNode.h"
-#include "InterpreterExecutionNodeVisitor.h"
-#include "InterpreterFunctionTable.h"
-#include "InterpreterSymbolTable.h"
-#include "InterpreterLog.h"
-#include "InterpreterErrorInterface.h"
-#include "InterpreterContext.h"
-#include "InterpreterQuitNode.h"
+#include "Algorithm/InterpreterAlgorithmRepository.h"
+#include "Driver/InterpreterDriver.hpp"
+#include "Nodes/InterpreterNode.h"
+#include "Visitors/InterpreterExecutionNodeVisitor.h"
+#include "Tables/InterpreterFunctionTable.h"
+#include "Tables/InterpreterSymbolTable.h"
+#include "Log/InterpreterLog.h"
+#include "Visitors/InterpreterErrorInterface.h"
+#include "Driver/InterpreterContext.h"
+#include "Nodes/InterpreterQuitNode.h"
 
 #include "DebugMemory/DebugMemory.h"
 

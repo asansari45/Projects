@@ -1,6 +1,6 @@
 #pragma once
 #include <string>
-#include "InterpreterNode.h"
+#include "Nodes/InterpreterNode.h"
 
 namespace Interpreter
 {

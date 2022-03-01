@@ -1,14 +1,14 @@
 #include <assert.h>
 #include <optional>
 #include "InterpreterAlgorithmRepository.h"
-#include "InterpreterSymbolTable.h"
-#include "InterpreterLog.h"
-#include "InterpreterContext.h"
-#include "InterpreterErrorInterface.h"
-#include "InterpreterLvalues.h"
-#include "InterpreterVarNode.h"
-#include "InterpreterVarListNode.h"
-#include "InterpreterDimNode.h"
+#include "Driver/InterpreterContext.h"
+#include "Tables/InterpreterSymbolTable.h"
+#include "Log/InterpreterLog.h"
+#include "Nodes/InterpreterVarNode.h"
+#include "Nodes/InterpreterVarListNode.h"
+#include "Nodes/InterpreterDimNode.h"
+#include "Values/InterpreterLvalues.h"
+#include "Visitors/InterpreterErrorInterface.h"
 #include "DebugMemory/DebugMemory.h"
 
 namespace Interpreter

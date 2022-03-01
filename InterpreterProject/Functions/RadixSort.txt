@@ -1,98 +1,98 @@
 function mod(a,b)
 {
-	q = a/b
-	r = a - q * b
-	return(r)
+    q = a/b
+    r = a - q * b
+    return(r)
 }
 
 function CalculateLargestDivisor(&a)
 {
-	alen = len(a)
-	max = a[0]
-	for (i=0, i < alen, i=i+1)
-	{
-		if (a[i] > max)
-		{
-			max = a[i]
-		}
-	}
+    alen = len(a)
+    max = a[0]
+    for (i=0, i < alen, i=i+1)
+    {
+        if (a[i] > max)
+        {
+            max = a[i]
+        }
+    }
 
-	for (divisor = 1, divisor < max, divisor = divisor * 10)
-	{
-	}
+    for (divisor = 1, divisor < max, divisor = divisor * 10)
+    {
+    }
 
-	return(divisor / 10)
+    return(divisor / 10)
 }
 
 function RadixSort(&a)
 {
-	buckets = dim[10, len(a)]
-	bucketCount = dim[10]
+    buckets = dim[10, len(a)]
+    bucketCount = dim[10]
 
-	maxDivisor = CalculateLargestDivisor(a)
-	for (divisor=1, divisor != maxDivisor * 10, divisor = divisor * 10)
-	{
-		// Place in buckets
-		for (i=0, i < len(a), i=i+1)
-		{
-			// Figure out the right bucket
-			number = a[i] / divisor
-			bucket = mod(number,10)
+    maxDivisor = CalculateLargestDivisor(a)
+    for (divisor=1, divisor != maxDivisor * 10, divisor = divisor * 10)
+    {
+        // Place in buckets
+        for (i=0, i < len(a), i=i+1)
+        {
+            // Figure out the right bucket
+            number = a[i] / divisor
+            bucket = mod(number,10)
 
-			// Place it in the bucket at the right index
-			bucketIndex = bucketCount[bucket]
-			buckets[bucket, bucketIndex] = a[i]
-			bucketCount[bucket] = bucketCount[bucket] + 1
-		}
+            // Place it in the bucket at the right index
+            bucketIndex = bucketCount[bucket]
+            buckets[bucket, bucketIndex] = a[i]
+            bucketCount[bucket] = bucketCount[bucket] + 1
+        }
 
-		// Extract from buckets
-		index = 0
-		for (i=0, i < 10, i=i+1)
-		{
-			for (j=0, j < bucketCount[i], j = j + 1)
-			{
-				a[index] = buckets[i,j]
-				index = index + 1
-			}
-			bucketCount[i] = 0
-		}
-	}
+        // Extract from buckets
+        index = 0
+        for (i=0, i < 10, i=i+1)
+        {
+            for (j=0, j < bucketCount[i], j = j + 1)
+            {
+                a[index] = buckets[i,j]
+                index = index + 1
+            }
+            bucketCount[i] = 0
+        }
+    }
 
-	// Passed
-	return(1)
+    // Passed
+    return(1)
 }
 
 if (main==1)
 {
-	array = dim[10]
-	array[0] = 101
-	array[1] = 20
-	array[2] = 25
-	array[3] = 11
-	array[4] = 3
-	array[5] = 8
-	array[6] = 1024
-	array[7] = 512
-	array[8] = 321
-	array[9] = 10024
+    array = dim[10]
+    array[0] = 101
+    array[1] = 20
+    array[2] = 25
+    array[3] = 11
+    array[4] = 3
+    array[5] = 8
+    array[6] = 1024
+    array[7] = 512
+    array[8] = 321
+    array[9] = 10024
 
-	print("BEFORE:")
-	for (i=0, i < 10, i=i+1)
-	{
-		print(i, ".  ", array[i])
-	}
-	status = RadixSort(array)
-	if (status == 1)
-	{
-		print("AFTER:")
-		for (i=0, i < 10, i=i+1)
-		{
-			print(i, ".  ", array[i])
-		}
-	}
-	else
-	{
-		print("....FAILED")
-	}
+    print("BEFORE:")
+    for (i=0, i < 10, i=i+1)
+    {
+        print(i, ".  ", array[i])
+    }
+    status = RadixSort(array)
+    if (status == 1)
+    {
+        print("AFTER:")
+        for (i=0, i < 10, i=i+1)
+        {
+            print(i, ".  ", array[i])
+        }
+    }
+    else
+    {
+        print("....FAILED")
+    }
 }
 

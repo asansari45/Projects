@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <fstream>
 #include "InterpreterDriver.hpp"
-#include "InterpreterSymbolTable.h"
+#include "Tables/InterpreterSymbolTable.h"
 #include "InterpreterContext.h"
 #include "DebugMemory/DebugMemory.h"
 

@@ -1,4 +1,5 @@
 #include "InterpreterValue.h"
+#include "File/InterpreterFile.h"
 
 namespace Interpreter
 {
@@ -6,7 +7,8 @@ namespace Interpreter
         m_Type(typeid(int)),
         m_IntValue(),
         m_FloatValue(),
-        m_StringValue()
+        m_StringValue(),
+        m_pFile(nullptr)
     {
     }
 
@@ -14,7 +16,8 @@ namespace Interpreter
         m_Type(v.m_Type),
         m_IntValue(v.m_IntValue),
         m_FloatValue(v.m_FloatValue),
-        m_StringValue(v.m_StringValue)
+        m_StringValue(v.m_StringValue),
+        m_pFile(v.m_pFile)
     {
     }
 
@@ -37,6 +40,12 @@ namespace Interpreter
             return std::string(buf);
         }
 
+        if (m_Type == typeid(File*))
+        {
+            sprintf_s(buf, sizeof(buf), "%p", m_pFile);
+            return std::string(buf);
+        }
+
         return m_StringValue;
     }
 
@@ -50,6 +59,11 @@ namespace Interpreter
         if (m_Type == typeid(float))
         {
             return m_FloatValue != 0;
+        }
+
+        if (m_Type == typeid(File*))
+        {
+            return m_pFile != nullptr;
         }
 
         return m_StringValue.size() != 0;

@@ -1,11 +1,11 @@
 #pragma once
 #include <vector>
 #include <optional>
-#include "InterpreterBinaryNode.h"
-#include "InterpreterSymbolTable.h"
-#include "InterpreterLog.h"
-#include "InterpreterLvalues.h"
-#include "InterpreterRvalue.h"
+#include "Nodes/InterpreterBinaryNode.h"
+#include "Tables/InterpreterSymbolTable.h"
+#include "Log/InterpreterLog.h"
+#include "Values/InterpreterLvalues.h"
+#include "Values/InterpreterRvalue.h"
 
 namespace Interpreter
 {

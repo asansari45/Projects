@@ -4,12 +4,12 @@
 
 // Implementation of yyFlexScanner
 #include "InterpreterScanner.hpp"
-#include "InterpreterLoadNode.h"
-#include "InterpreterQuitNode.h"
-#include "InterpreterValueNode.h"
-#include "InterpreterVarNode.h"
-#include "InterpreterFunctionTable.h"
-#include "InterpreterContext.h"
+#include "Nodes/InterpreterLoadNode.h"
+#include "Nodes/InterpreterQuitNode.h"
+#include "Nodes/InterpreterValueNode.h"
+#include "Nodes/InterpreterVarNode.h"
+#include "Tables/InterpreterFunctionTable.h"
+#include "Driver/InterpreterContext.h"
 #include "DebugMemory/DebugMemory.h"
 
 #undef  YY_DECL
@@ -25,7 +25,7 @@ using token = yy::InterpreterParser::token;
 int yycolumn = 1;
 
 #define YY_USER_ACTION location->columns(yyleng); Interpreter::contextStack.back()->IncColumn(yyleng);
-#define YYABORT		goto yyabortlab
+#define YYABORT        goto yyabortlab
 
 %}
 

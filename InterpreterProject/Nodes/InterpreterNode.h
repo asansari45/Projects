@@ -2,11 +2,11 @@
 
 #include <string>
 #include <vector>
-#include "InterpreterNodeVisitor.hpp"
-#include "InterpreterValue.h"
-#include "InterpreterArrayValue.h"
-#include "InterpreterContext.h"
-#include "InterpreterSymbolTable.h"
+#include "Visitors/InterpreterNodeVisitor.hpp"
+#include "Values/InterpreterValue.h"
+#include "Values/InterpreterArrayValue.h"
+#include "Driver/InterpreterContext.h"
+#include "Tables/InterpreterSymbolTable.h"
 
 namespace Interpreter
 {

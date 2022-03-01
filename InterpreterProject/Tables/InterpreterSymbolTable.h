@@ -4,8 +4,8 @@
 #include <map>
 #include <optional>
 #include <typeindex>
-#include "InterpreterValue.h"
-#include "InterpreterArrayValue.h"
+#include "Values/InterpreterValue.h"
+#include "Values/InterpreterArrayValue.h"
 
 namespace Interpreter
 {

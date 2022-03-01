@@ -2,7 +2,7 @@
 #include <cstdarg>
 #include <assert.h>
 #include "InterpreterLog.h"
-#include "InterpreterContext.h"
+#include "Driver/InterpreterContext.h"
 #include "DebugMemory/DebugMemory.h"
 
 namespace Interpreter

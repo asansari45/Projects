@@ -5,6 +5,8 @@
 
 namespace Interpreter
 {
+    class File;
+
     class Value
     {
     public:
@@ -21,6 +23,8 @@ namespace Interpreter
         float GetFloatValue() { return m_FloatValue; }
         void SetStringValue(std::string value) { m_Type = typeid(std::string); m_StringValue = value; }
         std::string GetStringValue() { return m_StringValue; }
+        void SetFileValue(File* pFile) { m_pFile = pFile; }
+        File* GetFileValue() { return m_pFile; }
 
         std::string GetRepresentation();
         bool IfEval();
@@ -40,5 +44,6 @@ namespace Interpreter
         int m_IntValue;
         float m_FloatValue;
         std::string m_StringValue;
+        File* m_pFile;
     };
 };

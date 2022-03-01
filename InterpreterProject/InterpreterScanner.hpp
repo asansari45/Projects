@@ -5,7 +5,7 @@
 #endif
 
 #include "InterpreterParser.hpp"
-#include "InterpreterLog.h"
+#include "Log/InterpreterLog.h"
 #include "location.hh"
 
 class InterpreterScanner : public yyFlexLexer

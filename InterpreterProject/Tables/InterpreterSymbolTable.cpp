@@ -1,6 +1,6 @@
 #include <assert.h>
-#include "InterpreterSymbolTable.h"
-#include "InterpreterLog.h"
+#include "Tables/InterpreterSymbolTable.h"
+#include "Log/InterpreterLog.h"
 
 #include "DebugMemory/DebugMemory.h"
 
