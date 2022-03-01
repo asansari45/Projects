@@ -40,6 +40,7 @@ public:
     virtual void VisitRandNode(RandNode* pNode);
     virtual void VisitLenNode(LenNode* pNode);
     virtual void VisitBreakNode(BreakNode* pNode);
+    virtual void VisitFileNode(FileNode* pNode);
 
     std::optional<Value> GetResult()
     {
@@ -141,6 +142,11 @@ private:
     }
 
     bool ExecuteIfNode(IfNode* pIfNode);
+    void DoFileOpen(FileNode* pNode);
+    void DoFileWrite(FileNode* pNode);
+    void DoFileRead(FileNode* pNode);
+    void DoFileClose(FileNode* pNode);
+    void DoFileEof(FileNode* pNode);
     
     // All nodes are clones of the original tree.
     std::vector<Node*> m_Nodes;

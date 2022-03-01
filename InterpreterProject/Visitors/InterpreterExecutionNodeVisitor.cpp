@@ -23,6 +23,7 @@
 #include "Nodes/InterpreterReturnNode.h"
 #include "Nodes/InterpreterSrandNode.h"
 #include "Nodes/InterpreterVarListNode.h"
+#include "Nodes/InterpreterFileNode.h"
 
 #include "DebugMemory/DebugMemory.h"
 
@@ -1269,6 +1270,52 @@ namespace Interpreter
     {
         StopNode* pStopNode = new StopNode(StopNode::BREAK);
         m_Nodes.push_back(pStopNode);
+    }
+
+    void ExecutionNodeVisitor::VisitFileNode(FileNode* pNode)
+    {
+        FileNode::Command command = pNode->GetCommand();
+        switch (command)
+        {
+            case FileNode::OPEN:
+                DoFileOpen(pNode);
+                break;
+            
+            case FileNode::WRITE:
+                DoFileWrite(pNode):
+                break;
+            
+            case FileNode::READ:
+                DoFileRead(pNode);
+                break;
+
+            case FileNode::CLOSE:
+                DoFileClose(pNode);
+                break;
+
+            case FileNode::END_OF_FILE:
+                DoFileEof(pNode);
+                break;
+        }
+    }
+
+    void ExecutionNodeVisitor::DoFileOpen(FileNode* pNode)
+    {
+        // We will open a file and push the value on the stack.
+        // Get the filename that could be in a variable.
+        pNode->GetFilenameNode()->Accept(*this);
+        if (m_Nodes.size() == 0)
+        {
+            // Could not get the name
+            return;
+        }
+
+        Node* pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+        ValueNode* pFilenameNode = GetTopOfStackValue(pTop);
+        delete pTop;
+
+        if (pF)
     }
 };
 
