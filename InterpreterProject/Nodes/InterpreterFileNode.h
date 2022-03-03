@@ -3,7 +3,6 @@
 
 namespace Interpreter
 {
-    class File;
     class Node;
 
     class FileNode : public Node

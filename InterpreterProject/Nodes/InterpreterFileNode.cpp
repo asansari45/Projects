@@ -1,7 +1,7 @@
 #pragma once
 #include "InterpreterFileNode.h"
-#include "VarNode.h"
-#include "ValueNode.h"
+#include "InterpreterVarNode.h"
+#include "InterpreterValueNode.h"
 
 namespace Interpreter
 {
@@ -11,8 +11,7 @@ FileNode::FileNode():
     m_pFileNode(nullptr),
     m_pWriteNode(nullptr),
     m_pFilenameNode(nullptr),
-    m_pModeNode(nullptr),
-    m_pFile(nullptr)
+    m_pModeNode(nullptr)
 {
 }
 
@@ -21,8 +20,7 @@ FileNode::FileNode(const FileNode& rProto):
     m_pFileNode(rProto.m_pFileNode),
     m_pWriteNode(rProto.m_pWriteNode),
     m_pFilenameNode(rProto.m_pFilenameNode),
-    m_pModeNode(rProto.m_pModeNode),
-    m_pFile(rProto.m_pFile)
+    m_pModeNode(rProto.m_pModeNode)
 {
 }
 
@@ -47,6 +45,7 @@ Node* FileNode::Clone()
     pNode->SetWriteNode(m_pWriteNode->Clone());
     pNode->SetFilenameNode(m_pFilenameNode->Clone());
     pNode->SetModeNode(m_pModeNode->Clone());
+    return pNode;
 }
 
 void FileNode::Accept(Interpreter::NodeVisitor& rVisitor)

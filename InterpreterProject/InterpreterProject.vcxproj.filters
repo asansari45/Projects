@@ -129,6 +129,9 @@
     <ClCompile Include="File\InterpreterFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Nodes\InterpreterFileNode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InterpreterNodeVisitor.hpp">

@@ -3,6 +3,7 @@
 *.pdb
 *.log
 *.idb
+*.bin
 __pycache__/*
 InterpreterGrammar.cpp
 InterpreterGrammar.hpp
