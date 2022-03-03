@@ -120,15 +120,16 @@ bool File::Write(Value v)
 
         if (sz != 0)
         {
-            elementsWritten = fwrite(v.GetStringValue().c_str(), sizeof(v.GetStringValue().c_str()[0]), sz, m_pFile);
+            elementsWritten = fwrite(v.GetStringValue().c_str(), 1, sz, m_pFile);
         }
+
+        if (elementsWritten != sz)
+        {
+            return false;
+        }
+
     }
     else
-    {
-        return false;
-    }
-
-    if (elementsWritten != 1)
     {
         return false;
     }
@@ -194,7 +195,7 @@ bool File::Write(ArrayValue v)
     if (v.GetType() == typeid(int))
     {
         elementsWritten = fwrite(v.GetInts(), sizeof(int), elementCount, m_pFile);
-        if (elementsWritten != 1)
+        if (elementsWritten != elementCount)
         {
             return false;
         }
@@ -202,7 +203,7 @@ bool File::Write(ArrayValue v)
     else if (v.GetType() == typeid(float))
     {
         elementsWritten = fwrite(v.GetFloats(), sizeof(float), elementCount, m_pFile);
-        if (elementsWritten != 1)
+        if (elementsWritten != elementCount)
         {
             return false;
         }
@@ -299,7 +300,7 @@ bool File::Read(bool& rArray, Value& rValue, ArrayValue& rArrayValue)
             for (int i=0; i < elementCount; i++)
             {
                 // Read size of string
-                int sz=0;
+                size_t sz=0;
                 elementsRead = fread(&sz, sizeof(sz), 1, m_pFile);
                 if (elementsRead != 1)
                 {
@@ -307,7 +308,7 @@ bool File::Read(bool& rArray, Value& rValue, ArrayValue& rArrayValue)
                     return false;
                 }
 
-                elementsRead = fread(s, sizeof(s[0]), sz, m_pFile);
+                elementsRead = fread(s, 1, sz, m_pFile);
                 if (elementsRead != sz)
                 {
                     delete [] pStrings;
@@ -349,7 +350,7 @@ bool File::Read(bool& rArray, Value& rValue, ArrayValue& rArrayValue)
 
     if (hdr.m_SubType == STRING)
     {
-        int sz;
+        size_t sz;
         const int MAX_STRING = 1024;
         char s[MAX_STRING];
         elementsRead = fread(&sz, sizeof(sz), 1, m_pFile);

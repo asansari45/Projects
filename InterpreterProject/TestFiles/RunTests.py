@@ -2,8 +2,8 @@ import os
 import subprocess
 import unittest
 
-# EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
-EXEFILE = r'..\x64\Release\InterpreterProject.exe'
+EXEFILE = r'..\x64\Debug\InterpreterProject.exe'
+# EXEFILE = r'..\x64\Release\InterpreterProject.exe'
 
 class FileBasedTests(unittest.TestCase) :
 
@@ -1317,6 +1317,98 @@ class PerformanceTests(unittest.TestCase):
         self.ExecuteTest(commands,
                           ['1000'])
 
+class FileIoTests(unittest.TestCase):
+    def test_fileio_basic(self):
+        testLines = ['clear()',
+                     'f=fopen(\"file.bin\", \"w\")',
+                     'fwrite(f,5)',
+                     'fclose(f)',
+                     'f=fopen(\"file.bin\", \"r\")',
+                     'x=fread(f)',
+                     'fclose(f)',
+                     'print(x)']
+        expectedOutput = ['5']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+    
+    def test_fileio_atomics(self):
+        testLines = ['clear()',
+                     'f=fopen(\"file.bin\", \"w\")',
+                     'fwrite(f,5.3)',
+                     'fclose(f)',
+                     'f=fopen(\"file.bin\", \"r\")',
+                     'x=fread(f)',
+                     'fclose(f)',
+                     'print(x)']
+        expectedOutput = ['5.3']
+
+        testLines = ['clear()',
+                     'f=fopen(\"file.bin\", \"w\")',
+                     'fwrite(f,\"jagrjagr\")',
+                     'fclose(f)',
+                     'f=fopen(\"file.bin\", \"r\")',
+                     'x=fread(f)',
+                     'fclose(f)',
+                     'print(x)']
+        expectedOutput = ['jagrjagr']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def test_fileio_arrays(self):
+        testLines = ['clear()',
+                     'x=dim[10]',
+                     'for (i=0,i<10,i=i+1)',
+                     '{',
+                     '    x[i] = i',
+                     '}',
+                     'f=fopen(\"file.bin\", \"w\")',
+                     'fwrite(f,x)',
+                     'fclose(f)',
+                     'f=fopen(\"file.bin\", \"r\")',
+                     'q=fread(f)',
+                     'fclose(f)',
+                     'for (i=0,i<10,i=i+1)',
+                     '{',
+                     '    print(x[i])',
+                     '}']
+        expectedOutput = ['%d' % x for x in range(10)]
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = ['clear()',
+                     'x=dim[10]',
+                     'for (i=0,i<10,i=i+1)',
+                     '{',
+                     '    x[i] = i*1.5',
+                     '}',
+                     'f=fopen(\"file.bin\", \"w\")',
+                     'fwrite(f,x)',
+                     'fclose(f)',
+                     'f=fopen(\"file.bin\", \"r\")',
+                     'q=fread(f)',
+                     'fclose(f)',
+                     'for (i=0,i<10,i=i+1)',
+                     '{',
+                     '    print(x[i])',
+                     '}']
+        expectedOutput = ['0','1.5', '3', '4.5', '6', '7.5', '9', '10.5', '12', '13.5']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = ['clear()',
+                     'x=dim[10]',
+                     'for (i=0,i<10,i=i+1)',
+                     '{',
+                     '    x[i] = \"jagr\"',
+                     '}',
+                     'f=fopen(\"file.bin\", \"w\")',
+                     'fwrite(f,x)',
+                     'fclose(f)',
+                     'f=fopen(\"file.bin\", \"r\")',
+                     'q=fread(f)',
+                     'fclose(f)',
+                     'for (i=0,i<10,i=i+1)',
+                     '{',
+                     '    print(x[i])',
+                     '}']
+        expectedOutput = ['jagr'] * 10
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
 if __name__ == '__main__':
     unittest.main()
