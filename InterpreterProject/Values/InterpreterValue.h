@@ -11,6 +11,10 @@ namespace Interpreter
     {
     public:
         Value();
+        Value(File* pFile);
+        Value(int i);
+        Value(float f);
+        Value(std::string s);
 
         Value(const Value& v);
 

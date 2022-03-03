@@ -6,6 +6,7 @@ namespace Interpreter
 
 File::FILEMAP File::m_FileMap;
 
+#if 0
 File* File::Open(std::string name, std::string fileName, std::string mode)
 {
     if (m_FileMap.find(name) != m_FileMap.end())
@@ -26,6 +27,21 @@ File* File::Open(std::string name, std::string fileName, std::string mode)
     m_FileMap.insert(std::make_pair(name, pRetFile));
     return pRetFile;
 }
+#endif
+
+File* File::Open(std::string fileName, std::string mode)
+{
+    FILE* pFile = nullptr;
+    fopen_s(&pFile, fileName.c_str(), mode.c_str());
+    if (pFile == nullptr)
+    {
+        return nullptr;
+    }
+
+    File* pRetFile = new File(pFile);
+    assert(pRetFile != nullptr);
+    return pRetFile;
+}
 
 File* File::Get(std::string name)
 {
@@ -41,12 +57,15 @@ File* File::Get(std::string name)
 void File::Close()
 {
     fclose(m_pFile);
-    FILEMAP::iterator i = m_FileMap.find(m_Name);
+#if 0
+    // FILEMAP::iterator i = m_FileMap.find(m_Name);
     if (i != m_FileMap.end())
     {
         delete this;
         m_FileMap.erase(i);
     }
+#endif
+
 }
 
 bool File::Write(Value v)

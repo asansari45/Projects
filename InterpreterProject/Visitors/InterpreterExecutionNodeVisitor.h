@@ -53,7 +53,7 @@ public:
 
 private:
     ValueNode* GetTopOfStackValue(Node* pTop);
-        
+
     bool IsArray(Node* pNode)
     {
         ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
@@ -142,6 +142,8 @@ private:
     }
 
     bool ExecuteIfNode(IfNode* pIfNode);
+
+    std::optional<std::string> GetFileOpenString(Node* pNode);
     void DoFileOpen(FileNode* pNode);
     void DoFileWrite(FileNode* pNode);
     void DoFileRead(FileNode* pNode);

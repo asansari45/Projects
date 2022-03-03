@@ -36,20 +36,22 @@ namespace Interpreter
         
         Node* GetFileNode() { return m_pFileNode; }
         void SetFileNode(Node* pFileNode) { m_pFileNode = pFileNode; }
+
+        Node* GetWriteNode() { return m_pWriteNode; }
+        void SetWriteNode(Node* pWriteNode) { m_pWriteNode = pWriteNode; }
         
         Node* GetFilenameNode() { return m_pFilenameNode; }
         void SetFilenameNode(Node* pFilenameNode){ m_pFilenameNode = pFilenameNode; }
-        void SetModeNode(Node* pModeNode){ m_ModeNode = pModeNode; }
+
+        void SetModeNode(Node* pModeNode){ m_pModeNode = pModeNode; }
         Node* GetModeNode(){ return m_pModeNode; }
-        void SetFile(File* pFile){ m_pFile = pFile; }
-        File* GetFile() { return m_pFile; }
 
     private:
         Command m_Command;
-        Node* m_pFileNode;     // File node holding fopen() result.
+        Node* m_pFileNode;     // Node holding File* value
+        Node* m_pWriteNode;    // Node holding value to write
         Node* m_pFilenameNode; // Filename node
         Node* m_pModeNode;     // Mode node
-        File* m_pFile;
     };
 
 };

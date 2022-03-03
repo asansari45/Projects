@@ -24,6 +24,7 @@
 #include "Nodes/InterpreterSrandNode.h"
 #include "Nodes/InterpreterVarListNode.h"
 #include "Nodes/InterpreterFileNode.h"
+#include "File/InterpreterFile.h"
 
 #include "DebugMemory/DebugMemory.h"
 
@@ -991,7 +992,7 @@ namespace Interpreter
 
         return pValueNode;
     }
-
+    
     void ExecutionNodeVisitor::VisitReturnNode(Interpreter::ReturnNode* pReturnNode)
     {
         // Count the number of expressions.
@@ -1282,7 +1283,7 @@ namespace Interpreter
                 break;
             
             case FileNode::WRITE:
-                DoFileWrite(pNode):
+                DoFileWrite(pNode);
                 break;
             
             case FileNode::READ:
@@ -1299,15 +1300,15 @@ namespace Interpreter
         }
     }
 
-    void ExecutionNodeVisitor::DoFileOpen(FileNode* pNode)
+    std::optional<std::string> ExecutionNodeVisitor::GetFileOpenString(Node* pNode)
     {
         // We will open a file and push the value on the stack.
         // Get the filename that could be in a variable.
-        pNode->GetFilenameNode()->Accept(*this);
+        pNode->Accept(*this);
         if (m_Nodes.size() == 0)
         {
             // Could not get the name
-            return;
+            return {};
         }
 
         Node* pTop = m_Nodes.back();
@@ -1315,7 +1316,295 @@ namespace Interpreter
         ValueNode* pFilenameNode = GetTopOfStackValue(pTop);
         delete pTop;
 
-        if (pF)
+        if (pFilenameNode->IsArray())
+        {
+            delete pFilenameNode;
+            ErrorInfo err(pFilenameNode);
+            err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+            SetErrorInfo(err);
+            return {};
+        }
+
+        Value fileNameValue = pFilenameNode->GetValue();
+        delete pFilenameNode;
+        if (fileNameValue.GetType() != typeid(std::string))
+        {
+            ErrorInfo err(pFilenameNode);
+            err.m_Msg = ERROR_INCORRECT_TYPE;
+            SetErrorInfo(err);
+            return {};
+        }
+
+        return fileNameValue.GetStringValue();
     }
+
+    void ExecutionNodeVisitor::DoFileOpen(FileNode* pNode)
+    {
+        std::optional<std::string> filename = GetFileOpenString(pNode->GetFilenameNode());
+        if (filename == std::nullopt)
+        {
+            return;
+        }
+
+        std::optional<std::string> mode = GetFileOpenString(pNode->GetModeNode());
+        if (mode == std::nullopt)
+        {
+            return;
+        }
+
+        File* pFile = File::Open(*filename, *mode);
+        if (pFile == nullptr)
+        {
+            ErrorInfo err;
+            err.m_Msg = ERROR_FILE_OPERATION_FAILED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        // Save the result on the stack.
+        Value v(pFile);
+        ValueNode* pValueNode = new ValueNode(v);
+        assert(pValueNode != nullptr);
+        m_Nodes.push_back(pValueNode);
+    }
+
+    void ExecutionNodeVisitor::DoFileWrite(FileNode* pNode)
+    {
+        // Get the file interface by processing file node.
+        Node* pFileNode = pNode->GetFileNode();
+        pFileNode->Accept(*this);
+        if (IsErrorFlagSet())
+        {
+            return;
+        }
+
+        if (m_Nodes.size() == 0)
+        {
+            return;
+        }
+
+        Node* pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+        ValueNode* pValueNode = GetTopOfStackValue(pTop);
+        delete pTop;
+
+        if (pValueNode->IsArray())
+        {
+            delete pValueNode;
+            ErrorInfo err;
+            err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        Value v = pValueNode->GetValue();
+        delete pValueNode;
+        if (v.GetType() != typeid(File*))
+        {
+            ErrorInfo err;
+            err.m_Msg = ERROR_INCORRECT_TYPE;
+            SetErrorInfo(err);
+            return;
+        }
+
+        File* pFile = v.GetFileValue();
+        assert(pFile != nullptr);
+
+        // Process the value to write.
+        Node* pWriteNode = pNode->GetWriteNode();
+        pWriteNode->Accept(*this);
+        if (IsErrorFlagSet())
+        {
+            return;
+        }
+
+        if (m_Nodes.size() == 0)
+        {
+            return;
+        }
+
+        pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+        pValueNode = GetTopOfStackValue(pTop);
+        delete pTop;
+
+        bool status;
+        if (pValueNode->IsArray())
+        {
+            status = pFile->Write(pValueNode->GetArrayValue());
+        }
+        else 
+        {
+            status = pFile->Write(pValueNode->GetValue());
+        }
+
+        delete pValueNode;
+        if (!status)
+        {
+            ErrorInfo err;
+            err.m_Msg = ERROR_FILE_OPERATION_FAILED;
+            SetErrorInfo(err);
+            return;
+        }
+    }
+
+    void ExecutionNodeVisitor::DoFileRead(FileNode* pNode)
+    {
+        // Get the file interface by processing file node.
+        Node* pFileNode = pNode->GetFileNode();
+        pFileNode->Accept(*this);
+        if (IsErrorFlagSet())
+        {
+            return;
+        }
+
+        if (m_Nodes.size() == 0)
+        {
+            return;
+        }
+
+        Node* pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+        ValueNode* pValueNode = GetTopOfStackValue(pTop);
+        delete pTop;
+    
+        if (pValueNode->IsArray())
+        {
+            delete pValueNode;
+            ErrorInfo err;
+            err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        Value v = pValueNode->GetValue();
+        delete pValueNode;
+        if (v.GetType() != typeid(File*))
+        {
+            ErrorInfo err;
+            err.m_Msg = ERROR_INCORRECT_TYPE;
+            SetErrorInfo(err);
+            return;
+        }
+
+        File* pFile = v.GetFileValue();
+        assert(pFile != nullptr);
+
+        bool isArray = false;
+        ArrayValue arrValue;
+        bool status = pFile->Read(isArray, v, arrValue);
+        if (!status)
+        {
+            ErrorInfo err;
+            err.m_Msg = ERROR_FILE_OPERATION_FAILED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        pValueNode = new ValueNode();
+        assert(pValueNode);
+        if (isArray)
+        {
+            pValueNode->SetArrayValue(arrValue);
+        }
+        else
+        {
+            pValueNode->SetValue(v);
+        }
+        m_Nodes.push_back(pValueNode);
 };
 
+    void ExecutionNodeVisitor::DoFileClose(FileNode* pNode)
+    {
+        // Get the file interface by processing file node.
+        Node* pFileNode = pNode->GetFileNode();
+        pFileNode->Accept(*this);
+        if (IsErrorFlagSet())
+        {
+            return;
+        }
+
+        if (m_Nodes.size() == 0)
+        {
+            return;
+        }
+
+        Node* pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+        ValueNode* pValueNode = GetTopOfStackValue(pTop);
+        delete pTop;
+    
+        if (pValueNode->IsArray())
+        {
+            delete pValueNode;
+            ErrorInfo err;
+            err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        Value v = pValueNode->GetValue();
+        delete pValueNode;
+        if (v.GetType() != typeid(File*))
+        {
+            ErrorInfo err;
+            err.m_Msg = ERROR_INCORRECT_TYPE;
+            SetErrorInfo(err);
+            return;
+        }
+
+        File* pFile = v.GetFileValue();
+        assert(pFile != nullptr);
+
+        pFile->Close();
+    }
+
+    void ExecutionNodeVisitor::DoFileEof(FileNode* pNode)
+    {
+        // Get the file interface by processing file node.
+        Node* pFileNode = pNode->GetFileNode();
+        pFileNode->Accept(*this);
+        if (IsErrorFlagSet())
+        {
+            return;
+        }
+
+        if (m_Nodes.size() == 0)
+        {
+            return;
+        }
+
+        Node* pTop = m_Nodes.back();
+        m_Nodes.pop_back();
+        ValueNode* pValueNode = GetTopOfStackValue(pTop);
+        delete pTop;
+    
+        if (pValueNode->IsArray())
+        {
+            delete pValueNode;
+            ErrorInfo err;
+            err.m_Msg = ERROR_ARRAY_UNEXPECTED;
+            SetErrorInfo(err);
+            return;
+        }
+
+        Value v = pValueNode->GetValue();
+        delete pValueNode;
+        if (v.GetType() != typeid(File*))
+        {
+            ErrorInfo err;
+            err.m_Msg = ERROR_INCORRECT_TYPE;
+            SetErrorInfo(err);
+            return;
+        }
+
+        File* pFile = v.GetFileValue();
+        assert(pFile != nullptr);
+
+        bool status = pFile->Eof();
+        v.SetIntValue(status);
+        pValueNode = new ValueNode(v);
+        assert(pValueNode != nullptr);
+        m_Nodes.push_back(pValueNode);
+    }
+}

@@ -12,6 +12,42 @@ namespace Interpreter
     {
     }
 
+    Value::Value(int i) :
+        m_Type(typeid(int)),
+        m_IntValue(i),
+        m_FloatValue(),
+        m_StringValue(),
+        m_pFile(nullptr)
+    {
+    }
+
+    Value::Value(float f) :
+        m_Type(typeid(float)),
+        m_IntValue(),
+        m_FloatValue(f),
+        m_StringValue(),
+        m_pFile(nullptr)
+    {
+    }
+
+    Value::Value(std::string s) :
+        m_Type(typeid(std::string)),
+        m_IntValue(),
+        m_FloatValue(),
+        m_StringValue(s),
+        m_pFile(nullptr)
+    {
+    }
+
+    Value::Value(File* pFile) :
+        m_Type(typeid(File*)),
+        m_IntValue(),
+        m_FloatValue(),
+        m_StringValue(),
+        m_pFile(pFile)
+    {
+    }
+
     Value::Value(const Value& v) :
         m_Type(v.m_Type),
         m_IntValue(v.m_IntValue),

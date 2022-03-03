@@ -12,7 +12,9 @@ namespace Interpreter
     class File
     {
     public:
-        static File* Open(std::string name, std::string fileName, std::string mode);
+        // static File* Open(std::string name, std::string fileName, std::string mode);
+        // static File* Open(std::string name, std::string fileName, std::string mode);
+        static File* Open(std::string fileName, std::string mode);
         static File* Get(std::string name);
         void Close();
         bool Write(Value v);
@@ -21,8 +23,7 @@ namespace Interpreter
         bool Eof();
 
     private:
-        File(std::string name, FILE* pFile):
-            m_Name(name),
+        File(FILE* pFile):
             m_pFile(pFile)
         {
         }
@@ -32,7 +33,6 @@ namespace Interpreter
         }
 
         // The file to read/write.
-        std::string m_Name;
         FILE* m_pFile;
 
         enum Type
