@@ -222,6 +222,10 @@ int yycolumn = 1;
         Interpreter::contextStack.back()->SetColumn(1);
      }
 
-"//"[a-zA-Z0-9 ]* { }
+"//"[a-zA-Z0-9 ]* { } /* one-line comments */ 
+
+.          {
+             Error("invalid character: " + std::string(yytext));
+}
 
 %%
