@@ -44,9 +44,9 @@ namespace Interpreter
 
         struct Header
         {
-            bool m_Array;
-            Type m_SubType;
-            int m_Dims[3];
+            uint32_t m_Array;
+            uint32_t m_SubType;
+            uint32_t m_Dims[3];
         };
 
         typedef std::map<std::string, File*> FILEMAP;

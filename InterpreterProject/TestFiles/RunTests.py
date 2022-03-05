@@ -68,10 +68,15 @@ class TestExecutor :
     
     def Execute(self, dbg=False):
 
+        s = ''
+        if type(self._testLines) == list:
+            s = '\r\n'.join(self._testLines)
+        else :
+            s = self._testLines
+
         # Open a file and add all the test lines to it.
         with open(self.FILENAME, 'w') as f :
-            for line in self._testLines:
-                f.write(line + '\n')
+            f.write(s)
 
         # Execute the file full of statements and capture the output
         s = subprocess.run([EXEFILE, '--file', self.FILENAME], capture_output=True).stdout.decode('utf-8')
@@ -1359,10 +1364,10 @@ class FileIoTests(unittest.TestCase):
                      '{',
                      '    x[i] = i',
                      '}',
-                     'f=fopen(\"file.bin\", \"w\")',
+                     'f=fopen(\"file.bin\", \"wb\")',
                      'fwrite(f,x)',
                      'fclose(f)',
-                     'f=fopen(\"file.bin\", \"r\")',
+                     'f=fopen(\"file.bin\", \"rb\")',
                      'q=fread(f)',
                      'fclose(f)',
                      'for (i=0,i<10,i=i+1)',
@@ -1378,10 +1383,10 @@ class FileIoTests(unittest.TestCase):
                      '{',
                      '    x[i] = i*1.5',
                      '}',
-                     'f=fopen(\"file.bin\", \"w\")',
+                     'f=fopen(\"file.bin\", \"wb\")',
                      'fwrite(f,x)',
                      'fclose(f)',
-                     'f=fopen(\"file.bin\", \"r\")',
+                     'f=fopen(\"file.bin\", \"rb\")',
                      'q=fread(f)',
                      'fclose(f)',
                      'for (i=0,i<10,i=i+1)',
@@ -1397,10 +1402,10 @@ class FileIoTests(unittest.TestCase):
                      '{',
                      '    x[i] = \"jagr\"',
                      '}',
-                     'f=fopen(\"file.bin\", \"w\")',
+                     'f=fopen(\"file.bin\", \"wb\")',
                      'fwrite(f,x)',
                      'fclose(f)',
-                     'f=fopen(\"file.bin\", \"r\")',
+                     'f=fopen(\"file.bin\", \"rb\")',
                      'q=fread(f)',
                      'fclose(f)',
                      'for (i=0,i<10,i=i+1)',
@@ -1408,6 +1413,91 @@ class FileIoTests(unittest.TestCase):
                      '    print(x[i])',
                      '}']
         expectedOutput = ['jagr'] * 10
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """
+        clear()
+        x=dim[10,11,12]
+        y=dim[10*11*12]
+        srand(1234)
+        count=0
+        for (i=0,i<10,i=i+1)
+        {
+            for (j=0,j<11,j=j+1)
+            {
+                for (k=0,k<12,k=k+1)
+                {
+                    y[count] = rand()
+                    x[i,j,k] = y[count]
+                    count = count + 1
+                }
+            }
+        }
+        f=fopen(\"file.bin\", \"wb\")
+        fwrite(f,x)
+        fclose(f)
+        f=fopen(\"file.bin\", \"rb\")
+        q=fread(f)
+        fclose(f)
+        print(len(q,0))
+        """
+        expectedOutput = ['10']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def test_fileio_mixed(self):
+        testLines = """
+        a=3
+        b=4
+        c=dim[10]
+        for (i=0,i<10,i=i+1)
+        {
+            c[i] = i
+        }
+        
+        f = fopen(\"file.bin\", \"wb\")
+        fwrite(f, a)
+        fwrite(f, b)
+        fwrite(f, c)
+        fclose(f)
+
+        f = fopen(\"file.bin\", \"rb\")
+        q = fread(f)
+        r = fread(f)
+        s = fread(f)
+        fclose(f)
+        print(q)
+        print(r)
+        for (i=0, i < 10, i=i+1)
+        {
+            print(s[i])
+        }
+        fclose(f)
+        """
+
+        expectedOutput = ['3', '4'] + ['%d' % s for s in range(10)]
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def test_fileio_eof(self):
+        testLines = """
+        f = fopen(\"file.bin\", \"wb\")
+        for (i=0, i < 1000, i=i+1)
+        {
+            fwrite(f,i)
+        }
+        fclose(f)
+
+        f = fopen(\"file.bin\", \"rb\")
+        x = fread(f)
+        print(x)
+        while (feof(f) == 0)
+        {
+            x = fread(f)
+            print(x)
+        }
+        fclose(f)
+        """
+        
+        expectedOutput = ['%d' % s for s in range(1000)] + ['0']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
 if __name__ == '__main__':

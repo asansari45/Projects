@@ -280,6 +280,10 @@ namespace Interpreter
         Log::GetInst()->AddMessage("// This is a one-line comment -- comments");
         Log::GetInst()->AddMessage("load(filename.txt) -- load and execute from a file");
         Log::GetInst()->AddMessage("clear()            -- clear all variables and functions");
+        Log::GetInst()->AddMessage("file = fopen(\"file.bin\", \"rb\")");
+        Log::GetInst()->AddMessage("fwrite(file, x)");
+        Log::GetInst()->AddMessage("q=fread(file)");
+        Log::GetInst()->AddMessage("fclose(file)");
     }
 
     void ExecutionNodeVisitor::VisitLoadNode(Interpreter::LoadNode* pLoadNode)
@@ -1495,10 +1499,12 @@ namespace Interpreter
         bool status = pFile->Read(isArray, v, arrValue);
         if (!status)
         {
-            ErrorInfo err;
-            err.m_Msg = ERROR_FILE_OPERATION_FAILED;
-            SetErrorInfo(err);
-            return;
+            // ErrorInfo err;
+            // err.m_Msg = ERROR_FILE_OPERATION_FAILED;
+            // SetErrorInfo(err);
+            // Let's just place zero on the stack.
+            isArray = false;
+            v.SetIntValue(0);
         }
 
         pValueNode = new ValueNode();
@@ -1512,7 +1518,7 @@ namespace Interpreter
             pValueNode->SetValue(v);
         }
         m_Nodes.push_back(pValueNode);
-};
+    };
 
     void ExecutionNodeVisitor::DoFileClose(FileNode* pNode)
     {
