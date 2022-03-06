@@ -86,7 +86,8 @@ class TestExecutor :
 
         if dbg:
             print('Actual Output:')
-            print('\t' + s)
+            print('\t' + '\r\n'.join(actualOutputLines))
+            print(actualOutputLines)
 
         # Add the file to the prefix
         prefix = ''
@@ -259,19 +260,28 @@ class FunctionsCommandTests(unittest.TestCase):
 
 class VarsCommandTests(unittest.TestCase):
     def test_functions_command(self):
+        expectedOutput = """Symbol Table Name:  GLOBAL
+NAME                  TYPE   DIMS          VALUE(S)
+===================================================
+a                     INT    ---           1
+b                     INT    ---           3
+c                     INT    [10]          0 0 0 0 0 0 0 0 0 0 ...
+d                     INT    [10,10]       0 0 0 0 0 0 0 0 0 0 ...
+e                     INT    [5,5,5]       0 0 0 0 0 0 0 0 0 0 ...
+main                  INT    ---           0
+
+REFERENCER    REFERENCEE      REFERENCEE
+  NAME           TABLE           NAME
+========================================"""
+        expectedOutput = expectedOutput.split('\n')
+        # print(expectedOutput)
         TestExecutor(self, ['a=1',
                             'b=3',
                             'c=dim[10]',
                             'd=dim[10,10]',
                             'e=dim[5,5,5]',
                             '.vars'],
-                            ['GLOBAL Symbol Table Contents',
-                            'a  1',
-                            'b  3',
-                            'c=dim[10]  [0...9]:  0 0 0 0 0 0 0 0 0 0 ...',
-                            'd=dim[10,10]  [0,0...9]:  0 0 0 0 0 0 0 0 0 0 ...',
-                            'e=dim[5,5,5]  [0,0,0...9]:  0 0 0 0 0 ...',
-                            'main  0'], False).Execute()
+                            expectedOutput, False).Execute()
 
 class EquTests(unittest.TestCase):
     def ExecuteTest(self, testLines, expectedOutput):

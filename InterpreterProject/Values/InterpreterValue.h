@@ -30,7 +30,6 @@ namespace Interpreter
         void SetFileValue(File* pFile) { m_pFile = pFile; }
         File* GetFileValue() { return m_pFile; }
 
-        std::string GetRepresentation();
         bool IfEval();
         bool Add(Value& p);
         bool Sub(Value& p);
@@ -43,6 +42,10 @@ namespace Interpreter
         std::optional<bool> Geq(Value& p);
         std::optional<bool> Deq(Value& p);
         std::optional<bool> Neq(Value& p);
+
+        std::string GetTypeRepr();
+        std::string GetValueRepr();
+
     private:
         std::type_index m_Type;
         int m_IntValue;

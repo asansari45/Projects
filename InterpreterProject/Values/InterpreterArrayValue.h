@@ -31,7 +31,9 @@ public:
     bool Add(ArrayValue& v);
 
     // For debug purposes
-    std::string GetRepresentation();
+    std::string GetTypeRepr();
+    std::string GetDimsRepr();
+    std::string GetValuesRepr();
 
     int* GetInts(){ return m_pInts; }
     void SetInts(int* pInts) { delete[] m_pInts; m_pInts = pInts; }

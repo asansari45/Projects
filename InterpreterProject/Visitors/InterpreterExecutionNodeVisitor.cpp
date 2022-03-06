@@ -172,7 +172,7 @@ namespace Interpreter
 
             if (value != std::nullopt)
             {
-                std::string repr = value.value().GetRepresentation();
+                std::string repr = value.value().GetValueRepr();
                 s += repr;
             }
         }
