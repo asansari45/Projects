@@ -39,11 +39,11 @@ static void FillDebugBuf(SymbolTable::SymbolInfo info, char* buf, int len)
         std::string s;
         if (info.m_IsArray)
         {
-            s = info.m_ArrayValue.GetRepresentation();
+            s = info.m_ArrayValue.GetTypeRepr() + " " + info.m_ArrayValue.GetDimsRepr() + " " + info.m_ArrayValue.GetValuesRepr();
         }
         else
         {
-            s = info.m_Value.GetRepresentation();
+            s = info.m_Value.GetTypeRepr() + " " = info.m_Value.GetValueRepr();
         }
 
         sprintf_s(buf, len, "INFO isArray=%d %s", info.m_IsArray, s.c_str());
@@ -144,9 +144,41 @@ void SymbolTable::DeleteSymbol(std::string name)
 void SymbolTable::Dump()
 {
     char buf[512];
-    sprintf_s(buf, sizeof(buf), "%s Symbol Table Contents", m_Name.c_str());
+    sprintf_s(buf, sizeof(buf), "Symbol Table Name:  %s", m_Name.c_str());
     Log::GetInst()->AddMessage(buf);
 
+    // Process all the non-references
+    Log::GetInst()->AddMessage("NAME                  TYPE   DIMS          VALUE(S)");
+    Log::GetInst()->AddMessage("===================================================");
+    for (SYMBOL_MAP::iterator i = m_SymbolMap.begin();
+         i != m_SymbolMap.end();
+         i++)
+    {
+        SymbolInfo& p = i->second;
+        char buf[512];
+        if (p.m_IsArray)
+        {
+            sprintf_s(buf, sizeof(buf), "%-20s  %-5s  %-12s  %s", p.m_Name.c_str(), 
+                                                                  p.m_ArrayValue.GetTypeRepr().c_str(),
+                                                                  p.m_ArrayValue.GetDimsRepr().c_str(),
+                                                                  p.m_ArrayValue.GetValuesRepr().c_str());
+        }
+        else
+        {
+            sprintf_s(buf, sizeof(buf), "%-20s  %-5s  %-12s  %s", p.m_Name.c_str(), 
+                                                                  p.m_Value.GetTypeRepr().c_str(),
+                                                                  "---",
+                                                                  p.m_Value.GetValueRepr().c_str());
+        }
+
+        Log::GetInst()->AddMessage(buf);
+    }
+
+    // Process all the non-references
+    Log::GetInst()->AddMessage("");
+    Log::GetInst()->AddMessage("REFERENCER    REFERENCEE      REFERENCEE");
+    Log::GetInst()->AddMessage("  NAME           TABLE           NAME");
+    Log::GetInst()->AddMessage("========================================");
     for (SYMBOL_MAP::iterator i = m_SymbolMap.begin();
          i != m_SymbolMap.end();
          i++)
@@ -154,33 +186,10 @@ void SymbolTable::Dump()
         SymbolInfo& p = i->second;
         if (p.m_IsRef)
         {
-            sprintf_s(buf, sizeof(buf), "REF %s==>%s::%s", p.m_Name.c_str(), 
-                                                           p.m_pRefTable->GetName().c_str(),
-                                                           p.m_RefName.c_str());
-            Log::GetInst()->AddMessage(buf);
-        }
-        else if (p.m_IsArray)
-        {
-            std::vector<int> dims = p.m_ArrayValue.GetDims();
-            if (dims.size() == 3)
-            {
-                sprintf_s(buf, sizeof(buf), "%s=dim[%d,%d,%d]  %s", p.m_Name.c_str(), dims[0], dims[1], dims[2], p.m_ArrayValue.GetRepresentation().c_str());
-                Log::GetInst()->AddMessage(buf);
-            }
-            else if (dims.size() == 2)
-            {
-                sprintf_s(buf, sizeof(buf), "%s=dim[%d,%d]  %s", p.m_Name.c_str(), dims[0], dims[1], p.m_ArrayValue.GetRepresentation().c_str());
-                Log::GetInst()->AddMessage(buf);
-            }
-            else if (dims.size() == 1)
-            {
-                sprintf_s(buf, sizeof(buf), "%s=dim[%d]  %s", p.m_Name.c_str(), dims[0], p.m_ArrayValue.GetRepresentation().c_str());
-                Log::GetInst()->AddMessage(buf);
-            }
-        }
-        else
-        {
-            sprintf_s(buf, sizeof(buf), "%s  %s", p.m_Name.c_str(), p.m_Value.GetRepresentation().c_str());
+            char buf[512];
+            sprintf_s(buf, sizeof(buf), "%-20s  %-20s  %s", p.m_Name.c_str(), 
+                                                            p.m_pRefTable->GetName().c_str(),
+                                                            p.m_RefName.c_str());
             Log::GetInst()->AddMessage(buf);
         }
     }

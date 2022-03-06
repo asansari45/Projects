@@ -61,7 +61,27 @@ namespace Interpreter
     {
     }
 
-    std::string Value::GetRepresentation()
+    std::string Value::GetTypeRepr()
+    {
+        if (m_Type == typeid(int))
+        {
+            return "INT";
+        }
+
+        if (m_Type == typeid(float))
+        {
+            return "FLT";
+        }
+
+        if (m_Type == typeid(File*))
+        {
+            return "FILE";
+        }
+
+        return "STR";
+    }
+
+    std::string Value::GetValueRepr()
     {
         char buf[256];
         if (m_Type == typeid(int))

@@ -92,7 +92,7 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
             if (v != std::nullopt)
             {
                 char buf[512];
-                sprintf_s(buf, sizeof(buf), "=%s", v.value().GetRepresentation().c_str());
+                sprintf_s(buf, sizeof(buf), "=%s", v.value().GetValueRepr().c_str());
                 Interpreter::Log::GetInst()->AddMessage(buf);
             }
         }
@@ -130,11 +130,11 @@ void PostprocessLine(Interpreter::SymbolTable* pGlobalSymbols)
     std::string valueRepr;
     if (mainInfo->m_IsArray)
     {
-        valueRepr = mainInfo->m_ArrayValue.GetRepresentation();
+        valueRepr = mainInfo->m_ArrayValue.GetValuesRepr();
     }
     else
     {
-        valueRepr = mainInfo->m_Value.GetRepresentation();
+        valueRepr = mainInfo->m_Value.GetValueRepr();
     }
 
     char buf[512];
