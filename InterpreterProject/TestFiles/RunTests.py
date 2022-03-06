@@ -441,12 +441,12 @@ class VarListTests(unittest.TestCase):
                                'b=3',
                                'c=4',
                                '{a}={b,c}'],
-                               'LINE:  5, COLUMN:  1  1 arguments on left 2 arguments on right.')
+                               'LINE:  4, COLUMN:  10  1 arguments on left 2 arguments on right.')
         self.ExecuteErrorTest(['clear()',
                                'b=3',
                                'c=4',
                                '{a,b}={c}'],
-                               'LINE:  5, COLUMN:  1  2 arguments on left 1 arguments on right.')
+                               'LINE:  4, COLUMN:  10  2 arguments on left 1 arguments on right.')
         self.ExecuteErrorTest(['clear()',
                                'a=3',
                                'b=4',

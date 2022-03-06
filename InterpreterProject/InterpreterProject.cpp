@@ -106,6 +106,42 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
     return true;
 }
 
+void PreprocessLine(const char* pLine, std::string& rNewLine, bool& rPostProcessingNeeded)
+{
+    // If the current line is not an assignment convert it to an assignment
+    // with main = pLine.  Later on evaluate expression for user.
+    rPostProcessingNeeded = false;
+    rNewLine = pLine;
+    if (strlen(pLine) != 0 && strstr(pLine, "=") == nullptr && pLine[0] != '.' )
+    {
+        // = not found in the current line, need to convert it.
+        // .command also not found in the current line.
+        char buf[512];
+        sprintf_s(buf, sizeof(buf), "main=%s", pLine);
+        rNewLine = buf;
+        rPostProcessingNeeded = true;
+    }
+}
+
+void PostprocessLine(Interpreter::SymbolTable* pGlobalSymbols)
+{
+    std::optional<Interpreter::SymbolTable::SymbolInfo> mainInfo = pGlobalSymbols->ReadSymbol("main");
+    assert(mainInfo != std::nullopt);
+    std::string valueRepr;
+    if (mainInfo->m_IsArray)
+    {
+        valueRepr = mainInfo->m_ArrayValue.GetRepresentation();
+    }
+    else
+    {
+        valueRepr = mainInfo->m_Value.GetRepresentation();
+    }
+
+    char buf[512];
+    sprintf_s(buf, sizeof(buf), "main=%s>", valueRepr.c_str());
+    Interpreter::Log::GetInst()->AddNoNewlineMessage(buf);
+}
+
 int PerformInteractive()
 {
     // Prompt
@@ -126,9 +162,19 @@ int PerformInteractive()
         pContext->SetColumn(1);
         Interpreter::contextStack.push_back(pContext);
         InterpreterDriver driver(pGlobalSymbols);
-        driver.Parse(input);
+
+        bool postProcessingRequired = false;
+        std::string newLine;
+        PreprocessLine(input, newLine, postProcessingRequired);
+        driver.Parse(newLine.c_str());
 
         bool cont = ExecuteNodes(driver, true);
+
+        if (postProcessingRequired)
+        {
+            PostprocessLine(pGlobalSymbols);
+        }
+
         delete Interpreter::contextStack.back();
         Interpreter::contextStack.pop_back();
 
@@ -138,7 +184,10 @@ int PerformInteractive()
         }
 
         // Prompt
-        Interpreter::Log::GetInst()->AddNoNewlineMessage(">");
+        if (!postProcessingRequired)
+        {
+            Interpreter::Log::GetInst()->AddNoNewlineMessage(">");
+        }
         pRet = gets_s(input, sizeof(input));
     }
 
