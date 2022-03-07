@@ -30,7 +30,11 @@ class SrandNode;
 class RandNode;
 class LenNode;
 class BreakNode;
-class FileNode;
+class FileOpenNode;
+class FileWriteNode;
+class FileReadNode;
+class FileCloseNode;
+class FileEofNode;
 
 class NodeVisitor
 {
@@ -108,7 +112,19 @@ public:
     virtual void VisitBreakNode(BreakNode* pNode)
     {
     }
-    virtual void VisitFileNode(FileNode* pNode)
+    virtual void VisitFileOpenNode(FileOpenNode* pNode)
+    {
+    }
+    virtual void VisitFileReadNode(FileReadNode* pNode)
+    {
+    }
+    virtual void VisitFileWriteNode(FileWriteNode* pNode)
+    {
+    }
+    virtual void VisitFileEofNode(FileEofNode* pNode)
+    {
+    }
+    virtual void VisitFileCloseNode(FileCloseNode* pNode)
     {
     }
 };

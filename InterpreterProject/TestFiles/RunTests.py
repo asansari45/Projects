@@ -1334,95 +1334,139 @@ class PerformanceTests(unittest.TestCase):
 
 class FileIoTests(unittest.TestCase):
     def test_fileio_basic(self):
-        testLines = ['clear()',
-                     'f=fopen(\"file.bin\", \"w\")',
-                     'fwrite(f,5)',
-                     'fclose(f)',
-                     'f=fopen(\"file.bin\", \"r\")',
-                     'x=fread(f)',
-                     'fclose(f)',
-                     'print(x)']
-        expectedOutput = ['5']
+        testLines = """clear()
+                       {status,f}=fopen(\"file.bin\", \"wb\")
+                       print(status)
+                       status=fwrite(f,5*6)
+                       print(status)
+                       status=fclose(f)
+                       print(status)
+                       {status,f}=fopen(\"file.bin\", \"rb\")
+                       print(status)
+                       {status,x}=fread(f)
+                       print(status)
+                       status=fclose(f)
+                       print(status)
+                       print(x)
+                       """
+                    
+        expectedOutput = ['1'] * 6 + ['30']
         TestExecutor(self, testLines, expectedOutput).Execute()
     
     def test_fileio_atomics(self):
-        testLines = ['clear()',
-                     'f=fopen(\"file.bin\", \"w\")',
-                     'fwrite(f,5.3)',
-                     'fclose(f)',
-                     'f=fopen(\"file.bin\", \"r\")',
-                     'x=fread(f)',
-                     'fclose(f)',
-                     'print(x)']
-        expectedOutput = ['5.3']
+        testLines = """clear()
+                     {status,f}=fopen(\"file.bin\", \"wb\")
+                     print(status)
+                     status=fwrite(f,5.3)
+                     print(status)
+                     status = fclose(f)
+                     print(status)
+                     {status,f}=fopen(\"file.bin\", \"rb\")
+                     print(status)
+                     {status,x}=fread(f)
+                     print(status)
+                     status=fclose(f)
+                     print(status)
+                     print(x)
+                     """
+        expectedOutput = ['1'] * 6 + ['5.3']
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
-        testLines = ['clear()',
-                     'f=fopen(\"file.bin\", \"w\")',
-                     'fwrite(f,\"jagrjagr\")',
-                     'fclose(f)',
-                     'f=fopen(\"file.bin\", \"r\")',
-                     'x=fread(f)',
-                     'fclose(f)',
-                     'print(x)']
-        expectedOutput = ['jagrjagr']
+        testLines = """clear()
+                     {status,f}=fopen(\"file.bin\", \"wb\")
+                     print(status)
+                     status=fwrite(f,\"jagrjagr\")
+                     print(status)
+                     status=fclose(f)
+                     print(status)
+                     {status,f}=fopen(\"file.bin\", \"rb\")
+                     print(status)
+                     {status,x}=fread(f)
+                     print(status)
+                     status = fclose(f)
+                     print(status)
+                     print(x)
+                     """
+        expectedOutput = ['1'] * 6 + ['jagrjagr']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
     def test_fileio_arrays(self):
-        testLines = ['clear()',
-                     'x=dim[10]',
-                     'for (i=0,i<10,i=i+1)',
-                     '{',
-                     '    x[i] = i',
-                     '}',
-                     'f=fopen(\"file.bin\", \"wb\")',
-                     'fwrite(f,x)',
-                     'fclose(f)',
-                     'f=fopen(\"file.bin\", \"rb\")',
-                     'q=fread(f)',
-                     'fclose(f)',
-                     'for (i=0,i<10,i=i+1)',
-                     '{',
-                     '    print(x[i])',
-                     '}']
-        expectedOutput = ['%d' % x for x in range(10)]
+        testLines = """clear()
+                     x=dim[10]
+                     for (i=0, i<10, i=i+1)
+                     {
+                         x[i] = i
+                     }
+                     {status,f}=fopen(\"file.bin\", \"wb\")
+                     print(status)
+                     status=fwrite(f,x)
+                     print(status)
+                     status=fclose(f)
+                     print(status)
+                     {status,f}=fopen(\"file.bin\", \"rb\")
+                     print(status)
+                     {status,q}=fread(f)
+                     print(status)
+                     status=fclose(f)
+                     print(status)
+                     for (i=0, i<10, i=i+1)
+                     {
+                         print(q[i])
+                     }
+                     """
+        expectedOutput = ['1']*6 + ['%d' % x for x in range(10)]
         TestExecutor(self, testLines, expectedOutput).Execute()
 
-        testLines = ['clear()',
-                     'x=dim[10]',
-                     'for (i=0,i<10,i=i+1)',
-                     '{',
-                     '    x[i] = i*1.5',
-                     '}',
-                     'f=fopen(\"file.bin\", \"wb\")',
-                     'fwrite(f,x)',
-                     'fclose(f)',
-                     'f=fopen(\"file.bin\", \"rb\")',
-                     'q=fread(f)',
-                     'fclose(f)',
-                     'for (i=0,i<10,i=i+1)',
-                     '{',
-                     '    print(x[i])',
-                     '}']
-        expectedOutput = ['0','1.5', '3', '4.5', '6', '7.5', '9', '10.5', '12', '13.5']
-        TestExecutor(self, testLines, expectedOutput).Execute()
+        testLines = """clear()
+                     x=dim[10]
+                     for (i=0, i<10, i=i+1)
+                     {
+                         x[i] = i*1.5
+                     }
+                     {status,f}=fopen(\"file.bin\", \"wb\")
+                     print(status)
+                     status=fwrite(f,x)
+                     print(status)
+                     status=fclose(f)
+                     print(status)
+                     {status,f}=fopen(\"file.bin\", \"rb\")
+                     print(status)
+                     {status,q}=fread(f)
+                     print(status)
+                     status=fclose(f)
+                     print(status)
+                     for (i=0, i<10, i=i+1)
+                     {
+                         print(q[i])
+                     }
+                     """
+        expectedOutput = ['1']*6 + ['0','1.5', '3', '4.5', '6', '7.5', '9', '10.5', '12', '13.5']
+        TestExecutor(self, testLines, expectedOutput).Execute(dbg=True)
 
-        testLines = ['clear()',
-                     'x=dim[10]',
-                     'for (i=0,i<10,i=i+1)',
-                     '{',
-                     '    x[i] = \"jagr\"',
-                     '}',
-                     'f=fopen(\"file.bin\", \"wb\")',
-                     'fwrite(f,x)',
-                     'fclose(f)',
-                     'f=fopen(\"file.bin\", \"rb\")',
-                     'q=fread(f)',
-                     'fclose(f)',
-                     'for (i=0,i<10,i=i+1)',
-                     '{',
-                     '    print(x[i])',
-                     '}']
-        expectedOutput = ['jagr'] * 10
+        testLines = """clear()
+                     x=dim[10]
+                     for (i=0, i<10, i=i+1)
+                     {
+                         x[i] = "jagr"
+                     }
+                     {status,f}=fopen(\"file.bin\", \"wb\")
+                     print(status)
+                     status=fwrite(f,x)
+                     print(status)
+                     status=fclose(f)
+                     print(status)
+                     {status,f}=fopen(\"file.bin\", \"rb\")
+                     print(status)
+                     {status,q}=fread(f)
+                     print(status)
+                     status=fclose(f)
+                     print(status)
+                     for (i=0, i<10, i=i+1)
+                     {
+                         print(q[i])
+                     }
+                     """
+        expectedOutput = ['1']*6  + ['jagr'] * 10
         TestExecutor(self, testLines, expectedOutput).Execute()
 
         testLines = """
@@ -1443,15 +1487,21 @@ class FileIoTests(unittest.TestCase):
                 }
             }
         }
-        f=fopen(\"file.bin\", \"wb\")
-        fwrite(f,x)
-        fclose(f)
-        f=fopen(\"file.bin\", \"rb\")
-        q=fread(f)
-        fclose(f)
+        {status,f}=fopen(\"file.bin\", \"wb\")
+        print(status)
+        status=fwrite(f,x)
+        print(status)
+        status=fclose(f)
+        print(status)
+        {status,f}=fopen(\"file.bin\", \"rb\")
+        print(status)
+        {status,q}=fread(f)
+        print(status)
+        status=fclose(f)
+        print(status)
         print(len(q,0))
         """
-        expectedOutput = ['10']
+        expectedOutput = ['1'] * 6 + ['10']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
     def test_fileio_mixed(self):

@@ -112,7 +112,12 @@ void PreprocessLine(const char* pLine, std::string& rNewLine, bool& rPostProcess
     // with main = pLine.  Later on evaluate expression for user.
     rPostProcessingNeeded = false;
     rNewLine = pLine;
-    if (strlen(pLine) != 0 && strstr(pLine, "=") == nullptr && pLine[0] != '.' )
+    if (strlen(pLine) != 0 && 
+        strstr(pLine, "=") == nullptr && 
+        pLine[0] != '.' &&
+        strstr(pLine, "print") == nullptr &&
+        strstr(pLine, "clear") == nullptr &&
+        strstr(pLine, "load") == nullptr)
     {
         // = not found in the current line, need to convert it.
         // .command also not found in the current line.

@@ -40,7 +40,11 @@ public:
     virtual void VisitRandNode(RandNode* pNode);
     virtual void VisitLenNode(LenNode* pNode);
     virtual void VisitBreakNode(BreakNode* pNode);
-    virtual void VisitFileNode(FileNode* pNode);
+    virtual void VisitFileOpenNode(FileOpenNode* pNode);
+    virtual void VisitFileCloseNode(FileCloseNode* pNode);
+    virtual void VisitFileReadNode(FileReadNode* pNode);
+    virtual void VisitFileWriteNode(FileWriteNode* pNode);
+    virtual void VisitFileEofNode(FileEofNode* pNode);
 
     std::optional<Value> GetResult()
     {
@@ -144,11 +148,8 @@ private:
     bool ExecuteIfNode(IfNode* pIfNode);
 
     std::optional<std::string> GetFileOpenString(Node* pNode);
-    void DoFileOpen(FileNode* pNode);
-    void DoFileWrite(FileNode* pNode);
-    void DoFileRead(FileNode* pNode);
-    void DoFileClose(FileNode* pNode);
-    void DoFileEof(FileNode* pNode);
+    File* GetFile(Node* pNode);
+
     
     // All nodes are clones of the original tree.
     std::vector<Node*> m_Nodes;

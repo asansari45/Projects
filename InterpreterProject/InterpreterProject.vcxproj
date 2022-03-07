@@ -158,7 +158,12 @@
     <ClCompile Include="Nodes\InterpreterBreakNode.cpp" />
     <ClCompile Include="Nodes\InterpreterClearNode.cpp" />
     <ClCompile Include="Nodes\InterpreterDimNode.cpp" />
+    <ClCompile Include="Nodes\InterpreterFileCloseNode.cpp" />
+    <ClCompile Include="Nodes\InterpreterFileEofNode.cpp" />
     <ClCompile Include="Nodes\InterpreterFileNode.cpp" />
+    <ClCompile Include="Nodes\InterpreterFileOpenNode.cpp" />
+    <ClCompile Include="Nodes\InterpreterFileReadNode.cpp" />
+    <ClCompile Include="Nodes\InterpreterFileWriteNode.cpp" />
     <ClCompile Include="Nodes\InterpreterForNode.cpp" />
     <ClCompile Include="Nodes\InterpreterFunctionCallNode.cpp" />
     <ClCompile Include="Nodes\InterpreterFunctionDefNode.cpp" />

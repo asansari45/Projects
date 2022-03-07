@@ -15,12 +15,12 @@ public:
     ArrayValue(const ArrayValue& p);
     ~ArrayValue();
 
+    bool Init(std::vector<int> dims, std::type_index t);
+
     // Simple accessor
     std::vector<int> GetDims() { return m_Dims; }
-    void SetDims(std::vector<int> d);
 
     std::optional<Value> GetValue(std::vector<int> element);
-    // std::vector<Value> GetValues();
     bool SetValue(std::vector<int> element, Value v);
 
     std::type_index GetType();
@@ -35,12 +35,40 @@ public:
     std::string GetDimsRepr();
     std::string GetValuesRepr();
 
-    int* GetInts(){ return m_pInts; }
-    void SetInts(int* pInts) { delete[] m_pInts; m_pInts = pInts; }
-    float* GetFloats(){ return m_pFloats; }
-    void SetFloats(float* pFloats) { delete[] m_pFloats; m_pFloats = pFloats; }
-    std::string* GetStrings(){ return m_pStrings; }
-    void SetStrings(std::string* pStrings) { delete[] m_pStrings; m_pStrings = pStrings; }
+    void GetData(int*& rpInts) const
+    {
+        assert(m_Type == typeid(int));
+        rpInts = m_Data.m_pInts;
+    }
+
+    void GetData(float *&rpFloats) const
+    {
+        assert(m_Type == typeid(float));
+        rpInts = m_Data.m_pFloats;
+    }
+
+    template<class A>
+    void SetData(A* pData)
+    {
+        assert(m_Type == typeid(A));
+        if (typeid(A) == typeid(int))
+        {
+            delete [] m_Data.m_pInts;
+            m_Data.m_pInts = pData;
+        }
+
+        if (typeid(A) == typeid(float))
+        {
+            delete [] m_Data.m_pFloats;
+            m_Data.m_pFloats = pData;
+        }
+
+        if (typeid(A) == typeid(std::string))
+        {
+            delete [] m_Data.m_pStrings;
+            m_Data.m_pStrings = pData;
+        }
+    }
 
 private:
     // Convert element index to flag index
@@ -82,9 +110,15 @@ private:
     std::vector<int> m_Dims;
 
     // Could be int, float, or string
-    int* m_pInts;
-    float* m_pFloats;
-    std::string* m_pStrings;
+    std::type_index m_Type;
+    union Type
+    {
+        int* m_pInts;
+        float* m_pFloats;
+        std::string* m_pStrings;
+    };
+
+    Type m_Data;
 };
 
 };

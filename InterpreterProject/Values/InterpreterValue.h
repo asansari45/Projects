@@ -27,7 +27,7 @@ namespace Interpreter
         float GetFloatValue() { return m_FloatValue; }
         void SetStringValue(std::string value) { m_Type = typeid(std::string); m_StringValue = value; }
         std::string GetStringValue() { return m_StringValue; }
-        void SetFileValue(File* pFile) { m_pFile = pFile; }
+        void SetFileValue(File* pFile) { m_Type = typeid(File*);  m_pFile = pFile; }
         File* GetFileValue() { return m_pFile; }
 
         bool IfEval();

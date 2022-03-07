@@ -71,7 +71,11 @@ class Node;
 #include "Nodes/InterpreterSrandNode.h"
 #include "Nodes/InterpreterVarListNode.h"
 #include "Nodes/InterpreterVarsCmdNode.h"
-#include "Nodes/InterpreterFileNode.h"
+#include "Nodes/InterpreterFileOpenNode.h"
+#include "Nodes/InterpreterFileCloseNode.h"
+#include "Nodes/InterpreterFileReadNode.h"
+#include "Nodes/InterpreterFileWriteNode.h"
+#include "Nodes/InterpreterFileEofNode.h"
 
 #include "DebugMemory/DebugMemory.h"
 
@@ -409,8 +413,7 @@ funccall : NAME_ LPAREN_ expression_list RPAREN_
          |
          FOPEN_ LPAREN_ expression COMMA_ expression RPAREN_
          {
-             Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
-             pFileNode->SetCommand(Interpreter::FileNode::OPEN);
+             Interpreter::FileOpenNode* pFileNode = new Interpreter::FileOpenNode;
              pFileNode->SetFilenameNode($3);
              pFileNode->SetModeNode($5);
              $$ = pFileNode;
@@ -418,8 +421,7 @@ funccall : NAME_ LPAREN_ expression_list RPAREN_
          |
          FWRITE_ LPAREN_ NAME_ COMMA_ expression RPAREN_
          {
-             Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
-             pFileNode->SetCommand(Interpreter::FileNode::WRITE);
+             Interpreter::FileWriteNode* pFileNode = new Interpreter::FileWriteNode;
              pFileNode->SetFileNode($3);
              pFileNode->SetWriteNode($5);
              $$ = pFileNode;
@@ -427,24 +429,21 @@ funccall : NAME_ LPAREN_ expression_list RPAREN_
          |
          FCLOSE_ LPAREN_ NAME_ RPAREN_
          {
-             Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
-             pFileNode->SetCommand(Interpreter::FileNode::CLOSE);
+             Interpreter::FileCloseNode* pFileNode = new Interpreter::FileCloseNode;
              pFileNode->SetFileNode($3);
              $$ = pFileNode;
          }
          |
          FREAD_ LPAREN_ NAME_ RPAREN_
          {
-             Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
-             pFileNode->SetCommand(Interpreter::FileNode::READ);
+             Interpreter::FileReadNode* pFileNode = new Interpreter::FileReadNode;
              pFileNode->SetFileNode($3);
              $$ = pFileNode;
          }
          |
          FEOF_ LPAREN_ NAME_ RPAREN_
          {
-             Interpreter::FileNode* pFileNode = new Interpreter::FileNode;
-             pFileNode->SetCommand(Interpreter::FileNode::END_OF_FILE);
+             Interpreter::FileEofNode* pFileNode = new Interpreter::FileEofNode;
              pFileNode->SetFileNode($3);
              $$ = pFileNode;
          }
