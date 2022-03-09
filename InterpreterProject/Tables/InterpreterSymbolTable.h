@@ -4,6 +4,7 @@
 #include <map>
 #include <optional>
 #include <typeindex>
+#include <assert.h>
 #include "Values/InterpreterValue.h"
 #include "Values/InterpreterArrayValue.h"
 
@@ -19,30 +20,35 @@ public:
             m_pTable(nullptr),
             m_IsArray(false),
             m_Value(),
-            m_ArrayValue(),
+            m_pArrayValue(),
             m_IsRef(false),
             m_RefName(),
             m_pRefTable(nullptr)
         {
         }
 
-        SymbolInfo(const SymbolInfo& rInfo) :
-            m_Name(rInfo.m_Name),
-            m_pTable(rInfo.m_pTable),
-            m_IsArray(rInfo.m_IsArray),
-            m_Value(rInfo.m_Value),
-            m_ArrayValue(rInfo.m_ArrayValue),
-            m_IsRef(rInfo.m_IsRef),
-            m_RefName(rInfo.m_RefName),
-            m_pRefTable(rInfo.m_pRefTable)
+        SymbolInfo* Clone()
         {
+            SymbolInfo* pClone = new SymbolInfo;
+            assert(pClone != nullptr);
+            pClone->m_Name = m_Name;
+            pClone->m_pTable = m_pTable;
+            pClone->m_IsArray = m_IsArray;
+            if (m_IsArray)
+            {
+                pClone->m_pArrayValue = m_pArrayValue->Clone();
+            }
+            pClone->m_IsRef = m_IsRef;
+            pClone->m_RefName = m_RefName;
+            pClone->m_pRefTable = m_pRefTable;
+            return pClone;
         }
 
         std::string m_Name;
         SymbolTable* m_pTable;
         bool m_IsArray;
         Value m_Value;
-        ArrayValue m_ArrayValue;
+        ArrayValue* m_pArrayValue;
         bool m_IsRef;
         std::string m_RefName;
         SymbolTable* m_pRefTable;
@@ -53,14 +59,14 @@ public:
     std::string GetName() { return m_Name; }
 
     // Create
-    bool CreateSymbol(std::string name, SymbolInfo info);
+    bool CreateSymbol(std::string name, SymbolInfo* pInfo);
 
     // Read
-    std::optional<SymbolInfo> ReadSymbol(std::string name, bool getroot=false);
+    SymbolInfo* ReadSymbol(std::string name, bool getroot=false);
     bool IsSymbolPresent(std::string name);
 
     // Update
-    bool UpdateSymbol(std::string name, const SymbolInfo info);
+    bool UpdateSymbol(std::string name, SymbolInfo* pInfo);
 
     // Delete
     void DeleteSymbol(std::string name);
@@ -72,7 +78,7 @@ public:
     static void DeleteGlobalSymbols(SymbolTable* pGlobalSymbols);
 
 private:
-    typedef std::map<std::string, SymbolInfo> SYMBOL_MAP;
+    typedef std::map<std::string, SymbolInfo*> SYMBOL_MAP;
     SYMBOL_MAP m_SymbolMap;
     std::string m_Name;
 };

@@ -86,6 +86,7 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
             break;
         }
 
+#if 0
         if (pNode->GetNext() == nullptr)
         {
             std::optional<Interpreter:: Value> v = nodeVisitor.GetResult();
@@ -96,6 +97,7 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
                 Interpreter::Log::GetInst()->AddMessage(buf);
             }
         }
+#endif
 
         Interpreter::Node* pNext = pNode->GetNext();
         pNode->Free();
@@ -130,12 +132,12 @@ void PreprocessLine(const char* pLine, std::string& rNewLine, bool& rPostProcess
 
 void PostprocessLine(Interpreter::SymbolTable* pGlobalSymbols)
 {
-    std::optional<Interpreter::SymbolTable::SymbolInfo> mainInfo = pGlobalSymbols->ReadSymbol("main");
-    assert(mainInfo != std::nullopt);
+    Interpreter::SymbolTable::SymbolInfo* mainInfo = pGlobalSymbols->ReadSymbol("main");
+    assert(mainInfo != nullptr);
     std::string valueRepr;
     if (mainInfo->m_IsArray)
     {
-        valueRepr = mainInfo->m_ArrayValue.GetValuesRepr();
+        valueRepr = mainInfo->m_pArrayValue->GetValuesRepr();
     }
     else
     {

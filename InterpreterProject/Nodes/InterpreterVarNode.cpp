@@ -7,7 +7,7 @@ namespace Interpreter
         m_Name(),
         m_ArraySpecifier(),
         m_SymbolPresent(false),
-        m_SymbolInfo(),
+        m_pSymbolInfo(),
         m_pNoSymbol(nullptr)
     {
     }
@@ -17,7 +17,7 @@ namespace Interpreter
         m_Name(rNode.m_Name),
         m_ArraySpecifier(rNode.m_ArraySpecifier),
         m_SymbolPresent(rNode.m_SymbolPresent),
-        m_SymbolInfo(rNode.m_SymbolInfo),
+        m_pSymbolInfo(rNode.m_pSymbolInfo),
         m_pNoSymbol(rNode.m_pNoSymbol)
     {
     }

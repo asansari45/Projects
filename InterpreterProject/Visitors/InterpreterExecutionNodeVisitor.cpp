@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <sstream>
 #include <filesystem>
+#include <memory>
 #include "InterpreterExecutionNodeVisitor.h"
 #include "Nodes/InterpreterFunctionDefNode.h"
 #include "Tables/InterpreterSymbolTable.h"
@@ -34,7 +35,6 @@
 
 namespace Interpreter
 {
-
     ExecutionNodeVisitor::ExecutionNodeVisitor(SymbolTable* pGlobalSymbols) :
         ErrorInterface(),
         m_Nodes(),
@@ -65,27 +65,27 @@ namespace Interpreter
         assert(pClone != nullptr);
 
         // Calculate the VarNode's symbol table.
-        std::optional<SymbolTable::SymbolInfo> symbolInfo;
+        SymbolTable::SymbolInfo* pSymbolInfo;
         if (m_FunctionCallStack.size() != 0)
         {
             SymbolTable* pSymbolTable = m_FunctionCallStack.back()->GetSymbolTable();
-            symbolInfo = pSymbolTable->ReadSymbol(pClone->GetName(), // Name
+            pSymbolInfo = pSymbolTable->ReadSymbol(pClone->GetName(), // Name
                                                   true);            // Get the root symbol
-            if (symbolInfo != std::nullopt)
+            if (pSymbolInfo != nullptr)
             {
                 pClone->SetSymbolPresent(true);
-                pClone->SetSymbolInfo(*symbolInfo);
+                pClone->SetSymbolInfo(pSymbolInfo);
             }
         }
 
         if (!pClone->IsSymbolPresent())
         {
-            symbolInfo = m_pGlobalSymbolTable->ReadSymbol(pClone->GetName(), // Name
-                                                          true);             // Get the root symbol
-            if (symbolInfo != std::nullopt)
+            pSymbolInfo = m_pGlobalSymbolTable->ReadSymbol(pClone->GetName(), // Name
+                                                           true);             // Get the root symbol
+            if (pSymbolInfo != nullptr)
             {
                 pClone->SetSymbolPresent(true);
-                pClone->SetSymbolInfo(*symbolInfo);
+                pClone->SetSymbolInfo(pSymbolInfo);
             }
         }
 
@@ -165,19 +165,19 @@ namespace Interpreter
         for (Interpreter::Node* pChild = pNode->GetChild(); pChild != nullptr; pChild = pChild->GetNext())
         {
             pChild->Accept(*this);
-            std::optional<Value> value;
             if (m_Nodes.size() != 0)
             {
-                Node* pTop = m_Nodes.back();
-                value = GetRvalue(pTop);
+                std::unique_ptr<Node> pTop(m_Nodes.back());
                 m_Nodes.pop_back();
-                delete pTop;
-            }
-
-            if (value != std::nullopt)
-            {
-                std::string repr = value.value().GetValueRepr();
-                s += repr;
+                std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
+                if (pValueNode->IsArray() == false)
+                {
+                    s += pValueNode->GetValue().GetValueRepr();
+                }
+                else
+                {
+                    s += pValueNode->GetArrayValue()->GetValuesRepr();
+                }
             }
         }
         Log::GetInst()->AddMessage(s);
@@ -352,8 +352,8 @@ namespace Interpreter
         Interpreter::FunctionTable::GetInst()->Clear();
         m_pGlobalSymbolTable->Clear();
 
-        SymbolTable::SymbolInfo s;
-        s.m_Name = "main";
+        SymbolTable::SymbolInfo* s = new SymbolTable::SymbolInfo;
+        s->m_Name = "main";
         bool status = m_pGlobalSymbolTable->CreateSymbol("main", s);
         assert(status);
     }
@@ -370,7 +370,7 @@ namespace Interpreter
             return false;
         }
 
-        ValueNode* pTop = dynamic_cast<ValueNode*>(m_Nodes.back());
+        std::unique_ptr<ValueNode> pTop(dynamic_cast<ValueNode*>(m_Nodes.back()));
         m_Nodes.pop_back();
         if (pTop == nullptr)
         {
@@ -383,7 +383,6 @@ namespace Interpreter
         // If this is an array, then fail.
         if (pTop->IsArray())
         {
-            delete pTop;
             ErrorInfo err(pIfNode);
             err.m_Msg = ERROR_INVALID_EXPRESSION_IN_IF_STATEMENT;
             SetErrorInfo(err);
@@ -392,9 +391,6 @@ namespace Interpreter
 
         if (pTop->GetValue().IfEval())
         {
-            // Done with top
-            delete pTop;
-
             // Just execute the then statements and leave.
             for (Node* pExecute = pIfNode->GetThen(); pExecute != nullptr; pExecute = pExecute->GetNext())
             {
@@ -422,7 +418,6 @@ namespace Interpreter
             return true;
         }
 
-        delete pTop;
         return false;
     }
 
@@ -498,12 +493,10 @@ namespace Interpreter
             return;
         }
 
-        Node* pTop = m_Nodes.back();
+        std::unique_ptr<Node> pTop(m_Nodes.back());
         m_Nodes.pop_back();
-        ValueNode* pExprResult = GetTopOfStackValue(pTop);
+        std::unique_ptr<ValueNode> pExprResult(GetTopOfStackValue(pTop.get()));
 
-        // Done with top
-        delete pTop;
         if (pExprResult == nullptr)
         {
             return;
@@ -512,7 +505,6 @@ namespace Interpreter
         // If it's an entire array, error.
         if (pExprResult->IsArray())
         {
-            delete pExprResult;
             ErrorInfo err(pWhileNode);
             err.m_Msg = ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -520,7 +512,6 @@ namespace Interpreter
         }
 
         bool result = pExprResult->GetValue().IfEval();
-        delete pExprResult;
         while (result)
         {
             // Just execute the then statements.
@@ -570,12 +561,10 @@ namespace Interpreter
                 return;
             }
 
-            Node* pTop = m_Nodes.back();
+            std::unique_ptr<Node> pTop(m_Nodes.back());
             m_Nodes.pop_back();
-            pExprResult = GetTopOfStackValue(pTop);
+            pExprResult.reset(GetTopOfStackValue(pTop.get()));
 
-            // Done with top
-            delete pTop;
             if (pExprResult == nullptr)
             {
                 return;
@@ -584,8 +573,6 @@ namespace Interpreter
             // If it's an entire array, error.
             if (pExprResult->IsArray())
             {
-                delete pExprResult;
-                
                 ErrorInfo err(pWhileNode);
                 err.m_Msg = ERROR_ARRAY_UNEXPECTED;
                 SetErrorInfo(err);
@@ -593,7 +580,6 @@ namespace Interpreter
             }
 
             result = pExprResult->GetValue().IfEval();
-            delete pExprResult;
         }
     };
 
@@ -612,12 +598,9 @@ namespace Interpreter
             return;
         }
 
-        Node* pTop = m_Nodes.back();
+        std::unique_ptr<Node> pTop(m_Nodes.back());
         m_Nodes.pop_back();
-        ValueNode* pExprResult = GetTopOfStackValue(pTop);
-
-        // Done with top
-        delete pTop;
+        std::unique_ptr<ValueNode> pExprResult(GetTopOfStackValue(pTop.get()));
         if (pExprResult == nullptr)
         {
             return;
@@ -625,7 +608,6 @@ namespace Interpreter
 
         if (pExprResult->IsArray())
         {
-            delete pExprResult;
             ErrorInfo err(pForNode);
             err.m_Msg = ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -633,8 +615,6 @@ namespace Interpreter
         }
 
         bool result = pExprResult->GetValue().IfEval();
-        delete pExprResult;
-
         while (result)
         {
             // Just execute the then statements.
@@ -683,12 +663,9 @@ namespace Interpreter
                 return;
             }
 
-            pTop = m_Nodes.back();
+            pTop.reset(m_Nodes.back());
             m_Nodes.pop_back();
-            ValueNode* pExprResult = GetTopOfStackValue(pTop);
-
-            // Done with top
-            delete pTop;
+            pExprResult.reset(GetTopOfStackValue(pTop.get()));
 
             if (pExprResult == nullptr)
             {
@@ -697,7 +674,6 @@ namespace Interpreter
 
             if (pExprResult->IsArray())
             {
-                delete pExprResult;
                 ErrorInfo err(pForNode);
                 err.m_Msg = ERROR_ARRAY_UNEXPECTED;
                 SetErrorInfo(err);
@@ -705,7 +681,6 @@ namespace Interpreter
             }
 
             result = pExprResult->GetValue().IfEval();
-            delete pExprResult;
         }
     };
 
@@ -775,13 +750,13 @@ namespace Interpreter
                 }
 
                 assert(m_Nodes.size() != 0);
-                Node* pTop = m_Nodes.back();
+                std::unique_ptr<Node> pTop(m_Nodes.back());
                 m_Nodes.pop_back();
 
                 // We have a reference here.  The call expression is only allowed to be
                 // a variable with no array specifier.  A reference is simply a rename
                 // for a passed in parameter.
-                VarNode* pVarNode = dynamic_cast<VarNode*>(pTop);
+                VarNode* pVarNode = dynamic_cast<VarNode*>(pTop.get());
                 if (pVarNode == nullptr)
                 {
                     ErrorInterface::ErrorInfo err(pCallExprNode);
@@ -789,8 +764,6 @@ namespace Interpreter
                     sprintf_s(buf, sizeof(buf), ERROR_INVALID_REFERENCE_PARAMETER, pRefNode->GetName().c_str());
                     err.m_Msg = buf;
                     SetErrorInfo(err);
-                    
-                    delete pTop;
                     pLocalTable->Clear();
                     return;
                 }
@@ -803,31 +776,28 @@ namespace Interpreter
                     sprintf_s(buf, sizeof(buf), ERROR_INVALID_REFERENCE_PARAMETER, pRefNode->GetName().c_str());
                     err.m_Msg = buf;
                     SetErrorInfo(err);
-                    
-                    delete pTop;
                     pLocalTable->Clear();
                     return;
                 }
 
-                std::optional<SymbolTable::SymbolInfo> referencee = pVarNode->GetSymbolInfo();
-                assert(referencee->m_IsRef == false);
+                SymbolTable::SymbolInfo* pReferencee = pVarNode->GetSymbolInfo();
+                assert(pReferencee->m_IsRef == false);
 
-                SymbolTable::SymbolInfo referencer;
-                referencer.m_IsRef = true;
-                referencer.m_Name = pRefNode->GetName();
-                referencer.m_RefName = referencee->m_Name;
-                referencer.m_pRefTable = referencee->m_pTable;
+                SymbolTable::SymbolInfo* pReferencer = new SymbolTable::SymbolInfo;
+                pReferencer->m_IsRef = true;
+                pReferencer->m_Name = pRefNode->GetName();
+                pReferencer->m_RefName = pReferencee->m_Name;
+                pReferencer->m_pRefTable = pReferencee->m_pTable;
 
-                bool status = pLocalTable->CreateSymbol(pRefNode->GetName(), referencer);
+                bool status = pLocalTable->CreateSymbol(pRefNode->GetName(), pReferencer);
                 if (!status)
                 {
+                    delete pReferencer;
                     ErrorInterface::ErrorInfo err(pCallExprNode);
                     char buf[512];
                     sprintf_s(buf, sizeof(buf), ERROR_INVALID_REFERENCE_PARAMETER, pRefNode->GetName().c_str());
                     err.m_Msg = buf;
                     SetErrorInfo(err);
-                    
-                    delete pTop;
                     pLocalTable->Clear();
                     return;
                 }
@@ -846,52 +816,27 @@ namespace Interpreter
                     return;
                 }
 
-                Node* pTop = m_Nodes.back();
+                std::unique_ptr<Node> pTop(m_Nodes.back());
                 m_Nodes.pop_back();
 
-                // Check if array
-                if (IsArray(pTop))
-                {
-                    std::optional<ArrayValue> v = GetRarrayValue(pTop);
-                    if (v == std::nullopt)
-                    {
-                        
-                        ErrorInfo err(pCallExprNode);
-                        char buf[512];
-                        sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_EXPRESSION, functionName.c_str());
-                        err.m_Msg = buf;
-                        SetErrorInfo(err);
-                        pLocalTable->Clear();
-                        return;
-                    }
+                std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
 
-                    SymbolTable::SymbolInfo info;
-                    info.m_Name = symbol;
-                    info.m_ArrayValue = *v;
-                    pLocalTable->CreateSymbol(symbol, info);
+                // Check if array
+                if (pValueNode->IsArray())
+                {
+                    SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+                    assert(pInfo != nullptr);
+                    pInfo->m_Name = symbol;
+                    pInfo->m_pArrayValue = pValueNode->GetArrayValue()->Clone();
+                    pLocalTable->CreateSymbol(symbol, pInfo);
                 }
                 else
                 {
-                    std::optional<Value> v = GetRvalue(pTop);
-                    if (v == std::nullopt)
-                    {
-                        
-                        ErrorInfo err(pCallExprNode);
-                        char buf[512];
-                        sprintf_s(buf, sizeof(buf), ERROR_FUNCTION_EXPRESSION, functionName.c_str());
-                        err.m_Msg = buf;
-                        SetErrorInfo(err);
-                        pLocalTable->Clear();
-                        return;
-                    }
-
-                    SymbolTable::SymbolInfo info;
-                    info.m_Name = symbol;
-                    info.m_Value = *v;
-                    pLocalTable->CreateSymbol(symbol, info);
+                    SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+                    assert(pInfo != nullptr);
+                    pInfo->m_Value = pValueNode->GetValue();
+                    pLocalTable->CreateSymbol(symbol, pInfo);
                 }
-
-                pTop->Free();
             }
 
             // Advance
@@ -957,13 +902,12 @@ namespace Interpreter
             return nullptr;
         }
 
-        SymbolTable::SymbolInfo info = pVarNode->GetSymbolInfo();
+        SymbolTable::SymbolInfo* pInfo = pVarNode->GetSymbolInfo();
         if (elementSpecifier.size() != 0)
         {
-            if (info.m_IsArray == false)
+            if (pInfo->m_IsArray == false)
             {
                 ErrorInfo err(pTop);
-                
                 char buf[256];
                 sprintf_s(buf, sizeof(buf), ERROR_UNEXPECTED_ARRAY_SPECIFIER, symbol);
                 err.m_Msg = buf;
@@ -971,10 +915,9 @@ namespace Interpreter
                 return nullptr;
             }
         
-            std::optional<Value> v = info.m_ArrayValue.GetValue(elementSpecifier);
+            std::optional<Value> v = pInfo->m_pArrayValue->GetValue(elementSpecifier);
             if (v == std::nullopt)
             {
-                
                 ErrorInfo err(pTop);
                 char buf[256];
                 sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, symbol);
@@ -987,15 +930,15 @@ namespace Interpreter
             pValueNode->SetValue(*v);
         }
         // No element specifier
-        else if (info.m_IsArray)
+        else if (pInfo->m_IsArray)
         {
             pValueNode = new ValueNode;
-            pValueNode->SetArrayValue(info.m_ArrayValue);
+            pValueNode->SetArrayValue(pInfo->m_pArrayValue->Clone());
         }
         else
         {
             pValueNode = new ValueNode;
-            pValueNode->SetValue(info.m_Value);
+            pValueNode->SetValue(pInfo->m_Value);
         }
 
         return pValueNode;
@@ -1025,11 +968,10 @@ namespace Interpreter
             }
 
             assert(m_Nodes.size() != 0);
-            Node* pTop = m_Nodes.back();
+            std::unique_ptr<Node> pTop(m_Nodes.back());
             m_Nodes.pop_back();
 
-            ValueNode* pValueNode = GetTopOfStackValue(pTop);
-            delete pTop;
+            ValueNode* pValueNode = GetTopOfStackValue(pTop.get());
             if (pValueNode == nullptr)
             {
                 return;
@@ -1168,11 +1110,10 @@ namespace Interpreter
         }
 
         assert(m_Nodes.size() != 0);
-        Node* pTop = m_Nodes.back();
+        std::unique_ptr<Node> pTop(m_Nodes.back());
         m_Nodes.pop_back();
 
-        ValueNode* pValueNode = GetTopOfStackValue(pTop);
-        delete pTop;
+        std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
         if (IsErrorFlagSet())
         {
             return;
@@ -1180,8 +1121,7 @@ namespace Interpreter
 
         if (pValueNode->IsArray())
         {
-            
-            ErrorInterface::ErrorInfo err(pValueNode);
+            ErrorInterface::ErrorInfo err(pValueNode.get());
             err.m_Msg = ErrorInterface::ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
             return;
@@ -1191,8 +1131,7 @@ namespace Interpreter
         Value v = pValueNode->GetValue();
         if (v.GetType() != typeid(int))
         {
-            
-            ErrorInterface::ErrorInfo err(pValueNode);
+            ErrorInterface::ErrorInfo err(pValueNode.get());
             err.m_Msg = ErrorInterface::ERROR_INCORRECT_TYPE;
             SetErrorInfo(err);
             return;
@@ -1217,21 +1156,21 @@ namespace Interpreter
     {
         // Make sure the symbol represents an array.
         SymbolTable* pSymbolTable = m_FunctionCallStack.size() != 0 ? m_FunctionCallStack.back()->GetSymbolTable() : nullptr;
-        std::optional<SymbolTable::SymbolInfo> info;
+        SymbolTable::SymbolInfo* pInfo = nullptr;
         if (pSymbolTable)
         {
-            info = pSymbolTable->ReadSymbol(pNode->GetName(), true);
-            if (info == std::nullopt)
+            pInfo = pSymbolTable->ReadSymbol(pNode->GetName(), true);
+            if (pInfo == nullptr)
             {
-                info = m_pGlobalSymbolTable->ReadSymbol(pNode->GetName());
+                pInfo = m_pGlobalSymbolTable->ReadSymbol(pNode->GetName());
             }
         }
         else
         {
-            info = m_pGlobalSymbolTable->ReadSymbol(pNode->GetName());
+            pInfo = m_pGlobalSymbolTable->ReadSymbol(pNode->GetName());
         }
 
-        if (info == std::nullopt)
+        if (pInfo == nullptr)
         {
             ErrorInterface::ErrorInfo err(pNode);
             char buf[512];
@@ -1242,7 +1181,7 @@ namespace Interpreter
             return;
         }
 
-        if (!info->m_IsArray)
+        if (!pInfo->m_IsArray)
         {
             ErrorInterface::ErrorInfo err(pNode);
             char buf[512];
@@ -1253,7 +1192,7 @@ namespace Interpreter
             return;
         }
 
-        std::vector<int> symbolDims = info->m_ArrayValue.GetDims();
+        std::vector<int> symbolDims = pInfo->m_pArrayValue->GetDims();
         assert(symbolDims.size() != 0);
 
         if (pNode->GetDim() >= symbolDims.size())
@@ -1292,25 +1231,21 @@ namespace Interpreter
             return {};
         }
 
-        Node* pTop = m_Nodes.back();
+        std::unique_ptr<Node> pTop(m_Nodes.back());
         m_Nodes.pop_back();
-        ValueNode* pFilenameNode = GetTopOfStackValue(pTop);
-        delete pTop;
-
+        std::unique_ptr<ValueNode> pFilenameNode(GetTopOfStackValue(pTop.get()));
         if (pFilenameNode->IsArray())
         {
-            delete pFilenameNode;
-            ErrorInfo err(pFilenameNode);
+            ErrorInfo err(pFilenameNode.get());
             err.m_Msg = ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
             return {};
         }
 
         Value fileNameValue = pFilenameNode->GetValue();
-        delete pFilenameNode;
         if (fileNameValue.GetType() != typeid(std::string))
         {
-            ErrorInfo err(pFilenameNode);
+            ErrorInfo err(pFilenameNode.get());
             err.m_Msg = ERROR_INCORRECT_TYPE;
             SetErrorInfo(err);
             return {};
@@ -1366,14 +1301,12 @@ namespace Interpreter
             return nullptr;
         }
 
-        Node* pTop = m_Nodes.back();
+        std::unique_ptr<Node> pTop(m_Nodes.back());
         m_Nodes.pop_back();
-        ValueNode* pValueNode = GetTopOfStackValue(pTop);
-        delete pTop;
+        std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
 
         if (pValueNode->IsArray())
         {
-            delete pValueNode;
             ErrorInfo err;
             err.m_Msg = ERROR_ARRAY_UNEXPECTED;
             SetErrorInfo(err);
@@ -1381,7 +1314,6 @@ namespace Interpreter
         }
 
         Value v = pValueNode->GetValue();
-        delete pValueNode;
         if (v.GetType() != typeid(File*))
         {
             ErrorInfo err;
@@ -1396,8 +1328,7 @@ namespace Interpreter
     // status = fwrite(f,x)
     void ExecutionNodeVisitor::VisitFileWriteNode(FileWriteNode* pNode)
     {
-        ValueNode* pStatusNode = new ValueNode;
-        assert(pStatusNode != nullptr);
+        std::unique_ptr<ValueNode> pStatusNode(new ValueNode);
         Value statusValue;
 
         // Get the file interface by processing file node.
@@ -1406,7 +1337,7 @@ namespace Interpreter
         {
             statusValue.SetIntValue(0);
             pStatusNode->SetValue(statusValue);
-            m_Nodes.push_back(pStatusNode);
+            m_Nodes.push_back(pStatusNode.release());
             return;
         }
 
@@ -1415,20 +1346,17 @@ namespace Interpreter
         pWriteNode->Accept(*this);
         if (IsErrorFlagSet())
         {
-            delete pStatusNode;
             return;
         }
 
         if (m_Nodes.size() == 0)
         {
-            delete pStatusNode;
             return;
         }
 
-        Node* pTop = m_Nodes.back();
+        std::unique_ptr<Node> pTop(m_Nodes.back());
         m_Nodes.pop_back();
-        ValueNode* pValueNode = GetTopOfStackValue(pTop);
-        delete pTop;
+        std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
 
         bool status;
         if (pValueNode->IsArray())
@@ -1440,26 +1368,23 @@ namespace Interpreter
             status = pFile->Write(pValueNode->GetValue());
         }
 
-        delete pValueNode;
         statusValue.SetIntValue(status);
         pStatusNode->SetValue(statusValue);
-        m_Nodes.push_back(pStatusNode);
+        m_Nodes.push_back(pStatusNode.release());
     }
 
     // {status,r} = fread(f)
     void ExecutionNodeVisitor::VisitFileReadNode(FileReadNode* pNode)
     {
-        ValueNode* pStatusNode = new ValueNode;
-        assert(pStatusNode != nullptr);
+        std::unique_ptr<ValueNode> pStatusNode(new ValueNode);
         Value statusValue;
 
-        ValueNode* pResultNode = new ValueNode;
-        assert(pResultNode != nullptr);
-        pStatusNode->SetNext(pResultNode);
+        std::unique_ptr<ValueNode> pResultNode(new ValueNode);
+        pStatusNode->SetNext(pResultNode.release());
 
         VarListNode* pVarListNode = new VarListNode;
         assert(pVarListNode != nullptr);
-        pVarListNode->SetList(pStatusNode);
+        pVarListNode->SetList(pStatusNode.release());
 
         // Get the file interface by processing file node.
         File* pFile = GetFile(pNode->GetFileNode());
@@ -1471,9 +1396,9 @@ namespace Interpreter
         }
 
         bool isArray = false;
-        ArrayValue arrValue;
+        ArrayValue* pArrayValue;
         Value v;
-        bool status = pFile->Read(isArray, v, arrValue);
+        bool status = pFile->Read(isArray, v, &pArrayValue);
         if (!status)
         {
             // Read failure.
@@ -1488,7 +1413,7 @@ namespace Interpreter
 
         if (isArray)
         {
-            pResultNode->SetArrayValue(arrValue);
+            pResultNode->SetArrayValue(pArrayValue);
         }
         else
         {

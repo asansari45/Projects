@@ -5,12 +5,12 @@
 #include "Tables/InterpreterSymbolTable.h"
 #include "Log/InterpreterLog.h"
 #include "Values/InterpreterLvalues.h"
-#include "Values/InterpreterRvalue.h"
 
 namespace Interpreter
 {
 class SymbolTable;
 class ErrorInterface;
+class ValueNode;
 
 class BinaryFunc
 {
@@ -18,8 +18,8 @@ public:
     virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface) = 0;
 
 protected:
-    std::optional<Rvalue> GetRvalue(Node * pNode, ErrorInterface* pErrorInterface);
-    Lvalue* GetLvalue(Node* pNode, Rvalue& rRvalue,
+    ValueNode* GetRvalue(Node * pNode, ErrorInterface* pErrorInterface);
+    Lvalue* GetLvalue(Node* pNode, ValueNode* pRvalue,
                       ErrorInterface* pErrorInterface);
 };
 

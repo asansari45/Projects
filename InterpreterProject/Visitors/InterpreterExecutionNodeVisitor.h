@@ -46,6 +46,7 @@ public:
     virtual void VisitFileWriteNode(FileWriteNode* pNode);
     virtual void VisitFileEofNode(FileEofNode* pNode);
 
+#if 0
     std::optional<Value> GetResult()
     {
         if (m_Nodes.size() != 0)
@@ -54,6 +55,7 @@ public:
         }
         return {};
     }
+#endif
 
 private:
     ValueNode* GetTopOfStackValue(Node* pTop);
@@ -75,74 +77,13 @@ private:
             }
 
             assert(pVarNode->IsSymbolPresent());
-            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
-            assert(info != std::nullopt);
-            assert(!info->m_IsRef);
-            return info->m_IsArray;
+            SymbolTable::SymbolInfo* pInfo = pVarNode->GetSymbolInfo();
+            assert(pInfo != nullptr);
+            assert(!pInfo->m_IsRef);
+            return pInfo->m_IsArray;
         }
 
         return false;
-    }
-
-    // Look at the local symbol table first, and then global symbol table.
-    std::optional<Value> GetRvalue(Interpreter::Node* pNode)
-    {
-        ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
-        if (pValueNode != nullptr)
-        {
-            return pValueNode->GetValue();
-        }
-
-        VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
-        if (pVarNode != nullptr)
-        {
-            assert(pVarNode->IsSymbolPresent());
-            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
-            assert(info != std::nullopt);
-            assert(!info->m_IsRef);
-            if (pVarNode->GetArraySpecifier().size() != 0)
-            {
-                if (!info->m_IsArray)
-                {
-                    return {};
-                }
-                return info->m_ArrayValue.GetValue(pVarNode->GetArraySpecifier());
-            }
-
-            if (info->m_IsArray)
-            {
-                return {};
-            }
-
-            return info->m_Value;
-        }
-
-        return {};
-    }
-
-    // Look at the local symbol table first, and then global symbol table.
-    std::optional<ArrayValue> GetRarrayValue(Interpreter::Node* pNode)
-    {
-        assert(IsArray(pNode));
-
-        ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
-        if (pValueNode != nullptr)
-        {
-            return pValueNode->GetArrayValue();
-        }
-
-        VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
-        if (pVarNode != nullptr)
-        {
-            assert(pVarNode->IsSymbolPresent());
-            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
-            assert(info != std::nullopt);
-            assert(!info->m_IsRef);
-            assert(info->m_IsArray);
-            return info->m_ArrayValue;
-        }
-
-        return {};
     }
 
     bool ExecuteIfNode(IfNode* pIfNode);

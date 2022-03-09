@@ -5,7 +5,7 @@ namespace Interpreter
     ValueNode::ValueNode() :
         Node(),
         m_Array(false),
-        m_ArrayValue(),
+        m_pArrayValue(nullptr),
         m_Value()
     {
     }
@@ -13,27 +13,33 @@ namespace Interpreter
     ValueNode::ValueNode(Value v) :
         Node(),
         m_Array(false),
-        m_ArrayValue(),
+        m_pArrayValue(nullptr),
         m_Value(v)
     {
     }
 
-    ValueNode::ValueNode(ArrayValue v) :
+    ValueNode::ValueNode(ArrayValue* pArrayValue) :
         Node(),
         m_Array(true),
-        m_ArrayValue(v),
+        m_pArrayValue(pArrayValue),
         m_Value()
     {
     }
 
     ValueNode::ValueNode(const ValueNode& rNode) :
         Node(rNode),
+        m_Array(rNode.m_Array),
         m_Value(rNode.m_Value)
     {
+        if (rNode.IsArray())
+        {
+            m_pArrayValue = rNode.GetArrayValue()->Clone();
+        }
     }
 
     ValueNode::~ValueNode()
     {
+        delete m_pArrayValue;
     }
 
     Node* ValueNode::Clone()

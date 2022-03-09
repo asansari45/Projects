@@ -8,20 +8,20 @@ namespace Interpreter
     public:
         ValueNode();
         ValueNode(Value v);
-        ValueNode(ArrayValue v);
+        ValueNode(ArrayValue* v);
         ValueNode(const ValueNode& rNode);
         virtual ~ValueNode();
         Node* Clone();
         virtual void Accept(NodeVisitor& rVisitor);
         Value GetValue() { return m_Value; }
         void SetValue(Value v) { m_Array = false; m_Value = v; }
-        ArrayValue& GetArrayValue() { return m_ArrayValue; }
-        void SetArrayValue(ArrayValue v) { m_Array = true; m_ArrayValue = v; }
-        bool IsArray() { return m_Array; }
+        ArrayValue* GetArrayValue() const { return m_pArrayValue; }
+        void SetArrayValue(ArrayValue* pValue) { m_Array = true; m_pArrayValue = pValue; }
+        bool IsArray() const { return m_Array; }
 
     private:
         bool m_Array;
-        ArrayValue m_ArrayValue;
+        ArrayValue* m_pArrayValue;
         Value m_Value;
     };
 };

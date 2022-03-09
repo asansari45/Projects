@@ -1,4 +1,5 @@
 #include <cassert>
+#include <memory>
 #include "InterpreterFile.h"
 
 namespace Interpreter
@@ -137,22 +138,22 @@ bool File::Write(Value v)
     return true;
 }
 
-bool File::Write(ArrayValue v)
+bool File::Write(ArrayValue* v)
 {
     // Write the header first
     Header hdr;
     hdr.m_Array = true;
-    if (v.GetType() == typeid(int))
+    if (v->GetType() == typeid(int))
     {
         hdr.m_SubType = INTEGER;
     }
-    else if (v.GetType() == typeid(float))
+    else if (v->GetType() == typeid(float))
     {
         hdr.m_SubType = FLOAT;
     }
-    else if (v.GetType() == typeid(std::string)) 
+    else if (v->GetType() == typeid(std::string)) 
     {
-        assert(v.GetType() == typeid(std::string));
+        assert(v->GetType() == typeid(std::string));
         hdr.m_SubType = STRING;
     }
     else
@@ -163,7 +164,7 @@ bool File::Write(ArrayValue v)
     hdr.m_Dims[0] = 0;
     hdr.m_Dims[1] = 0;
     hdr.m_Dims[2] = 0;
-    std::vector<int> dims = v.GetDims();
+    std::vector<int> dims = v->GetDims();
     int elementCount = 0;
     if (dims.size() == 3)
     {
@@ -192,17 +193,17 @@ bool File::Write(ArrayValue v)
     }
 
     // Write the value second.
-    if (v.GetType() == typeid(int))
+    if (v->GetType() == typeid(int))
     {
-        elementsWritten = fwrite(v.GetInts(), sizeof(int), elementCount, m_pFile);
+        elementsWritten = fwrite(v->GetIntData(), sizeof(int), elementCount, m_pFile);
         if (elementsWritten != elementCount)
         {
             return false;
         }
     }
-    else if (v.GetType() == typeid(float))
+    else if (v->GetType() == typeid(float))
     {
-        elementsWritten = fwrite(v.GetFloats(), sizeof(float), elementCount, m_pFile);
+        elementsWritten = fwrite(v->GetFloatData(), sizeof(float), elementCount, m_pFile);
         if (elementsWritten != elementCount)
         {
             return false;
@@ -210,8 +211,8 @@ bool File::Write(ArrayValue v)
     }
     else 
     {
-        assert(v.GetType() == typeid(std::string));
-        std::string* pStrings = v.GetStrings();
+        assert(v->GetType() == typeid(std::string));
+        std::string* pStrings = v->GetStringData();
         for ( int i = 0; i < elementCount; i++)
         {
             std::string s = pStrings[i];
@@ -236,7 +237,7 @@ bool File::Write(ArrayValue v)
     return true;
 }
 
-bool File::Read(bool& rArray, Value& rValue, ArrayValue& rArrayValue)
+bool File::Read(bool& rArray, Value& rValue, ArrayValue** ppArrayValue)
 {
     // Read the header from the file.
     Header hdr;
@@ -260,43 +261,40 @@ bool File::Read(bool& rArray, Value& rValue, ArrayValue& rArrayValue)
                 elementCount *= hdr.m_Dims[i];
             }
         }
-        rArrayValue.SetDims(dims);
+
+        std::unique_ptr<ArrayValue> pArrValue;
 
         if (hdr.m_SubType == INTEGER)
         {
-            int* pInts = new int[elementCount];
-            assert(pInts != nullptr);
-            elementsRead = fread(pInts, sizeof(int), elementCount, m_pFile);
+            pArrValue.reset(ArrayValue::Create(dims, typeid(int)));
+            elementsRead = fread(pArrValue->GetIntData(), sizeof(int), elementCount, m_pFile);
             if (elementsRead != elementCount)
             {
-                delete [] pInts;
                 return false;
             }
-            rArrayValue.SetInts(pInts);
+            *ppArrayValue = pArrValue.release();
             return true;
         }
         
         if (hdr.m_SubType == FLOAT)
         {
-            float* pFloats = new float[elementCount];
-            assert(pFloats != nullptr);
-            elementsRead = fread(pFloats, sizeof(float), elementCount, m_pFile);
+            pArrValue.reset(ArrayValue::Create(dims, typeid(float)));
+            elementsRead = fread(pArrValue->GetFloatData(), sizeof(float), elementCount, m_pFile);
             if (elementsRead != elementCount)
             {
-                delete [] pFloats;
                 return false;
             }
-            rArrayValue.SetFloats(pFloats);
+            *ppArrayValue = pArrValue.release();
             return true;
         }
         
         if (hdr.m_SubType == STRING)
         {
-            std::string* pStrings = new std::string[elementCount];
-            assert(pStrings != nullptr);
+            pArrValue.reset(ArrayValue::Create(dims, typeid(std::string)));
             // todo fix max_string
             const int MAX_STRING = 1024;
             char s[MAX_STRING];
+            std::string* pStringData = pArrValue->GetStringData();
             for (int i=0; i < elementCount; i++)
             {
                 // Read size of string
@@ -304,21 +302,20 @@ bool File::Read(bool& rArray, Value& rValue, ArrayValue& rArrayValue)
                 elementsRead = fread(&sz, sizeof(sz), 1, m_pFile);
                 if (elementsRead != 1)
                 {
-                    delete [] pStrings;
                     return false;
                 }
 
                 elementsRead = fread(s, 1, sz, m_pFile);
                 if (elementsRead != sz)
                 {
-                    delete [] pStrings;
                     return false;
                 }
 
                 std::string finalString(s, sz);
-                pStrings[i] = finalString;
+                pStringData[i] = finalString;
             }
 
+            *ppArrayValue = pArrValue.release();
             return true;
         }
         return false;

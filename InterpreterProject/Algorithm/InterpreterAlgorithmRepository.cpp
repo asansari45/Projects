@@ -1,10 +1,12 @@
 #include <assert.h>
 #include <optional>
+#include <memory>
 #include "InterpreterAlgorithmRepository.h"
 #include "Driver/InterpreterContext.h"
 #include "Tables/InterpreterSymbolTable.h"
 #include "Log/InterpreterLog.h"
 #include "Nodes/InterpreterVarNode.h"
+#include "Nodes/InterpreterValueNode.h"
 #include "Nodes/InterpreterVarListNode.h"
 #include "Nodes/InterpreterDimNode.h"
 #include "Values/InterpreterLvalues.h"
@@ -41,15 +43,14 @@ namespace Interpreter
         return m_pFunctionTable[oper];
     }
 
-    std::optional<Rvalue> BinaryFunc::GetRvalue(Node* pNode,
-                                                ErrorInterface* pErrorInterface)
+    ValueNode* BinaryFunc::GetRvalue(Node* pNode,
+                                     ErrorInterface* pErrorInterface)
     {
         // Literals processing
         ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
         if (pValueNode != nullptr)
         {
-            Rvalue r(pValueNode);
-            return r;
+            return dynamic_cast<ValueNode*>(pValueNode->Clone());
         }
 
         // Symbols processing
@@ -61,14 +62,14 @@ namespace Interpreter
 
         if (pVarNode->IsSymbolPresent())
         {
-            std::optional<SymbolTable::SymbolInfo> info = pVarNode->GetSymbolInfo();
-            assert(info != std::nullopt);
-            assert(!info->m_IsRef);
-            if (info->m_IsArray)
+            SymbolTable::SymbolInfo* pInfo = pVarNode->GetSymbolInfo();
+            assert(pInfo != nullptr);
+            assert(!pInfo->m_IsRef);
+            if (pInfo->m_IsArray)
             {
                 if (arraySpecifier.size() != 0)
                 {
-                    std::optional<Value> v = info->m_ArrayValue.GetValue(arraySpecifier);
+                    std::optional<Value> v = pInfo->m_pArrayValue->GetValue(arraySpecifier);
                     if (v == std::nullopt)
                     {
                         ErrorInterface::ErrorInfo err(pNode);
@@ -77,15 +78,13 @@ namespace Interpreter
                         err.m_Msg = buf;
                         
                         pErrorInterface->SetErrorInfo(err);
-                        return {};
+                        return nullptr;
                     }
 
-                    Rvalue r(*v);
-                    return r;
+                    return new ValueNode(*v);
                 }
 
-                Rvalue r(info->m_ArrayValue);
-                return r;
+                return new ValueNode(pInfo->m_pArrayValue->Clone());
             }
 
             if (arraySpecifier.size() != 0)
@@ -96,11 +95,10 @@ namespace Interpreter
                 err.m_Msg = buf;
                 
                 pErrorInterface->SetErrorInfo(err);
-                return {};
+                return nullptr;
             }
 
-            Rvalue r(info->m_Value);
-            return r;
+            return new ValueNode(pInfo->m_Value);
         }
 
         // Symbol is not present in the symbol table.
@@ -110,11 +108,11 @@ namespace Interpreter
         err.m_Msg = buf;
         
         pErrorInterface->SetErrorInfo(err);
-        return {};
+        return nullptr;
     }
 
     Lvalue* BinaryFunc::GetLvalue(Node* pNode, 
-                                  Rvalue& rRvalue,
+                                  ValueNode* pRvalue,
                                   ErrorInterface* pErrorInterface)
     {
         ErrorInterface::ErrorInfo errInfo(pNode);
@@ -133,34 +131,22 @@ namespace Interpreter
                                           errInfo);
             }
 
-            SymbolTable::SymbolInfo symbolInfo = pVarNode->GetSymbolInfo();
-            assert(!symbolInfo.m_IsRef);
-#if 0
-            // Ref checking
-            if (symbolInfo.m_IsRef)
-            {
-                if (arraySpecifier.size() != 0)
-                {
-                    return new RefArraySpecifierLvalue(name, pSymbols, pErrorInterface, errInfo,
-                                                       arraySpecifier);
-                }
+            SymbolTable::SymbolInfo* pSymbolInfo = pVarNode->GetSymbolInfo();
+            assert(!pSymbolInfo->m_IsRef);
 
-                return new RefLvalue(name, pSymbols, pErrorInterface, errInfo);
-            }
-#endif
             // Array element checking
             if (arraySpecifier.size() != 0)
             {
-                return new ArrayElementLvalue(symbolInfo.m_Name, symbolInfo.m_pTable, pErrorInterface, errInfo, arraySpecifier);
+                return new ArrayElementLvalue(pSymbolInfo->m_Name, pSymbolInfo->m_pTable, pErrorInterface, errInfo, arraySpecifier);
             }
 
             // Whole arrays
-            if (rRvalue.IsArray())
+            if (pRvalue->IsArray())
             {
-                return new WholeArrayLvalue(symbolInfo.m_Name, symbolInfo.m_pTable, pErrorInterface, errInfo);
+                return new WholeArrayLvalue(pSymbolInfo->m_Name, pSymbolInfo->m_pTable, pErrorInterface, errInfo);
             }
 
-            return new VariableLvalue(symbolInfo.m_Name, symbolInfo.m_pTable, pErrorInterface, errInfo);
+            return new VariableLvalue(pSymbolInfo->m_Name, pSymbolInfo->m_pTable, pErrorInterface, errInfo);
         }
 
         return nullptr;
@@ -192,20 +178,19 @@ namespace Interpreter
 
             // Figure it if we're operating with arrays or not.
             // Either both have to represent arrays or not.
-            std::optional<Rvalue> rval = GetRvalue(pRight, pErrorInterface);
-            if (rval == std::nullopt)
+            std::unique_ptr<ValueNode> pRval(GetRvalue(pRight, pErrorInterface));
+            if (pRval == nullptr)
             {
                 return nullptr;
             }
 
-            Lvalue* pLval = GetLvalue(pLeft, *rval, pErrorInterface);
+            std::unique_ptr<Lvalue> pLval(GetLvalue(pLeft, pRval.get(), pErrorInterface));
             if (pLval == nullptr)
             {
                 return nullptr;
             }
 
-            pLval->Equ(*rval);
-            delete pLval;
+            pLval->Equ(pRval.get());
             return nullptr;
         }
     private:
@@ -245,14 +230,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -263,7 +248,7 @@ namespace Interpreter
                 if (rhs->IsArray())
                 {
                     // The dimensions must match.
-                    bool status = lhs->GetArrayValue().Add(rhs->GetArrayValue());
+                    bool status = lhs->GetArrayValue()->Add(rhs->GetArrayValue());
                     if (!status)
                     {
                         ErrorInterface::ErrorInfo err(pLeft);
@@ -275,7 +260,7 @@ namespace Interpreter
                         return nullptr;
                     }
 
-                    ValueNode* pValueNode = new ValueNode(lhs->GetArrayValue());
+                    ValueNode* pValueNode = new ValueNode(lhs->GetArrayValue()->Clone());
                     assert(pValueNode != nullptr);
                     return pValueNode;
                 }
@@ -300,7 +285,7 @@ namespace Interpreter
                 pErrorInterface->SetErrorInfo(err);
                 return nullptr;
             }
-
+            
             bool status = lhs->GetValue().Add(rhs->GetValue());
             if (!status)
             {
@@ -311,7 +296,8 @@ namespace Interpreter
                 return nullptr;
             }
 
-            return new ValueNode(lhs->GetValue());
+            ValueNode* pRet = new ValueNode(lhs->GetValue());
+            return pRet;
         }
 
     };
@@ -320,14 +306,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -352,14 +338,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -384,14 +370,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -416,14 +402,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -450,14 +436,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -484,14 +470,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -518,14 +504,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -552,14 +538,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -587,14 +573,14 @@ namespace Interpreter
     {
         virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::optional<Rvalue> rhs = GetRvalue(pRight, pErrorInterface);
-            if (rhs == std::nullopt)
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            if (rhs == nullptr)
             {
                 return nullptr;
             }
@@ -622,8 +608,8 @@ namespace Interpreter
         virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
         {
             assert(pRight == nullptr);
-            std::optional<Rvalue> lhs = GetRvalue(pLeft, pErrorInterface);
-            if (lhs == std::nullopt)
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            if (lhs == nullptr)
             {
                 return nullptr;
             }
@@ -658,8 +644,8 @@ namespace Interpreter
             std::vector<int> dims;
             for (Node* pValNode = pDimNode->GetDim(); pValNode != nullptr; pValNode = pValNode->GetNext())
             {
-                std::optional<Rvalue> rval = GetRvalue(pValNode, pErrorInterface);
-                if (rval == std::nullopt)
+                std::unique_ptr<ValueNode> rval(GetRvalue(pValNode, pErrorInterface));
+                if (rval == nullptr)
                 {
                     return nullptr;
                 }
@@ -669,7 +655,6 @@ namespace Interpreter
                     ErrorInterface::ErrorInfo err(pDimNode);
                     err.m_Msg = pErrorInterface->ERROR_ARRAY_UNEXPECTED;
                     pErrorInterface->SetErrorInfo(err);
-                    
                     return nullptr;
                 }
 
@@ -678,20 +663,19 @@ namespace Interpreter
                     ErrorInterface::ErrorInfo err(pDimNode);
                     err.m_Msg = pErrorInterface->ERROR_INCORRECT_TYPE;
                     pErrorInterface->SetErrorInfo(err);
-                    
                     return nullptr;
                 }
 
                 dims.push_back(rval->GetValue().GetIntValue());
             }
 
-            ArrayValue arrayVal;
-            arrayVal.SetDims(dims);
-            Rvalue rValue(arrayVal);
+            std::unique_ptr<ValueNode> pValueNode(new ValueNode);
+            ArrayValue* pArrayValue = ArrayValue::Create(dims, typeid(int));
+            pValueNode->SetArrayValue(pArrayValue);
 
-            Lvalue* pLval = GetLvalue(pLeft, rValue, pErrorInterface);
+            Lvalue* pLval = GetLvalue(pLeft, pValueNode.get(), pErrorInterface);
             assert(pLval != nullptr);
-            pLval->Dim(rValue);
+            pLval->Dim(pValueNode.get());
             delete pLval;
 
             // No Result
@@ -713,8 +697,8 @@ namespace Interpreter
             std::vector<int> dims;
             for (Node* pValNode = pDimNode->GetDim(); pValNode != nullptr; pValNode = pValNode->GetNext())
             {
-                std::optional<Rvalue> v = GetRvalue(pValNode, pErrorInterface);
-                if (v != std::nullopt)
+                std::unique_ptr<ValueNode> v(GetRvalue(pValNode, pErrorInterface));
+                if (v != nullptr)
                 {
                     if (v->IsArray())
                     {

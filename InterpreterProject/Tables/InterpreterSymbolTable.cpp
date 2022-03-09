@@ -25,36 +25,36 @@ SymbolTable::~SymbolTable()
 {
 }
 
-static void FillDebugBuf(SymbolTable::SymbolInfo info, char* buf, int len)
+static void FillDebugBuf(SymbolTable::SymbolInfo* pInfo, char* buf, int len)
 {
-    if (info.m_IsRef)
+    if (pInfo->m_IsRef)
     {
         sprintf_s(buf, len, "INFO isRef=%d, tName=%s, tTable=%s",
-                  info.m_IsRef,
-                  info.m_RefName.c_str(),
-                  info.m_pRefTable->GetName().c_str());
+                  pInfo->m_IsRef,
+                  pInfo->m_RefName.c_str(),
+                  pInfo->m_pRefTable->GetName().c_str());
     }
     else
     {
         std::string s;
-        if (info.m_IsArray)
+        if (pInfo->m_IsArray)
         {
-            s = info.m_ArrayValue.GetTypeRepr() + " " + info.m_ArrayValue.GetDimsRepr() + " " + info.m_ArrayValue.GetValuesRepr();
+            s = pInfo->m_pArrayValue->GetTypeRepr() + " " + pInfo->m_pArrayValue->GetDimsRepr() + " " + pInfo->m_pArrayValue->GetValuesRepr();
         }
         else
         {
-            s = info.m_Value.GetTypeRepr() + " " = info.m_Value.GetValueRepr();
+            s = pInfo->m_Value.GetTypeRepr() + " " = pInfo->m_Value.GetValueRepr();
         }
 
-        sprintf_s(buf, len, "INFO isArray=%d %s", info.m_IsArray, s.c_str());
+        sprintf_s(buf, len, "INFO isArray=%d %s", pInfo->m_IsArray, s.c_str());
     }
 }
 
-bool SymbolTable::CreateSymbol(std::string name, SymbolInfo info)
+bool SymbolTable::CreateSymbol(std::string name, SymbolInfo* pInfo)
 {
 #if defined(SYMTABLE_DEBUG)
     char sinfo[256];
-    FillDebugBuf(info, sinfo, sizeof(sinfo));
+    FillDebugBuf(pInfo, sinfo, sizeof(sinfo));
 
     char buf[256];
     sprintf_s(buf, sizeof(buf), "SymbolTable %s:  CreateSymbol name=%s %s", m_Name.c_str(), name.c_str(), sinfo);
@@ -64,8 +64,8 @@ bool SymbolTable::CreateSymbol(std::string name, SymbolInfo info)
 
     if (m_SymbolMap.find(name) == m_SymbolMap.end())
     {
-        info.m_pTable = this;
-        m_SymbolMap.insert(std::make_pair(name, info));
+        pInfo->m_pTable = this;
+        m_SymbolMap.insert(std::make_pair(name, pInfo));
         return true;
     }
 
@@ -73,7 +73,7 @@ bool SymbolTable::CreateSymbol(std::string name, SymbolInfo info)
 }
 
 
-std::optional<SymbolTable::SymbolInfo> SymbolTable::ReadSymbol(std::string name, bool getroot)
+SymbolTable::SymbolInfo* SymbolTable::ReadSymbol(std::string name, bool getroot)
 {
 #if defined(SYMTABLE_DEBUG)
     char buf[512];
@@ -86,40 +86,43 @@ std::optional<SymbolTable::SymbolInfo> SymbolTable::ReadSymbol(std::string name,
     {
         if (getroot)
         {
-            if (i->second.m_IsRef)
+            if (i->second->m_IsRef)
             {
-                return i->second.m_pRefTable->ReadSymbol(i->second.m_RefName, getroot);
+                return i->second->m_pRefTable->ReadSymbol(i->second->m_RefName, getroot);
             }
         }
 
         return i->second;
     }
 
-    return {};
+    return nullptr;
 }
 
 bool SymbolTable::IsSymbolPresent(std::string name)
 {
-    std::optional<SymbolInfo> s = ReadSymbol(name);
-    return s != std::nullopt;
+    return ReadSymbol(name) != nullptr;
 }
 
-bool SymbolTable::UpdateSymbol(std::string name, SymbolInfo info)
+bool SymbolTable::UpdateSymbol(std::string name, SymbolInfo* pInfo)
 {
 #if defined(SYMTABLE_DEBUG)
     char buf[512];
     sprintf_s(buf, sizeof(buf), "SymbolTable %s:  UpdateSymbol name=%s", m_Name.c_str(), name.c_str());
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
-    FillDebugBuf(info, buf, sizeof(buf));
+    FillDebugBuf(pInfo, buf, sizeof(buf));
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
 #endif
 
     SYMBOL_MAP::iterator i = m_SymbolMap.find(name);
     if (i != m_SymbolMap.end())
     {
+        if (i->second->m_IsArray)
+        {
+            delete i->second->m_pArrayValue;
+        }
         m_SymbolMap.erase(i);
-        info.m_pTable = this;
-        m_SymbolMap.insert(std::make_pair(name, info));
+        pInfo->m_pTable = this;
+        m_SymbolMap.insert(std::make_pair(name, pInfo));
         return true;
     }
 
@@ -137,6 +140,11 @@ void SymbolTable::DeleteSymbol(std::string name)
     SYMBOL_MAP::iterator i = m_SymbolMap.find(name);
     if (i != m_SymbolMap.end())
     {
+        if (i->second->m_IsArray)
+        {
+            delete i->second->m_pArrayValue;
+        }
+        delete i->second;
         m_SymbolMap.erase(i);
     }
 }
@@ -154,21 +162,21 @@ void SymbolTable::Dump()
          i != m_SymbolMap.end();
          i++)
     {
-        SymbolInfo& p = i->second;
+        SymbolInfo* p = i->second;
         char buf[512];
-        if (p.m_IsArray)
+        if (p->m_IsArray)
         {
-            sprintf_s(buf, sizeof(buf), "%-20s  %-5s  %-12s  %s", p.m_Name.c_str(), 
-                                                                  p.m_ArrayValue.GetTypeRepr().c_str(),
-                                                                  p.m_ArrayValue.GetDimsRepr().c_str(),
-                                                                  p.m_ArrayValue.GetValuesRepr().c_str());
+            sprintf_s(buf, sizeof(buf), "%-20s  %-5s  %-12s  %s", p->m_Name.c_str(), 
+                                                                  p->m_pArrayValue->GetTypeRepr().c_str(),
+                                                                  p->m_pArrayValue->GetDimsRepr().c_str(),
+                                                                  p->m_pArrayValue->GetValuesRepr().c_str());
         }
         else
         {
-            sprintf_s(buf, sizeof(buf), "%-20s  %-5s  %-12s  %s", p.m_Name.c_str(), 
-                                                                  p.m_Value.GetTypeRepr().c_str(),
+            sprintf_s(buf, sizeof(buf), "%-20s  %-5s  %-12s  %s", p->m_Name.c_str(),
+                                                                  p->m_Value.GetTypeRepr().c_str(),
                                                                   "---",
-                                                                  p.m_Value.GetValueRepr().c_str());
+                                                                  p->m_Value.GetValueRepr().c_str());
         }
 
         Log::GetInst()->AddMessage(buf);
@@ -183,13 +191,13 @@ void SymbolTable::Dump()
          i != m_SymbolMap.end();
          i++)
     {
-        SymbolInfo& p = i->second;
-        if (p.m_IsRef)
+        SymbolInfo* p = i->second;
+        if (p->m_IsRef)
         {
             char buf[512];
-            sprintf_s(buf, sizeof(buf), "%-20s  %-20s  %s", p.m_Name.c_str(), 
-                                                            p.m_pRefTable->GetName().c_str(),
-                                                            p.m_RefName.c_str());
+            sprintf_s(buf, sizeof(buf), "%-20s  %-20s  %s", p->m_Name.c_str(), 
+                                                            p->m_pRefTable->GetName().c_str(),
+                                                            p->m_RefName.c_str());
             Log::GetInst()->AddMessage(buf);
         }
     }
@@ -203,6 +211,15 @@ void SymbolTable::Clear()
     Log::GetInst()->AddMessage(Log::DEBUG, buf);
 #endif
 
+    for (SYMBOL_MAP::iterator i = m_SymbolMap.begin(); i != m_SymbolMap.end(); i++)
+    {
+        if (i->second->m_IsArray)
+        {
+            delete i->second->m_pArrayValue;
+        }
+        delete i->second;
+    }
+
     m_SymbolMap.clear();
 }
 
@@ -213,7 +230,7 @@ SymbolTable* SymbolTable::Clone()
 
     for (SYMBOL_MAP::iterator i = m_SymbolMap.begin(); i != m_SymbolMap.end(); i++)
     {
-        bool status = pClone->CreateSymbol(i->first, i->second);
+        bool status = pClone->CreateSymbol(i->first, i->second->Clone());
         assert(status);
     }
     return pClone;
@@ -224,16 +241,19 @@ SymbolTable* SymbolTable::CreateGlobalSymbols()
     SymbolTable* pSymbolTable = new SymbolTable("GLOBAL");
     assert(pSymbolTable != nullptr);
 
-    SymbolInfo info;
-    info.m_Value.SetIntValue(0);
-    info.m_Name = "main";
-    bool status = pSymbolTable->CreateSymbol("main", info);
+    SymbolInfo* pInfo = new SymbolInfo;
+    assert(pInfo != nullptr);
+
+    pInfo->m_Value.SetIntValue(0);
+    pInfo->m_Name = "main";
+    bool status = pSymbolTable->CreateSymbol("main", pInfo);
     assert(status);
     return pSymbolTable;
 }
 
 void SymbolTable::DeleteGlobalSymbols(SymbolTable* pGlobalSymbols)
 {
+    pGlobalSymbols->Clear();
     delete pGlobalSymbols;
 }
 

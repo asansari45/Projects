@@ -18,8 +18,8 @@ namespace Interpreter
         static File* Get(std::string name);
         void Close();
         bool Write(Value v);
-        bool Write(ArrayValue v);
-        bool Read(bool& rArray, Value& rValue, ArrayValue& rArrayValue);
+        bool Write(ArrayValue* v);
+        bool Read(bool& rArray, Value& rValue, ArrayValue** ppArrayValue);
         bool Eof();
 
     private:
