@@ -1,5 +1,5 @@
 #include "InterpreterLvalues.h"
-#include "InterpreterRvalue.h"
+#include "Nodes/InterpreterValueNode.h"
 #include "Visitors/InterpreterErrorInterface.h"
 
 #include "DebugMemory/DebugMemory.h"
@@ -10,12 +10,12 @@ namespace Interpreter
     // Create it and set the value.
     // a = b where a does not exist, b is an array or value.
     // a = 1 where a does not exist, 1 is a value.
-    void NoSymbolLvalue::Equ(Rvalue& rRvalue)
+    void NoSymbolLvalue::Equ(ValueNode* pRvalue)
     {
         assert(m_pSymbolTable != nullptr);
         assert(m_pSymbolTable->IsSymbolPresent(m_Name) == false);
-        SymbolTable::SymbolInfo info;
-        info.m_Name = m_Name;
+        SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+        pInfo->m_Name = m_Name;
 
         // No arrays specifiers when no symbol is specified.
         if (m_ArraySpecifier.size() != 0)
@@ -24,37 +24,39 @@ namespace Interpreter
             m_ErrInfo.m_Msg = m_Buf;
             
             m_pErrIf->SetErrorInfo(m_ErrInfo);
+            delete pInfo;
             return;
         }
 
         bool status;
-        if (rRvalue.IsArray())
+        if (pRvalue->IsArray())
         {
-            info.m_IsArray = true;
-            info.m_ArrayValue = rRvalue.GetArrayValue();
-            status = m_pSymbolTable->CreateSymbol(m_Name, info);
+            pInfo->m_IsArray = true;
+            pInfo->m_pArrayValue = pRvalue->GetArrayValue()->Clone();
+            status = m_pSymbolTable->CreateSymbol(m_Name, pInfo);
         }
         else
         {
-            info.m_IsArray = false;
-            info.m_Value = rRvalue.GetValue();
-            status = m_pSymbolTable->CreateSymbol(m_Name, info);
+            pInfo->m_IsArray = false;
+            pInfo->m_Value = pRvalue->GetValue();
+            status = m_pSymbolTable->CreateSymbol(m_Name, pInfo);
         }
         assert(status);
     }
 
     // There is no symbol for the given rvalue in the symbol table.
     // a = dim[q,r,s] where a does not exist.
-    void NoSymbolLvalue::Dim(Rvalue& rRvalue)
+    void NoSymbolLvalue::Dim(ValueNode* pRvalue)
     {
         assert(m_pSymbolTable != nullptr);
         assert(m_pSymbolTable->IsSymbolPresent(m_Name) == false);
-        assert(rRvalue.IsArray());
-        SymbolTable::SymbolInfo info;
-        info.m_Name = m_Name;
-        info.m_IsArray = true;
-        info.m_ArrayValue = rRvalue.GetArrayValue();
-        bool status = m_pSymbolTable->CreateSymbol(m_Name, info);
+        assert(pRvalue->IsArray());
+        SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+        assert(pInfo != nullptr);
+        pInfo->m_Name = m_Name;
+        pInfo->m_IsArray = true;
+        pInfo->m_pArrayValue = pRvalue->GetArrayValue()->Clone();
+        bool status = m_pSymbolTable->CreateSymbol(m_Name, pInfo);
         assert(status);
     }
 
@@ -62,7 +64,7 @@ namespace Interpreter
     // We are setting the value of one element here.
     // a[0,1,1] = 3 where a must exist or an error.
     // a[0,1,1] = b where a must exist and b must not be an array.
-    void ArrayElementLvalue::Equ(Rvalue& rRvalue)
+    void ArrayElementLvalue::Equ(ValueNode* pRvalue)
     {
         assert(m_pSymbolTable != nullptr);
         if (!m_pSymbolTable->IsSymbolPresent(m_Name))
@@ -74,10 +76,10 @@ namespace Interpreter
             return;
         }
 
-        std::optional<SymbolTable::SymbolInfo> info = m_pSymbolTable->ReadSymbol(m_Name);
-        assert(info != std::nullopt);
+        SymbolTable::SymbolInfo* pInfo = m_pSymbolTable->ReadSymbol(m_Name);
+        assert(pInfo != nullptr);
 
-        if (!info->m_IsArray)
+        if (!pInfo->m_IsArray)
         {
             sprintf_s(m_Buf, sizeof(m_Buf), m_pErrIf->ERROR_UNEXPECTED_ARRAY_SPECIFIER, m_Name.c_str());
             m_ErrInfo.m_Msg = m_Buf;
@@ -86,7 +88,7 @@ namespace Interpreter
             return;
         }
         
-        if (rRvalue.IsArray())
+        if (pRvalue->IsArray())
         {
             sprintf_s(m_Buf, sizeof(m_Buf), m_pErrIf->ERROR_UNEXPECTED_ARRAY_SPECIFIER, m_Name.c_str());
             m_ErrInfo.m_Msg = m_Buf;
@@ -95,7 +97,7 @@ namespace Interpreter
             return;
         }
 
-        bool status = info->m_ArrayValue.SetValue(m_ArraySpecifier, rRvalue.GetValue());
+        bool status = pInfo->m_pArrayValue->SetValue(m_ArraySpecifier, pRvalue->GetValue());
         if (!status)
         {
             // The array specifier could be wrong.
@@ -106,132 +108,140 @@ namespace Interpreter
             return;
         }
 
-        status = m_pSymbolTable->UpdateSymbol(m_Name, *info);
+        status = m_pSymbolTable->UpdateSymbol(m_Name, pInfo);
         assert(status);
     }
 
     // There is a symbol in the symbol table.  It is an array.
     // We are setting the value of the entire array here.
     // a = b where b is an array.
-    void WholeArrayLvalue::Equ(Rvalue& rRvalue)
+    void WholeArrayLvalue::Equ(ValueNode* pRvalue)
     {
-        assert(rRvalue.IsArray());
+        assert(pRvalue->IsArray());
         m_pSymbolTable->DeleteSymbol(m_Name);
-        SymbolTable::SymbolInfo info;
-        info.m_Name = m_Name;
-        info.m_IsArray = true;
-        info.m_ArrayValue = rRvalue.GetArrayValue();
-        bool status = m_pSymbolTable->CreateSymbol(m_Name, info);
+        SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+        assert(pInfo != nullptr);
+
+        pInfo->m_Name = m_Name;
+        pInfo->m_IsArray = true;
+        pInfo->m_pArrayValue = pRvalue->GetArrayValue()->Clone();
+        bool status = m_pSymbolTable->CreateSymbol(m_Name, pInfo);
         assert(status);
     }
 
     // There is a symbol in the symbol table.  It is an array.
     // a = dim[q,r,s]
-    void WholeArrayLvalue::Dim(Rvalue& rRvalue)
+    void WholeArrayLvalue::Dim(ValueNode* pRvalue)
     {
-        assert(rRvalue.IsArray());
+        assert(pRvalue->IsArray());
         m_pSymbolTable->DeleteSymbol(m_Name);
-        SymbolTable::SymbolInfo info;
-        info.m_Name = m_Name;
-        info.m_IsArray = true;
-        info.m_ArrayValue = rRvalue.GetArrayValue();
-        bool status = m_pSymbolTable->CreateSymbol(m_Name, info);
+        SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+        assert(pInfo != nullptr);
+
+        pInfo->m_Name = m_Name;
+        pInfo->m_IsArray = true;
+        pInfo->m_pArrayValue = pRvalue->GetArrayValue()->Clone();
+        bool status = m_pSymbolTable->CreateSymbol(m_Name, pInfo);
         assert(status);
     }
 
     // There is a symbol in the symbol table.  It is not array.
     // a = 1 
     // a = b where b is not an array.
-    void VariableLvalue::Equ(Rvalue& rRvalue)
+    void VariableLvalue::Equ(ValueNode* pRvalue)
     {
-        assert(!rRvalue.IsArray());
+        assert(!pRvalue->IsArray());
         m_pSymbolTable->DeleteSymbol(m_Name);
-        SymbolTable::SymbolInfo info;
-        info.m_Name = m_Name;
-        info.m_Value = rRvalue.GetValue();
-        bool status = m_pSymbolTable->CreateSymbol(m_Name, info);
+        SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+        assert(pInfo != nullptr);
+
+        pInfo->m_Name = m_Name;
+        pInfo->m_Value = pRvalue->GetValue();
+        bool status = m_pSymbolTable->CreateSymbol(m_Name, pInfo);
         assert(status);
     }
 
     // There is a symbol in the symbol table.  It is not an array.
     // a = dim[q,r,s]
-    void VariableLvalue::Dim(Rvalue& rRvalue)
+    void VariableLvalue::Dim(ValueNode* pRvalue)
     {
-        assert(rRvalue.IsArray());
+        assert(pRvalue->IsArray());
         m_pSymbolTable->DeleteSymbol(m_Name);
-        SymbolTable::SymbolInfo info;
-        info.m_Name = m_Name;
-        info.m_IsArray = true;
-        info.m_ArrayValue = rRvalue.GetArrayValue();
-        bool status = m_pSymbolTable->CreateSymbol(m_Name, info);
+        SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+        assert(pInfo != nullptr);
+
+        pInfo->m_Name = m_Name;
+        pInfo->m_IsArray = true;
+        pInfo->m_pArrayValue = pRvalue->GetArrayValue()->Clone();
+        bool status = m_pSymbolTable->CreateSymbol(m_Name, pInfo);
         assert(status);
     }
 
     // This is a reference parameter in a function.  It can morph into other values
     // based on what the target is.
-    void RefLvalue::Equ(Rvalue& rRvalue)
+    void RefLvalue::Equ(ValueNode* pRvalue)
     {
         assert(m_pSymbolTable != nullptr);
         assert(m_pSymbolTable->IsSymbolPresent(m_Name));
 
-        std::optional<SymbolTable::SymbolInfo> symbolInfo = m_pSymbolTable->ReadSymbol(m_Name);
-        assert(symbolInfo != std::nullopt);
-        assert(symbolInfo->m_IsRef);
+        SymbolTable::SymbolInfo* pSymbolInfo = m_pSymbolTable->ReadSymbol(m_Name);
+        assert(pSymbolInfo != nullptr);
+        assert(pSymbolInfo->m_IsRef);
 
-        if (!rRvalue.IsArray())
+        if (!pRvalue->IsArray())
         {
             // rvalue is not an array
-               VariableLvalue lvalue(symbolInfo->m_RefName, symbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
-            lvalue.Equ(rRvalue);
+            VariableLvalue lvalue(pSymbolInfo->m_RefName, pSymbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
+            lvalue.Equ(pRvalue);
             return;
         }
 
         // It is an array.
-        WholeArrayLvalue lvalue(symbolInfo->m_RefName, symbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
-        lvalue.Equ(rRvalue);
+        WholeArrayLvalue lvalue(pSymbolInfo->m_RefName, pSymbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
+        lvalue.Equ(pRvalue);
     }
 
     // This is a reference parameter in a function.  It can morph into other values
     // based on what the target is.
     // a = dim[q,r,s]
-    void RefLvalue::Dim(Rvalue& rRvalue)
+    void RefLvalue::Dim(ValueNode* pRvalue)
     {
         assert(m_pSymbolTable != nullptr);
         assert(m_pSymbolTable->IsSymbolPresent(m_Name));
 
-        std::optional<SymbolTable::SymbolInfo> symbolInfo = m_pSymbolTable->ReadSymbol(m_Name);
-        assert(symbolInfo != std::nullopt);
-        assert(symbolInfo->m_IsRef);
+        SymbolTable::SymbolInfo* pSymbolInfo = m_pSymbolTable->ReadSymbol(m_Name);
+        assert(pSymbolInfo != nullptr);
+        assert(pSymbolInfo->m_IsRef);
 
-        if (!rRvalue.IsArray())
+        if (!pRvalue->IsArray())
         {
             // rvalue is not an array
-            VariableLvalue lvalue(symbolInfo->m_RefName, symbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
-            lvalue.Dim(rRvalue);
+            VariableLvalue lvalue(pSymbolInfo->m_RefName, pSymbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
+            lvalue.Dim(pRvalue);
             return;
         }
 
         // It is an array.
-        WholeArrayLvalue lvalue(symbolInfo->m_RefName, symbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
-        lvalue.Dim(rRvalue);
+        WholeArrayLvalue lvalue(pSymbolInfo->m_RefName, pSymbolInfo->m_pRefTable, m_pErrIf, m_ErrInfo);
+        lvalue.Dim(pRvalue);
     }
 
     // This is a reference parameter in a function.  It can morph into other values
     // based on what the target is.
-    void RefArraySpecifierLvalue::Equ(Rvalue& rRvalue)
+    void RefArraySpecifierLvalue::Equ(ValueNode* pRvalue)
     {
         assert(m_pSymbolTable != nullptr);
         assert(m_pSymbolTable->IsSymbolPresent(m_Name));
 
-        std::optional<SymbolTable::SymbolInfo> symbolInfo = m_pSymbolTable->ReadSymbol(m_Name);
-        assert(symbolInfo != std::nullopt);
-        assert(symbolInfo->m_IsRef);
+        SymbolTable::SymbolInfo* pSymbolInfo = m_pSymbolTable->ReadSymbol(m_Name);
+        assert(pSymbolInfo != nullptr);
+        assert(pSymbolInfo->m_IsRef);
 
-        ArrayElementLvalue lvalue(symbolInfo->m_RefName, 
-                                  symbolInfo->m_pRefTable, 
+        ArrayElementLvalue lvalue(pSymbolInfo->m_RefName, 
+                                  pSymbolInfo->m_pRefTable, 
                                   m_pErrIf, 
                                   m_ErrInfo,
                                   m_ArraySpecifier);
-        lvalue.Equ(rRvalue);
+        lvalue.Equ(pRvalue);
     }
 }

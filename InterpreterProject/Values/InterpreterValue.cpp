@@ -125,7 +125,7 @@ namespace Interpreter
         return m_StringValue.size() != 0;
     }
 
-    bool Value::Add(Value& p)
+    bool Value::Add(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -179,7 +179,7 @@ namespace Interpreter
         return false;
     }
 
-    bool Value::Sub(Value& p)
+    bool Value::Sub(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -222,7 +222,7 @@ namespace Interpreter
         return false;
     }
 
-    bool Value::Mul(Value& p)
+    bool Value::Mul(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -265,7 +265,7 @@ namespace Interpreter
         return false;
     }
 
-    bool Value::Div(Value& p)
+    bool Value::Div(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -330,7 +330,7 @@ namespace Interpreter
         return true;
     }
 
-    std::optional<bool> Value::Les(Value& p)
+    std::optional<bool> Value::Les(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -378,7 +378,7 @@ namespace Interpreter
         return {};
     }
 
-    std::optional<bool> Value::Leq(Value& p)
+    std::optional<bool> Value::Leq(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -426,7 +426,7 @@ namespace Interpreter
         return {};
     }
 
-    std::optional<bool> Value::Grt(Value& p)
+    std::optional<bool> Value::Grt(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -474,7 +474,7 @@ namespace Interpreter
         return {};
     }
 
-    std::optional<bool> Value::Geq(Value& p)
+    std::optional<bool> Value::Geq(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -522,7 +522,7 @@ namespace Interpreter
         return {};
     }
 
-    std::optional<bool> Value::Deq(Value& p)
+    std::optional<bool> Value::Deq(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();
@@ -570,7 +570,7 @@ namespace Interpreter
         return {};
     }
 
-    std::optional<bool> Value::Neq(Value& p)
+    std::optional<bool> Value::Neq(Value p)
     {
         std::type_index mytype = GetType();
         std::type_index othertype = p.GetType();

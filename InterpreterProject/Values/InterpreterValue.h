@@ -31,17 +31,17 @@ namespace Interpreter
         File* GetFileValue() { return m_pFile; }
 
         bool IfEval();
-        bool Add(Value& p);
-        bool Sub(Value& p);
-        bool Mul(Value& p);
-        bool Div(Value& p);
+        bool Add(Value p);
+        bool Sub(Value p);
+        bool Mul(Value p);
+        bool Div(Value p);
         bool Neg();
-        std::optional<bool> Les(Value& p);
-        std::optional<bool> Leq(Value& p);
-        std::optional<bool> Grt(Value& p);
-        std::optional<bool> Geq(Value& p);
-        std::optional<bool> Deq(Value& p);
-        std::optional<bool> Neq(Value& p);
+        std::optional<bool> Les(Value p);
+        std::optional<bool> Leq(Value p);
+        std::optional<bool> Grt(Value p);
+        std::optional<bool> Geq(Value p);
+        std::optional<bool> Deq(Value p);
+        std::optional<bool> Neq(Value p);
 
         std::string GetTypeRepr();
         std::string GetValueRepr();

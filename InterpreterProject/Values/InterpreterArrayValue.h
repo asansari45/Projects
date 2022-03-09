@@ -11,11 +11,10 @@ class ArrayValue
 {
 public:
 
-    ArrayValue();
-    ArrayValue(const ArrayValue& p);
     ~ArrayValue();
+    static ArrayValue* Create(std::vector<int> dims, std::type_index t);
 
-    bool Init(std::vector<int> dims, std::type_index t);
+    ArrayValue* Clone();
 
     // Simple accessor
     std::vector<int> GetDims() { return m_Dims; }
@@ -25,57 +24,38 @@ public:
 
     std::type_index GetType();
 
-    ArrayValue& operator=(const ArrayValue& o);
-
     // Operations
-    bool Add(ArrayValue& v);
+    bool Add(ArrayValue* v);
 
     // For debug purposes
     std::string GetTypeRepr();
     std::string GetDimsRepr();
     std::string GetValuesRepr();
 
-    void GetData(int*& rpInts) const
+    int* GetIntData() const
     {
-        assert(m_Type == typeid(int));
-        rpInts = m_Data.m_pInts;
+        return m_Data.m_pInts;
     }
 
-    void GetData(float *&rpFloats) const
+    float* GetFloatData() const
     {
-        assert(m_Type == typeid(float));
-        rpInts = m_Data.m_pFloats;
+        return m_Data.m_pFloats;
     }
 
-    template<class A>
-    void SetData(A* pData)
+    std::string* GetStringData() const
     {
-        assert(m_Type == typeid(A));
-        if (typeid(A) == typeid(int))
-        {
-            delete [] m_Data.m_pInts;
-            m_Data.m_pInts = pData;
-        }
-
-        if (typeid(A) == typeid(float))
-        {
-            delete [] m_Data.m_pFloats;
-            m_Data.m_pFloats = pData;
-        }
-
-        if (typeid(A) == typeid(std::string))
-        {
-            delete [] m_Data.m_pStrings;
-            m_Data.m_pStrings = pData;
-        }
+        return m_Data.m_pStrings;
     }
 
 private:
+    ArrayValue(std::vector<int> dims, std::type_index t);
+    ArrayValue(const ArrayValue& p)=delete;
+
     // Convert element index to flag index
     std::optional<int> ConvertElementIndex(std::vector<int> element);
 
     // Perform likeness checks between 2 arrays.
-    bool LikenessChecks(ArrayValue& v);
+    bool LikenessChecks(ArrayValue* v);
 
     int GetElementCount();
 

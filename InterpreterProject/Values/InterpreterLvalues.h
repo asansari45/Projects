@@ -9,7 +9,7 @@ namespace Interpreter
     class ErrorInterface;
     class Node;
     class VarNode;
-    class Rvalue;
+    class ValueNode;
 
     class Lvalue
     {
@@ -20,11 +20,11 @@ namespace Interpreter
         }
 
         // Perform the equals operation a=b
-        virtual void Equ(Rvalue& rRvalue) = 0;
+        virtual void Equ(ValueNode* pRvalue) = 0;
 
         // Perfrom the dim function.
         // a = dim[9+8]
-        virtual void Dim(Rvalue& rRvalue) = 0;
+        virtual void Dim(ValueNode* pRvalue) = 0;
 
     protected:
         Lvalue(std::string name, SymbolTable* pSymbolTable, ErrorInterface* pErrIf, ErrorInterface::ErrorInfo& rErrInfo) :
@@ -59,8 +59,8 @@ namespace Interpreter
         virtual ~NoSymbolLvalue()
         {
         }
-        virtual void Equ(Rvalue& rValue);
-        virtual void Dim(Rvalue& rValue);
+        virtual void Equ(ValueNode* pRvalue);
+        virtual void Dim(ValueNode* pRvalue);
 
     private:
         std::vector<int> m_ArraySpecifier;
@@ -80,8 +80,8 @@ namespace Interpreter
         {
         }
 
-        virtual void Equ(Rvalue& rValue);
-        virtual void Dim(Rvalue& rValue)
+        virtual void Equ(ValueNode* pRvalue);
+        virtual void Dim(ValueNode* pRvalue)
         {
             assert(false);
         }
@@ -102,8 +102,8 @@ namespace Interpreter
         {
         }
 
-        virtual void Equ(Rvalue& rValue);
-        virtual void Dim(Rvalue& rValue);
+        virtual void Equ(ValueNode* pRvalue);
+        virtual void Dim(ValueNode* pRvalue);
     private:
     };
 
@@ -119,8 +119,8 @@ namespace Interpreter
         {
         }
 
-        virtual void Equ(Rvalue& rValue);
-        virtual void Dim(Rvalue& rValue);
+        virtual void Equ(ValueNode* pRvalue);
+        virtual void Dim(ValueNode* pRvalue);
 
     private:
     };
@@ -138,8 +138,8 @@ namespace Interpreter
         {
         }
 
-        virtual void Equ(Rvalue& rValue);
-        virtual void Dim(Rvalue& rValue);
+        virtual void Equ(ValueNode* pRvalue);
+        virtual void Dim(ValueNode* pRvalue);
     };
 
     class RefArraySpecifierLvalue : public Lvalue
@@ -157,8 +157,8 @@ namespace Interpreter
         {
         }
 
-        virtual void Equ(Rvalue& rValue);
-        virtual void Dim(Rvalue& rValue)
+        virtual void Equ(ValueNode* pRvalue);
+        virtual void Dim(ValueNode* pRvalue)
         {
             assert(false);
         }

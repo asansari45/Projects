@@ -5,30 +5,30 @@
 namespace Interpreter
 {
 
-ArrayValue::ArrayValue():
-    m_Dims(),
-    m_Type(typeid(int))
-{
-    m_Data.m_pInts = nullptr;
-}
-
-ArrayValue::ArrayValue(const ArrayValue& p):
-    m_Dims(p.m_Dims),
-    m_Type(p.m_Type)
+ArrayValue::ArrayValue(std::vector<int> dims, std::type_index t):
+    m_Dims(dims),
+    m_Type(t)
 {
     if (m_Type == typeid(int))
     {
-        AssignArrays(m_Data.m_pInts, p.GetData<int>(), GetElementCount());
+        m_Data.m_pInts = new int[GetElementCount()];
+        std::memset(m_Data.m_pInts, 0, sizeof(int) * GetElementCount());
+        assert(m_Data.m_pInts != nullptr);
     }
-
-    if (m_Type == typeid(float))
+    else if (m_Type == typeid(float))
     {
-        AssignArrays(m_Data.m_pFloats, p.GetData<float>(), GetElementCount());
+        m_Data.m_pFloats = new float[GetElementCount()];
+        std::memset(m_Data.m_pFloats, 0, sizeof(float) * GetElementCount());
+        assert(m_Data.m_pFloats != nullptr);
     }
-
-    if (m_Type == typeid(std::string))
+    else if (m_Type == typeid(std::string))
     {
-        AssignArrays(m_Data.m_pStrings, p.GetData<std::string>(), GetElementCount());
+        m_Data.m_pStrings = new std::string[GetElementCount()];
+        assert(m_Data.m_pStrings != nullptr);
+    }
+    else
+    {
+        assert(false);
     }
 }
 
@@ -50,39 +50,9 @@ ArrayValue::~ArrayValue()
     }
 }
 
-bool ArrayValue::Init(std::vector<int> dims, std::type_index t)
+ArrayValue* ArrayValue::Create(std::vector<int> dims, std::type_index t)
 {
-    if (m_Type == typeid(int))
-    {
-        delete [] m_Data.m_pInts;
-    }
-
-    if (m_Type == typeid(float))
-    {
-        delete [] m_Data.m_pFloats;
-    }
-
-    if (m_Type == typeid(std::string))
-    {
-        delete [] m_Data.m_pStrings;
-    }
-
-    m_Type = t;
-    m_Dims = dims;
-    if (m_Type == typeid(int))
-    {
-        m_Data.m_pInts = new int[GetElementCount()];
-    }
-
-    if (m_Type == typeid(float))
-    {
-        m_Data.m_pFloats = new float[GetElementCount()];
-    }
-
-    if (m_Type == typeid(std::string))
-    {
-        m_Data.m_pStrings = new std::string[GetElementCount()];
-    }
+    return new ArrayValue(dims,t);
 }
 
 std::optional<Value> ArrayValue::GetValue(std::vector<int> element)
@@ -267,7 +237,7 @@ std::type_index ArrayValue::GetType()
 }
 
 // Add 2 arrays together.
-bool ArrayValue::Add(ArrayValue& v)
+bool ArrayValue::Add(ArrayValue* v)
 {
     bool status = LikenessChecks(v);
     if (!status)
@@ -276,12 +246,12 @@ bool ArrayValue::Add(ArrayValue& v)
     }
 
     std::type_index ourType = GetType();
-    std::type_index theirType = v.GetType();
+    std::type_index theirType = v->GetType();
     if (ourType == typeid(int))
     {
         if (theirType == typeid(int))
         {
-            AddArrays(m_Data.m_pInts, v.GetData<int>(), m_Data.m_pInts, GetElementCount());
+            AddArrays(m_Data.m_pInts, v->GetIntData(), m_Data.m_pInts, GetElementCount());
             return true;
         }
 
@@ -290,7 +260,7 @@ bool ArrayValue::Add(ArrayValue& v)
             // Convert results to be all floats.
             float* pFloats = new float[GetElementCount()];
             assert(m_Data.m_pFloats != nullptr);
-            AddArrays(m_Data.m_pInts, v.GetData<float>(), pFloats, GetElementCount());
+            AddArrays(m_Data.m_pInts, v->GetFloatData(), pFloats, GetElementCount());
             delete [] m_Data.m_pInts;
             m_Type = typeid(float);
             m_Data.m_pFloats = pFloats;
@@ -304,13 +274,13 @@ bool ArrayValue::Add(ArrayValue& v)
     {
         if (theirType == typeid(int))
         {
-            AddArrays(m_Data.m_pFloats, v.GetData<int>(), m_Data.m_pFloats, GetElementCount());
+            AddArrays(m_Data.m_pFloats, v->GetIntData(), m_Data.m_pFloats, GetElementCount());
             return true;
         }
 
         if (theirType == typeid(float))
         {
-            AddArrays(m_Data.m_pFloats, v.GetData<float>(), m_Data.m_pFloats, GetElementCount());
+            AddArrays(m_Data.m_pFloats, v->GetFloatData(), m_Data.m_pFloats, GetElementCount());
             return true;
         }
 
@@ -320,23 +290,23 @@ bool ArrayValue::Add(ArrayValue& v)
     assert(ourType == typeid(std::string));
     if (theirType == typeid(std::string))
     {
-        AddArrays(m_Data.m_pStrings, v.GetData<std::string>(), m_Data.m_pStrings, GetElementCount());
+        AddArrays(m_Data.m_pStrings, v->GetStringData(), m_Data.m_pStrings, GetElementCount());
     }
 
     return true;
 }
 
-bool ArrayValue::LikenessChecks(ArrayValue& v)
+bool ArrayValue::LikenessChecks(ArrayValue* v)
 {
     // The dimensions must match.
-    if (m_Dims != v.GetDims())
+    if (m_Dims != v->GetDims())
     {
         return false;
     }
 
     // The type of each element must match.
     std::type_index ourType = GetType();
-    std::type_index theirType = v.GetType();
+    std::type_index theirType = v->GetType();
     if (ourType == typeid(int))
     {
         if (theirType == typeid(std::string))
@@ -445,40 +415,30 @@ std::string ArrayValue::GetValuesRepr()
     return s;
 }
 
-ArrayValue& ArrayValue::operator=(const ArrayValue& o)
+ArrayValue* ArrayValue::Clone()
 {
-    ArrayValue& r = const_cast<ArrayValue&>(o);
-    m_Dims = r.GetDims();
-    if ( m_Type == typeid(int))
-    {
-        delete [] m_Data.m_pInts;
-    }
-    else if( m_Type == typeid(float))
-    {
-        delete [] m_Data.m_pFloats;
-    }
-    else if( m_Type == typeid(std::string))
-    {
-        delete [] m_Data.m_pStrings;
-    }
+    // Clone has memory allocated for the given type.
+    ArrayValue* pClone = ArrayValue::Create(m_Dims, m_Type);
+    assert(pClone != nullptr);
 
-    if (r.GetType() == typeid(int))
+    // copy data over to clone's buffer.
+    if (m_Type == typeid(int))
     {
-        m_Data.m_pInts = new int[GetElementCount()];
-        AssignArrays(m_Data.m_pInts, r.GetData<int>(), GetElementCount());
+        std::memcpy(pClone->GetIntData(), m_Data.m_pInts, sizeof(int) * GetElementCount());
     }
-    else if (r.GetType() == typeid(float))
+    else if (m_Type == typeid(float))
     {
-        m_Data.m_pFloats = new float[GetElementCount()];
-        AssignArrays(m_Data.m_pFloats, r.GetData<float>(), GetElementCount());
+        std::memcpy(pClone->GetFloatData(), m_Data.m_pFloats, sizeof(float) * GetElementCount());
     }
-    else if (r.GetType() == typeid(std::string))
+    else if (m_Type == typeid(std::string))
     {
-        m_Data.m_pStrings = new std::string[GetElementCount()];
-        AssignArrays(m_Data.m_pStrings, r.GetData<std::string>(), GetElementCount());
+        std::string* pCloneData = pClone->GetStringData();
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            pCloneData[i] = m_Data.m_pStrings[i];
+        }
     }
-
-    return *this;
+    
+    return pClone;
 }
-
 }
