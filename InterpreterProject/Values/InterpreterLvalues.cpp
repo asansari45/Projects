@@ -107,9 +107,6 @@ namespace Interpreter
             m_pErrIf->SetErrorInfo(m_ErrInfo);
             return;
         }
-
-        status = m_pSymbolTable->UpdateSymbol(m_Name, pInfo);
-        assert(status);
     }
 
     // There is a symbol in the symbol table.  It is an array.

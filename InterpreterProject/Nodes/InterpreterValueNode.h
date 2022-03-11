@@ -14,6 +14,7 @@ namespace Interpreter
         Node* Clone();
         virtual void Accept(NodeVisitor& rVisitor);
         Value GetValue() { return m_Value; }
+        Value& GetValueRef() { return m_Value; }
         void SetValue(Value v) { m_Array = false; m_Value = v; }
         ArrayValue* GetArrayValue() const { return m_pArrayValue; }
         void SetArrayValue(ArrayValue* pValue) { m_Array = true; m_pArrayValue = pValue; }

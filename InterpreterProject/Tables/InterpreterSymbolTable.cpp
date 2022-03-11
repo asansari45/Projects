@@ -4,7 +4,7 @@
 
 #include "DebugMemory/DebugMemory.h"
 
-#undef SYMTABLE_DEBUG
+#define SYMTABLE_DEBUG
 
 namespace Interpreter
 {
@@ -23,6 +23,7 @@ SymbolTable::SymbolTable(SymbolTable& rProto) :
 
 SymbolTable::~SymbolTable()
 {
+    Clear();
 }
 
 static void FillDebugBuf(SymbolTable::SymbolInfo* pInfo, char* buf, int len)

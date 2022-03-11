@@ -125,6 +125,7 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
             float* pFloats = new float[GetElementCount()];
             AssignArrays(pFloats, m_Data.m_pInts, GetElementCount());
             delete [] m_Data.m_pInts;
+            m_Type = typeid(float);
             m_Data.m_pFloats = pFloats;
             m_Data.m_pFloats[*index] = v.GetFloatValue();
             return true;

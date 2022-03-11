@@ -11,6 +11,7 @@
 #include "Nodes/InterpreterDimNode.h"
 #include "Values/InterpreterLvalues.h"
 #include "Visitors/InterpreterErrorInterface.h"
+#include "Visitors/InterpreterExecutionNodeVisitorServices.h"
 #include "DebugMemory/DebugMemory.h"
 
 namespace Interpreter
@@ -44,6 +45,7 @@ namespace Interpreter
     }
 
     ValueNode* BinaryFunc::GetRvalue(Node* pNode,
+                                     ExecutionNodeVisitorServices* pServices,
                                      ErrorInterface* pErrorInterface)
     {
         // Literals processing
@@ -60,9 +62,9 @@ namespace Interpreter
         std::string name = pVarNode->GetName();
         std::vector<int> arraySpecifier = pVarNode->GetArraySpecifier();
 
-        if (pVarNode->IsSymbolPresent())
+        if (pServices->IsSymbolPresent(name))
         {
-            SymbolTable::SymbolInfo* pInfo = pVarNode->GetSymbolInfo();
+            SymbolTable::SymbolInfo* pInfo = pServices->ReadSymbol(name, true);
             assert(pInfo != nullptr);
             assert(!pInfo->m_IsRef);
             if (pInfo->m_IsArray)
@@ -113,6 +115,7 @@ namespace Interpreter
 
     Lvalue* BinaryFunc::GetLvalue(Node* pNode, 
                                   ValueNode* pRvalue,
+                                  ExecutionNodeVisitorServices* pServices,
                                   ErrorInterface* pErrorInterface)
     {
         ErrorInterface::ErrorInfo errInfo(pNode);
@@ -122,16 +125,16 @@ namespace Interpreter
         {
             std::string name = pVarNode->GetName();
             std::vector<int> arraySpecifier = pVarNode->GetArraySpecifier();
-            if (!pVarNode->IsSymbolPresent())
+            if (!pServices->IsSymbolPresent(name))
             {
                 return new NoSymbolLvalue(name,
                                           arraySpecifier,
-                                          pVarNode->GetNoSymbol(),
+                                          pServices->GetNoSymbolTable(),
                                           pErrorInterface, 
                                           errInfo);
             }
 
-            SymbolTable::SymbolInfo* pSymbolInfo = pVarNode->GetSymbolInfo();
+            SymbolTable::SymbolInfo* pSymbolInfo = pServices->ReadSymbol(name, true);
             assert(!pSymbolInfo->m_IsRef);
 
             // Array element checking
@@ -154,7 +157,7 @@ namespace Interpreter
 
     class EquFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
             // Check for variable lists.
             VarListNode* pLeftVarList = dynamic_cast<VarListNode*>(pLeft);
@@ -172,19 +175,19 @@ namespace Interpreter
 
             if (pLeftVarList != nullptr)
             {
-                ProcessVarLists(pLeftVarList, pRightVarList, pErrorInterface);
+                ProcessVarLists(pLeftVarList, pRightVarList, pServices, pErrorInterface);
                 return nullptr;
             }
 
             // Figure it if we're operating with arrays or not.
             // Either both have to represent arrays or not.
-            std::unique_ptr<ValueNode> pRval(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> pRval(GetRvalue(pRight, pServices, pErrorInterface));
             if (pRval == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<Lvalue> pLval(GetLvalue(pLeft, pRval.get(), pErrorInterface));
+            std::unique_ptr<Lvalue> pLval(GetLvalue(pLeft, pRval.get(), pServices, pErrorInterface));
             if (pLval == nullptr)
             {
                 return nullptr;
@@ -194,7 +197,7 @@ namespace Interpreter
             return nullptr;
         }
     private:
-        void ProcessVarLists(VarListNode* pLeft, VarListNode* pRight, ErrorInterface* pErrorInterface)
+        void ProcessVarLists(VarListNode* pLeft, VarListNode* pRight, ExecutionNodeVisitorServices* pServices, ErrorInterface* pErrorInterface)
         {
             // Argument count check
             if (pLeft->GetListCount() != pRight->GetListCount())
@@ -212,7 +215,7 @@ namespace Interpreter
             while (pLeftNodes != nullptr && pRightNodes != nullptr)
             {
                 // Perform the copies one by one.
-                Perform(pLeftNodes, pRightNodes, pErrorInterface);
+                Perform(pLeftNodes, pRightNodes, pServices, pErrorInterface);
                 if (pErrorInterface->IsErrorFlagSet())
                 {
                     // We're done, let's stop.
@@ -228,15 +231,15 @@ namespace Interpreter
 
     class AddFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
@@ -286,7 +289,7 @@ namespace Interpreter
                 return nullptr;
             }
             
-            bool status = lhs->GetValue().Add(rhs->GetValue());
+            bool status = lhs->GetValueRef().Add(rhs->GetValue());
             if (!status)
             {
                 ErrorInterface::ErrorInfo err(pLeft);
@@ -304,21 +307,21 @@ namespace Interpreter
 
     class SubFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
             }
 
-            bool status = lhs->GetValue().Sub(rhs->GetValue());
+            bool status = lhs->GetValueRef().Sub(rhs->GetValue());
             if (!status)
             {
                 ErrorInterface::ErrorInfo err(pLeft);
@@ -336,21 +339,21 @@ namespace Interpreter
 
     class MulFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
             }
 
-            bool status = lhs->GetValue().Mul(rhs->GetValue());
+            bool status = lhs->GetValueRef().Mul(rhs->GetValue());
             if (!status)
             {
                 ErrorInterface::ErrorInfo err(pLeft);
@@ -368,21 +371,21 @@ namespace Interpreter
 
     class DivFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
             }
 
-            bool status = lhs->GetValue().Div(rhs->GetValue());
+            bool status = lhs->GetValueRef().Div(rhs->GetValue());
             if (!status)
             {
                 ErrorInterface::ErrorInfo err(pLeft);
@@ -400,15 +403,15 @@ namespace Interpreter
 
     class LesFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
@@ -434,15 +437,15 @@ namespace Interpreter
 
     class LeqFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
@@ -468,15 +471,15 @@ namespace Interpreter
 
     class GrtFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
@@ -502,15 +505,15 @@ namespace Interpreter
 
     class GeqFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
@@ -536,15 +539,15 @@ namespace Interpreter
 
     class DeqFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
@@ -571,15 +574,15 @@ namespace Interpreter
 
     class NeqFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pErrorInterface));
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
             if (rhs == nullptr)
             {
                 return nullptr;
@@ -605,16 +608,16 @@ namespace Interpreter
 
     class NegFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight,  ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
         {
             assert(pRight == nullptr);
-            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pErrorInterface));
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
             if (lhs == nullptr)
             {
                 return nullptr;
             }
 
-            bool status = lhs->GetValue().Neg();
+            bool status = lhs->GetValueRef().Neg();
             if (status == false)
             {
                 ErrorInterface::ErrorInfo err(pLeft);
@@ -634,7 +637,7 @@ namespace Interpreter
     // a = dim[10]
     class DimFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight,  
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,  
                               ErrorInterface* pErrorInterface)
         {
             DimNode* pDimNode = dynamic_cast<DimNode*>(pRight);
@@ -644,7 +647,7 @@ namespace Interpreter
             std::vector<int> dims;
             for (Node* pValNode = pDimNode->GetDim(); pValNode != nullptr; pValNode = pValNode->GetNext())
             {
-                std::unique_ptr<ValueNode> rval(GetRvalue(pValNode, pErrorInterface));
+                std::unique_ptr<ValueNode> rval(GetRvalue(pValNode, pServices, pErrorInterface));
                 if (rval == nullptr)
                 {
                     return nullptr;
@@ -673,7 +676,7 @@ namespace Interpreter
             ArrayValue* pArrayValue = ArrayValue::Create(dims, typeid(int));
             pValueNode->SetArrayValue(pArrayValue);
 
-            Lvalue* pLval = GetLvalue(pLeft, pValueNode.get(), pErrorInterface);
+            Lvalue* pLval = GetLvalue(pLeft, pValueNode.get(), pServices, pErrorInterface);
             assert(pLval != nullptr);
             pLval->Dim(pValueNode.get());
             delete pLval;
@@ -687,8 +690,9 @@ namespace Interpreter
     // AryFunc is used for a[3,4,5]
     class AryFunc : public BinaryFunc
     {
-        virtual Node* Perform(Node* pLeft, Node* pRight, 
-            ErrorInterface* pErrorInterface)
+        virtual Node* Perform(Node* pLeft, Node* pRight,
+                              ExecutionNodeVisitorServices* pServices, 
+                              ErrorInterface* pErrorInterface)
         {
             DimNode* pDimNode = dynamic_cast<DimNode*>(pRight);
             assert(pDimNode != nullptr);
@@ -697,7 +701,7 @@ namespace Interpreter
             std::vector<int> dims;
             for (Node* pValNode = pDimNode->GetDim(); pValNode != nullptr; pValNode = pValNode->GetNext())
             {
-                std::unique_ptr<ValueNode> v(GetRvalue(pValNode, pErrorInterface));
+                std::unique_ptr<ValueNode> v(GetRvalue(pValNode, pServices, pErrorInterface));
                 if (v != nullptr)
                 {
                     if (v->IsArray())

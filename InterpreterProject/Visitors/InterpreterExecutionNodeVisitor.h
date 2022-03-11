@@ -3,6 +3,7 @@
 #include <optional>
 #include "InterpreterNodeVisitor.hpp"
 #include "InterpreterErrorInterface.h"
+#include "InterpreterExecutionNodeVisitorServices.h"
 #include "Nodes/InterpreterValueNode.h"
 #include "Nodes/InterpreterVarNode.h"
 #include "Tables/InterpreterSymbolTable.h"
@@ -11,7 +12,8 @@ namespace Interpreter
 {
 
 class ExecutionNodeVisitor : public NodeVisitor,
-                             public ErrorInterface
+                             public ErrorInterface,
+                             public ExecutionNodeVisitorServices
 {
 public:
     ExecutionNodeVisitor(SymbolTable* pGlobalSymbols);
@@ -58,8 +60,10 @@ public:
 #endif
 
 private:
+
     ValueNode* GetTopOfStackValue(Node* pTop);
 
+#if 0
     bool IsArray(Node* pNode)
     {
         ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
@@ -85,12 +89,20 @@ private:
 
         return false;
     }
+#endif
 
     bool ExecuteIfNode(IfNode* pIfNode);
 
     std::optional<std::string> GetFileOpenString(Node* pNode);
     File* GetFile(Node* pNode);
 
+    // Symbol services
+    bool CreateSymbol(std::string name, SymbolTable::SymbolInfo* pSymbolInfo) override;
+    bool IsSymbolPresent(std::string name) override;
+    SymbolTable::SymbolInfo* ReadSymbol(std::string name, bool getroot=false) override;
+    bool UpdateSymbol(std::string name, SymbolTable::SymbolInfo* pSymbolInfo) override;
+    void DeleteSymbol(SymbolTable::SymbolInfo* pSymbolInfo) override;
+    SymbolTable* GetNoSymbolTable() override;
     
     // All nodes are clones of the original tree.
     std::vector<Node*> m_Nodes;

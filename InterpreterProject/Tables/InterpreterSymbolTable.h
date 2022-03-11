@@ -20,7 +20,7 @@ public:
             m_pTable(nullptr),
             m_IsArray(false),
             m_Value(),
-            m_pArrayValue(),
+            m_pArrayValue(nullptr),
             m_IsRef(false),
             m_RefName(),
             m_pRefTable(nullptr)

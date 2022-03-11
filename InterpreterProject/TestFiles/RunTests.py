@@ -1441,7 +1441,7 @@ class FileIoTests(unittest.TestCase):
                      }
                      """
         expectedOutput = ['1']*6 + ['0','1.5', '3', '4.5', '6', '7.5', '9', '10.5', '12', '13.5']
-        TestExecutor(self, testLines, expectedOutput).Execute(dbg=True)
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
         testLines = """clear()
                      x=dim[10]
@@ -1514,24 +1514,24 @@ class FileIoTests(unittest.TestCase):
             c[i] = i
         }
         
-        f = fopen(\"file.bin\", \"wb\")
-        fwrite(f, a)
-        fwrite(f, b)
-        fwrite(f, c)
-        fclose(f)
+        {status,f} = fopen(\"file.bin\", \"wb\")
+        status=fwrite(f, a)
+        status=fwrite(f, b)
+        status=fwrite(f, c)
+        status=fclose(f)
 
-        f = fopen(\"file.bin\", \"rb\")
-        q = fread(f)
-        r = fread(f)
-        s = fread(f)
-        fclose(f)
+        {status,f} = fopen(\"file.bin\", \"rb\")
+        {status,q} = fread(f)
+        {status,r} = fread(f)
+        {status,s} = fread(f)
+        status=fclose(f)
         print(q)
         print(r)
         for (i=0, i < 10, i=i+1)
         {
             print(s[i])
         }
-        fclose(f)
+        status=fclose(f)
         """
 
         expectedOutput = ['3', '4'] + ['%d' % s for s in range(10)]
@@ -1539,22 +1539,24 @@ class FileIoTests(unittest.TestCase):
 
     def test_fileio_eof(self):
         testLines = """
-        f = fopen(\"file.bin\", \"wb\")
+        {status,f} = fopen(\"file.bin\", \"wb\")
         for (i=0, i < 1000, i=i+1)
         {
-            fwrite(f,i)
+            status=fwrite(f,i)
         }
-        fclose(f)
+        status=fclose(f)
 
-        f = fopen(\"file.bin\", \"rb\")
-        x = fread(f)
+        {status,f} = fopen(\"file.bin\", \"rb\")
+        {status,x} = fread(f)
         print(x)
-        while (feof(f) == 0)
+        {status,eofstatus}=feof(f)
+        while (eofstatus == 0)
         {
-            x = fread(f)
+            {status,x} = fread(f)
             print(x)
+            {status,eofstatus}=feof(f)
         }
-        fclose(f)
+        status=fclose(f)
         """
         
         expectedOutput = ['%d' % s for s in range(1000)] + ['0']
