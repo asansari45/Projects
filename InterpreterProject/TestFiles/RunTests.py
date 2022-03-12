@@ -1562,5 +1562,68 @@ class FileIoTests(unittest.TestCase):
         expectedOutput = ['%d' % s for s in range(1000)] + ['0']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
+class BitWiseOperators(unittest.TestCase):
+    def test_bitwise(self):
+        testLines = """clear()
+                       a = b1001
+                       b = b0110
+                       c = a | b
+                       print(c)
+
+                       a = b1001
+                       b = b0110
+                       c = a & b
+                       print(c)
+
+                       a = b1111
+                       b = b0110
+                       c = a ^ b
+                       print(c)
+
+                       a = b1111
+                       b = 2
+                       c = a >> b
+                       print(c)
+
+                       a = 1
+                       b = 2
+                       c = a << b
+                       print(c)
+                       """
+                    
+        expectedOutput = ['15', '0', '9', '3', '4']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+class LogicalOperators(unittest.TestCase):
+    def test_Logical(self):
+        testLines = """clear()
+                       a=1
+                       b=0
+                       c=a && b
+                       print(c)
+
+                       a=1
+                       b=1
+                       c=a && b
+                       print(c)
+
+                       a=1
+                       b=0
+                       c=a || b
+                       print(c)
+
+                       a=1
+                       b=1
+                       c=a || b
+                       print(c)
+
+                       a=0
+                       b=0
+                       c=a || b
+                       print(c)
+                    """
+        expectedOutput = ['0', '1', '1', '1', '0']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
 if __name__ == '__main__':
     unittest.main()

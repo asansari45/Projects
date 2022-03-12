@@ -99,6 +99,13 @@ class Node;
 %token GEQ_
 %token DEQ_
 %token NEQ_
+%token OR_
+%token AND_
+%token XOR_
+%token LSH_
+%token RSH_
+%token LOR_
+%token LAND_
 %token LPAREN_
 %token RPAREN_
 %token IF_
@@ -123,7 +130,6 @@ class Node;
 %token RAND_
 %token LEN_
 %token BREAK_
-%token AMPERSAND_
 %token QUIT_
 %token PRINT_
 %token LOAD_
@@ -173,6 +179,7 @@ class Node;
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
+%left OR_ AND_ XOR_ LSH_ RSH_ LOR_ LAND_
 %left PLUS_ MINUS_
 %left MULTIPLY_ DIVIDE_
 %right UMINUS_
@@ -473,7 +480,7 @@ func_param_comma : func_param COMMA_
     ;
 
 func_param :
-    AMPERSAND_ NAME_
+    AND_ NAME_
     {
         Interpreter::VarNode* pNode = dynamic_cast<Interpreter::VarNode*>($2);
         assert(pNode != nullptr);
@@ -714,6 +721,69 @@ expression:
     {
         Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
         pNode->SetOperator(Interpreter::BinaryNode::NEQ);
+        pNode->SetLeft($1);
+        pNode->SetRight($3);
+        $$ = pNode;
+    }
+    |
+    expression OR_ expression
+    {
+        Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
+        pNode->SetOperator(Interpreter::BinaryNode::OR);
+        pNode->SetLeft($1);
+        pNode->SetRight($3);
+        $$ = pNode;
+    }
+    |
+    expression AND_ expression
+    {
+        Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
+        pNode->SetOperator(Interpreter::BinaryNode::AND);
+        pNode->SetLeft($1);
+        pNode->SetRight($3);
+        $$ = pNode;
+    }
+    |
+    expression XOR_ expression
+    {
+        Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
+        pNode->SetOperator(Interpreter::BinaryNode::XOR);
+        pNode->SetLeft($1);
+        pNode->SetRight($3);
+        $$ = pNode;
+    }
+    |
+    expression LSH_ expression
+    {
+        Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
+        pNode->SetOperator(Interpreter::BinaryNode::LSH);
+        pNode->SetLeft($1);
+        pNode->SetRight($3);
+        $$ = pNode;
+    }
+    |
+    expression RSH_ expression
+    {
+        Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
+        pNode->SetOperator(Interpreter::BinaryNode::RSH);
+        pNode->SetLeft($1);
+        pNode->SetRight($3);
+        $$ = pNode;
+    }
+    |
+    expression LOR_ expression
+    {
+        Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
+        pNode->SetOperator(Interpreter::BinaryNode::LOR);
+        pNode->SetLeft($1);
+        pNode->SetRight($3);
+        $$ = pNode;
+    }
+    |
+    expression LAND_ expression
+    {
+        Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
+        pNode->SetOperator(Interpreter::BinaryNode::LAND);
         pNode->SetLeft($1);
         pNode->SetRight($3);
         $$ = pNode;

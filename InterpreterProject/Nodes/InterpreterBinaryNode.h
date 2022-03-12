@@ -23,7 +23,14 @@ namespace Interpreter
             NEQ,
             NEG,
             DIM,
-            ARY
+            ARY,
+            OR,
+            AND,
+            XOR,
+            LSH,
+            RSH,
+            LOR,
+            LAND
         };
 
         BinaryNode();

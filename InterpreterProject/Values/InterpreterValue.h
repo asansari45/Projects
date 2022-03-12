@@ -36,15 +36,29 @@ namespace Interpreter
         bool Mul(Value p);
         bool Div(Value p);
         bool Neg();
+
+        // Bitwise operators
+        bool Or(Value p);
+        bool And(Value p);
+        bool Xor(Value p);
+        bool Lsh(Value p);
+        bool Rsh(Value p);
+
         std::optional<bool> Les(Value p);
         std::optional<bool> Leq(Value p);
         std::optional<bool> Grt(Value p);
         std::optional<bool> Geq(Value p);
         std::optional<bool> Deq(Value p);
         std::optional<bool> Neq(Value p);
+        std::optional<bool> LogicalOr(Value p);
+        std::optional<bool> LogicalAnd(Value p);
+
 
         std::string GetTypeRepr();
         std::string GetValueRepr();
+
+        // Helper methods for conversion
+        static int ConvertBinary(const char* pStr);
 
     private:
         std::type_index m_Type;

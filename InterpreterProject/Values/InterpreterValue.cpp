@@ -330,6 +330,106 @@ namespace Interpreter
         return true;
     }
 
+    bool Value::Or(Value v)
+    {
+        std::type_index mytype = GetType();
+        std::type_index theirtype = v.GetType();
+
+        if (mytype == typeid(std::string) || mytype == typeid(float))
+        {
+            return false;
+        }
+
+        if (theirtype == typeid(std::string) || theirtype == typeid(float))
+        {
+            return false;
+        }
+
+        assert(mytype == typeid(int) && theirtype == typeid(int));
+        m_IntValue |= v.GetIntValue();
+        return true;
+    }
+
+    bool Value::And(Value v)
+    {
+        std::type_index mytype = GetType();
+        std::type_index theirtype = v.GetType();
+
+        if (mytype == typeid(std::string) || mytype == typeid(float))
+        {
+            return false;
+        }
+
+        if (theirtype == typeid(std::string) || theirtype == typeid(float))
+        {
+            return false;
+        }
+
+        assert(mytype == typeid(int) && theirtype == typeid(int));
+        m_IntValue &= v.GetIntValue();
+        return true;
+    }
+
+    bool Value::Xor(Value v)
+    {
+        std::type_index mytype = GetType();
+        std::type_index theirtype = v.GetType();
+
+        if (mytype == typeid(std::string) || mytype == typeid(float))
+        {
+            return false;
+        }
+
+        if (theirtype == typeid(std::string) || theirtype == typeid(float))
+        {
+            return false;
+        }
+
+        assert(mytype == typeid(int) && theirtype == typeid(int));
+        m_IntValue ^= v.GetIntValue();
+        return true;
+    }
+
+    bool Value::Lsh(Value v)
+    {
+        std::type_index mytype = GetType();
+        std::type_index theirtype = v.GetType();
+
+        if (mytype == typeid(std::string) || mytype == typeid(float))
+        {
+            return false;
+        }
+
+        if (theirtype == typeid(std::string) || theirtype == typeid(float))
+        {
+            return false;
+        }
+
+        assert(mytype == typeid(int) && theirtype == typeid(int));
+        m_IntValue = m_IntValue << v.GetIntValue();
+        return true;
+    }
+
+    bool Value::Rsh(Value v)
+    {
+        std::type_index mytype = GetType();
+        std::type_index theirtype = v.GetType();
+
+        if (mytype == typeid(std::string) || mytype == typeid(float))
+        {
+            return false;
+        }
+
+        if (theirtype == typeid(std::string) || theirtype == typeid(float))
+        {
+            return false;
+        }
+
+        assert(mytype == typeid(int) && theirtype == typeid(int));
+        m_IntValue = m_IntValue >> v.GetIntValue();
+        return true;
+    }
+
     std::optional<bool> Value::Les(Value p)
     {
         std::type_index mytype = GetType();
@@ -617,4 +717,42 @@ namespace Interpreter
 
         return {};
     }
+
+    std::optional<bool> Value::LogicalOr(Value p)
+    {
+        std::type_index mytype = GetType();
+        std::type_index othertype = p.GetType();
+
+        if (mytype != typeid(int) || othertype != typeid(int))
+        {
+            return {};
+        }
+
+        return GetIntValue() || p.GetIntValue();
+   }
+
+    std::optional<bool> Value::LogicalAnd(Value p)
+    {
+        std::type_index mytype = GetType();
+        std::type_index othertype = p.GetType();
+
+        if (mytype != typeid(int) || othertype != typeid(int))
+        {
+            return {};
+        }
+
+        return GetIntValue() && p.GetIntValue();
+   }
+
+   int Value::ConvertBinary(const char* pStr)
+   {
+       int len = static_cast<int>(strlen(pStr));
+       int result = 0;
+       for (int i = len-1; i >= 0; i--)
+       {
+           int v = pStr[i] == '1' ? 1 : 0;
+           result = result | (v<<i);
+       }
+       return result;
+   }
 }

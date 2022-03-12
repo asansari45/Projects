@@ -31,7 +31,7 @@ namespace Interpreter
 
     void AlgorithmRepository::Shutdown()
     {
-        for (int i = 0; i <= BinaryNode::ARY; i++)
+        for (int i = 0; i <= BinaryNode::LAND; i++)
         {
             delete m_pFunctionTable[i];
         }
@@ -606,6 +606,74 @@ namespace Interpreter
         }
     };
 
+    class LorFunc : public BinaryFunc
+    {
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
+        {
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
+            if (lhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
+            if (rhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::optional<bool> status = lhs->GetValue().LogicalOr(rhs->GetValue());
+            if (status == std::nullopt)
+            {
+                ErrorInterface::ErrorInfo err(pLeft);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
+                err.m_Msg = buf;
+                
+                pErrorInterface->SetErrorInfo(err);
+                return nullptr;
+            }
+
+            Value v;
+            v.SetIntValue(*status);
+            return new ValueNode(v);
+        }
+    };
+
+    class LandFunc : public BinaryFunc
+    {
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
+        {
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
+            if (lhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
+            if (rhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::optional<bool> status = lhs->GetValue().LogicalAnd(rhs->GetValue());
+            if (status == std::nullopt)
+            {
+                ErrorInterface::ErrorInfo err(pLeft);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_BINARY_OPERATION_FAILED);
+                err.m_Msg = buf;
+                
+                pErrorInterface->SetErrorInfo(err);
+                return nullptr;
+            }
+
+            Value v;
+            v.SetIntValue(*status);
+            return new ValueNode(v);
+        }
+    };
+
     class NegFunc : public BinaryFunc
     {
         virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
@@ -734,6 +802,166 @@ namespace Interpreter
         }
     };
 
+    class OrFunc : public BinaryFunc
+    {
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
+        {
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
+            if (lhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
+            if (rhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            bool status = lhs->GetValueRef().Or(rhs->GetValue());
+            if (status == false)
+            {
+                ErrorInterface::ErrorInfo err(pLeft);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNARY_OPERATION_FAILED);
+                err.m_Msg = buf;
+                
+                pErrorInterface->SetErrorInfo(err);
+                return nullptr;
+            }
+
+            return new ValueNode(lhs->GetValue());
+        }
+    };
+
+    class AndFunc : public BinaryFunc
+    {
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
+        {
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
+            if (lhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
+            if (rhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            bool status = lhs->GetValueRef().And(rhs->GetValue());
+            if (status == false)
+            {
+                ErrorInterface::ErrorInfo err(pLeft);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNARY_OPERATION_FAILED);
+                err.m_Msg = buf;
+                
+                pErrorInterface->SetErrorInfo(err);
+                return nullptr;
+            }
+
+            return new ValueNode(lhs->GetValue());
+        }
+    };
+
+    class XorFunc : public BinaryFunc
+    {
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
+        {
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
+            if (lhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
+            if (rhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            bool status = lhs->GetValueRef().Xor(rhs->GetValue());
+            if (status == false)
+            {
+                ErrorInterface::ErrorInfo err(pLeft);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNARY_OPERATION_FAILED);
+                err.m_Msg = buf;
+                
+                pErrorInterface->SetErrorInfo(err);
+                return nullptr;
+            }
+
+            return new ValueNode(lhs->GetValue());
+        }
+    };
+ 
+    class LshFunc : public BinaryFunc
+    {
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
+        {
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
+            if (lhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
+            if (rhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            bool status = lhs->GetValueRef().Lsh(rhs->GetValue());
+            if (status == false)
+            {
+                ErrorInterface::ErrorInfo err(pLeft);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNARY_OPERATION_FAILED);
+                err.m_Msg = buf;
+                
+                pErrorInterface->SetErrorInfo(err);
+                return nullptr;
+            }
+
+            return new ValueNode(lhs->GetValue());
+        }
+    };
+    
+    class RshFunc : public BinaryFunc
+    {
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
+        {
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
+            if (lhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            std::unique_ptr<ValueNode> rhs(GetRvalue(pRight, pServices, pErrorInterface));
+            if (rhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            bool status = lhs->GetValueRef().Rsh(rhs->GetValue());
+            if (status == false)
+            {
+                ErrorInterface::ErrorInfo err(pLeft);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNARY_OPERATION_FAILED);
+                err.m_Msg = buf;
+                
+                pErrorInterface->SetErrorInfo(err);
+                return nullptr;
+            }
+
+            return new ValueNode(lhs->GetValue());
+        }
+    };
+
     BinaryFunc* AlgorithmRepository::m_pFunctionTable[] =
     {
         nullptr,
@@ -750,7 +978,14 @@ namespace Interpreter
         new NeqFunc,
         new NegFunc,
         new DimFunc,
-        new AryFunc
+        new AryFunc,
+        new OrFunc,
+        new AndFunc,
+        new XorFunc,
+        new LshFunc,
+        new RshFunc,
+        new LorFunc,
+        new LandFunc
     };
 
     AlgorithmRepository::AlgorithmRepository()

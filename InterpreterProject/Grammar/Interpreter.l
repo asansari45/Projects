@@ -152,10 +152,6 @@ int yycolumn = 1;
     return token::FEOF_;
 }
 
-"&" {
-    return token::AMPERSAND_;
-}
-
 [a-zA-Z]+ {
             Interpreter::VarNode* pNode = new Interpreter::VarNode;
             pNode->SetName(yytext);
@@ -180,6 +176,23 @@ int yycolumn = 1;
             return token::STRING_;
 }
 
+[b][0-1]+ {
+    int result = Interpreter::Value::ConvertBinary(&yytext[1]);
+    Interpreter::Value v;
+    v.SetIntValue(result); 
+    Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
+    m_pYylval->m_pNode = pNode;
+    return token::NUM_;
+}
+
+0[xX][0-9a-fA-F]+ {
+            Interpreter::Value v;
+            v.SetIntValue(std::stoi(yytext, nullptr, 16));
+            Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
+            m_pYylval->m_pNode = pNode;
+            return token::NUM_;
+        }
+
 [0-9]*[\.][0-9]+ {
             Interpreter::Value v;
             v.SetFloatValue(std::stof(yytext));
@@ -196,20 +209,26 @@ int yycolumn = 1;
             return token::NUM_;
         }
 
-
+"<<" {return token::LSH_;}
+">>" {return token::RSH_;}
+"||" {return token::LOR_;}
+"&&" {return token::LAND_;}
+"<=" { return token::LEQ_; }
+"=<" { return token::LEQ_; }
+"==" { return token::DEQ_; }
+"!=" { return token::NEQ_; }
+">=" { return token::GEQ_; }
+"=>" { return token::GEQ_; }
+"^"  { return token::XOR_; }
 "\+" {return token::PLUS_;}
 "\-" {return token::MINUS_;}
 "\*" {return token::MULTIPLY_;}
 "\/" {return token::DIVIDE_;}
 "\=" {return token::EQUALS_;}
 ">" { return token::GRT_; }
-">=" { return token::GEQ_; }
-"=>" { return token::GEQ_; }
 "<" { return token::LES_; }
-"<=" { return token::LEQ_; }
-"=<" { return token::LEQ_; }
-"==" { return token::DEQ_; }
-"!=" { return token::NEQ_; }
+"|"  { return token::OR_; }
+"&" { return token::AND_;}
 "\(" { return token::LPAREN_; }
 "\)" { return token::RPAREN_; }
 "\{" { return token::LBRACKET_; }
