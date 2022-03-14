@@ -142,6 +142,7 @@ class Node;
 %token HEX_
 %token DEC_
 %token OCT_
+%token ENDL_
 %token <m_pNode> WIDTH_
 %token <m_pNode> FILL_
 %token <m_pNode> STRING_
@@ -989,6 +990,11 @@ print_param:
     OCT_
     {
         $$ = new Interpreter::PrintNode(Interpreter::PrintNode::OCT);
+    }
+    |
+    ENDL_
+    {
+        $$ = new Interpreter::PrintNode(Interpreter::PrintNode::ENDL);
     }
     |
     WIDTH_

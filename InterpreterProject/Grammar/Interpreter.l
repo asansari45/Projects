@@ -156,6 +156,7 @@ int yycolumn = 1;
 <print>"hex" { return token::HEX_; }
 <print>"dec" { return token::DEC_; }
 <print>"oct" { return token::OCT_; }
+<print>"endl" { return token::ENDL_; }
 <print>"\)" { BEGIN INITIAL;
               return token::RPAREN_; }
 <print>"width="[0-9]+ { char* ptr = strchr(yytext, '=');

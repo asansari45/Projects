@@ -14,7 +14,8 @@ namespace Interpreter
             HEX =   3,
             OCT =   4,
             WIDTH = 5,
-            FILL  = 6
+            FILL  = 6,
+            ENDL  = 7
         };
 
         PrintNode();

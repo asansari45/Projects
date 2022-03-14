@@ -148,7 +148,7 @@ namespace Interpreter
                 }
             }
         }
-        Log::GetInst()->AddMessage(s.str());
+        Log::GetInst()->AddNoNewlineMessage(s.str());
     }
 
     void ExecutionNodeVisitor::VisitQuitNode(Interpreter::QuitNode* pNode)

@@ -80,6 +80,10 @@ namespace Interpreter
         {
             rStream << std::setfill(static_cast<char>(m_FormatArg));
         }
+        else if (m_Format == ENDL)
+        {
+            rStream << std::endl;
+        }
     }
 
 };
