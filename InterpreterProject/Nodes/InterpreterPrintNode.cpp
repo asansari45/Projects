@@ -1,9 +1,29 @@
+#include <assert.h>
+#include <ios>
+#include <sstream>
+#include <iomanip>
 #include "InterpreterPrintNode.h"
 
 namespace Interpreter
 {
 
     PrintNode::PrintNode() :
+        m_Format(PrintNode::NONE),
+        m_FormatArg(0),
+        m_pChild(nullptr)
+    {
+    }
+
+    PrintNode::PrintNode(Format format) :
+        m_Format(format),
+        m_FormatArg(0),
+        m_pChild(nullptr)
+    {
+    }
+
+    PrintNode::PrintNode(Format format, int formatArg) :
+        m_Format(format),
+        m_FormatArg(formatArg),
         m_pChild(nullptr)
     {
     }
@@ -35,6 +55,31 @@ namespace Interpreter
     void PrintNode::Accept(Interpreter::NodeVisitor& rVisitor)
     {
         rVisitor.VisitPrintNode(this);
+    }
+
+    void PrintNode::ModifyStream(std::stringstream& rStream)
+    {
+        assert(m_Format != NONE);
+        if (m_Format == DEC)
+        {
+            rStream << std::dec;
+        }
+        else if (m_Format == HEX)
+        {
+            rStream << std::hex;
+        }
+        else if (m_Format == OCT)
+        {
+            rStream << std::oct;
+        }
+        else if (m_Format == WIDTH)
+        {
+            rStream << std::setw(m_FormatArg);
+        }
+        else if (m_Format == FILL)
+        {
+            rStream << std::setfill(static_cast<char>(m_FormatArg));
+        }
     }
 
 };

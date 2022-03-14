@@ -139,6 +139,11 @@ class Node;
 %token FREAD_
 %token FCLOSE_
 %token FEOF_
+%token HEX_
+%token DEC_
+%token OCT_
+%token <m_pNode> WIDTH_
+%token <m_pNode> FILL_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
 %token <m_pNode> FILENAME_
@@ -176,6 +181,10 @@ class Node;
 %nterm <m_pNode> func_param_comma
 %nterm <m_pNode> func_param_list
 %nterm <m_pNode> func_param_comma_list
+%nterm <m_pNode> print_param_list
+%nterm <m_pNode> print_param_comma_list
+%nterm <m_pNode> print_param_comma
+%nterm <m_pNode> print_param
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
@@ -925,7 +934,7 @@ command:
     ;
 
 print:
-    PRINT_ LPAREN_ expression_list RPAREN_
+    PRINT_ LPAREN_ print_param_list RPAREN_
     {
         Interpreter::PrintNode* pNode = new Interpreter::PrintNode;
         pNode->SetChild($3);
@@ -935,6 +944,72 @@ print:
     PRINT_ LPAREN_ RPAREN_
     {
         Interpreter::PrintNode* pNode = new Interpreter::PrintNode;
+        $$ = pNode;
+    }
+    ;
+
+print_param_list : print_param_comma_list print_param
+    {
+        Interpreter::Node* pNode = $1;
+        for (; pNode->GetNext() != nullptr; pNode = pNode->GetNext());
+        pNode->SetNext($2);
+        $$ = $1;
+    }
+    |
+    print_param
+    ;
+
+print_param_comma_list : print_param_comma_list print_param_comma
+    {
+        Interpreter::Node* pNode = $1;
+        for (; pNode->GetNext() != nullptr; pNode = pNode->GetNext());
+        pNode->SetNext($2);
+        $$ = $1;
+    }
+    |
+    print_param_comma
+    ;
+
+print_param_comma : print_param COMMA_
+    ;
+
+print_param:
+    expression
+    |
+    HEX_
+    {
+        $$ = new Interpreter::PrintNode(Interpreter::PrintNode::HEX);
+    }
+    |
+    DEC_
+    {
+        $$ = new Interpreter::PrintNode(Interpreter::PrintNode::DEC);
+    }
+    |
+    OCT_
+    {
+        $$ = new Interpreter::PrintNode(Interpreter::PrintNode::OCT);
+    }
+    |
+    WIDTH_
+    {
+        Interpreter::ValueNode* pValueNode = dynamic_cast<Interpreter::ValueNode*>($1);
+        assert(pValueNode != nullptr);
+        assert(pValueNode->IsArray() == false);
+        int width = pValueNode->GetValue().GetIntValue();
+        delete pValueNode;
+        Interpreter::PrintNode* pNode = new Interpreter::PrintNode(Interpreter::PrintNode::WIDTH,width);
+        $$ = pNode;
+    }
+    |
+    FILL_
+    {
+        Interpreter::ValueNode* pValueNode = dynamic_cast<Interpreter::ValueNode*>($1);
+        assert(pValueNode != nullptr);
+        assert(pValueNode->IsArray() == false);
+        int fill = pValueNode->GetValue().GetIntValue();
+        delete pValueNode;
+        Interpreter::PrintNode* pNode = new Interpreter::PrintNode(Interpreter::PrintNode::FILL,fill);
         $$ = pNode;
     }
     ;

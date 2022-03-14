@@ -3,6 +3,7 @@
         "chrono": "cpp",
         "system_error": "cpp",
         "typeindex": "cpp",
-        "xlocale": "cpp"
+        "xlocale": "cpp",
+        "iomanip": "cpp"
     }
 }

@@ -35,7 +35,7 @@ int yycolumn = 1;
 %option noyywrap
 %option c++
 %option yylineno
-%s function
+%s print
 %%
 %{
     m_pYylval = lval;
@@ -57,6 +57,7 @@ int yycolumn = 1;
 }
 
 "print" {
+            BEGIN print;
             return token::PRINT_;
 }
 
@@ -152,6 +153,27 @@ int yycolumn = 1;
     return token::FEOF_;
 }
 
+<print>"hex" { return token::HEX_; }
+<print>"dec" { return token::DEC_; }
+<print>"oct" { return token::OCT_; }
+<print>"\)" { BEGIN INITIAL;
+              return token::RPAREN_; }
+<print>"width="[0-9]+ { char* ptr = strchr(yytext, '=');
+                        ptr++;
+                        Interpreter::Value v;
+                        v.SetIntValue(atoi(ptr));
+                        Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
+                        m_pYylval->m_pNode = pNode;
+                        return token::WIDTH_; }
+<print>"fill="[a-zA-Z0-9\*] { char* ptr = strchr(yytext, '=');
+                        ptr++;
+                        Interpreter::Value v;
+                        v.SetIntValue(static_cast<int>(*ptr));
+                        Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
+                        m_pYylval->m_pNode = pNode;
+                        return token::FILL_; }
+
+"\)" { return token::RPAREN_; }
 [a-zA-Z]+ {
             Interpreter::VarNode* pNode = new Interpreter::VarNode;
             pNode->SetName(yytext);

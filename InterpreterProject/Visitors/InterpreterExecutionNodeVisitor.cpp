@@ -120,26 +120,35 @@ namespace Interpreter
 
     void ExecutionNodeVisitor::VisitPrintNode(Interpreter::PrintNode* pNode)
     {
-        std::string s;
+        std::stringstream s;
         for (Interpreter::Node* pChild = pNode->GetChild(); pChild != nullptr; pChild = pChild->GetNext())
         {
-            pChild->Accept(*this);
-            if (m_Nodes.size() != 0)
+            // Deal with formatting nodes first.
+            PrintNode* pFormatNode = dynamic_cast<PrintNode*>(pChild);
+            if (pFormatNode != nullptr)
             {
-                std::unique_ptr<Node> pTop(m_Nodes.back());
-                m_Nodes.pop_back();
-                std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
-                if (pValueNode->IsArray() == false)
+                pFormatNode->ModifyStream(s);
+            }
+            else
+            {
+                pChild->Accept(*this);
+                if (m_Nodes.size() != 0)
                 {
-                    s += pValueNode->GetValue().GetValueRepr();
-                }
-                else
-                {
-                    s += pValueNode->GetArrayValue()->GetValuesRepr();
+                    std::unique_ptr<Node> pTop(m_Nodes.back());
+                    m_Nodes.pop_back();
+                    std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
+                    if (pValueNode->IsArray() == false)
+                    {
+                        pValueNode->GetValue().FillStream(s);
+                    }
+                    else
+                    {
+                        s << pValueNode->GetArrayValue()->GetValuesRepr();
+                    }
                 }
             }
         }
-        Log::GetInst()->AddMessage(s);
+        Log::GetInst()->AddMessage(s.str());
     }
 
     void ExecutionNodeVisitor::VisitQuitNode(Interpreter::QuitNode* pNode)

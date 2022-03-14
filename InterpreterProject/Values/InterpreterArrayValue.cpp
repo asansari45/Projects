@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <sstream>
 #include "InterpreterArrayValue.h"
 #include "Log/InterpreterLog.h"
 
@@ -414,6 +415,27 @@ std::string ArrayValue::GetValuesRepr()
     }
     s += "...";
     return s;
+}
+
+void ArrayValue::FillStream(std::stringstream& rStream)
+{
+    const int ELEMENT_COUNT = 10;
+    for (int i = 0; i < ELEMENT_COUNT && i < GetElementCount(); i++)
+    {
+        if (m_Type == typeid(int))
+        {
+            rStream << m_Data.m_pInts[i];
+        }
+        else if (m_Type == typeid(float))
+        {
+            rStream << m_Data.m_pFloats[i];
+        }
+        else if (m_Type == typeid(std::string))
+        {
+            rStream << m_Data.m_pStrings[i];
+        }
+    }
+    rStream << "...";
 }
 
 ArrayValue* ArrayValue::Clone()

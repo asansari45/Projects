@@ -1,3 +1,4 @@
+#include <sstream>
 #include "InterpreterValue.h"
 #include "File/InterpreterFile.h"
 
@@ -744,15 +745,31 @@ namespace Interpreter
         return GetIntValue() && p.GetIntValue();
    }
 
-   int Value::ConvertBinary(const char* pStr)
-   {
-       int len = static_cast<int>(strlen(pStr));
-       int result = 0;
-       for (int i = len-1; i >= 0; i--)
-       {
-           int v = pStr[i] == '1' ? 1 : 0;
-           result = result | (v<<i);
-       }
-       return result;
-   }
+    void Value::FillStream(std::stringstream& rStream)
+    {
+        if (m_Type == typeid(int))
+        {
+            rStream << GetIntValue();
+        }
+        else if (m_Type == typeid(float))
+        {
+            rStream << GetFloatValue();
+        }
+        else
+        {
+            assert(m_Type == typeid(std::string));
+            rStream << GetStringValue();
+        }
+    } 
+    int Value::ConvertBinary(const char* pStr)
+    {
+        int len = static_cast<int>(strlen(pStr));
+        int result = 0;
+        for (int i = len-1; i >= 0; i--)
+        {
+            int v = pStr[i] == '1' ? 1 : 0;
+            result = result | (v<<i);
+        }
+        return result;
+    }
 }

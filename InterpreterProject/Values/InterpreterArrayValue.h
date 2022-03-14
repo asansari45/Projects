@@ -31,6 +31,7 @@ public:
     std::string GetTypeRepr();
     std::string GetDimsRepr();
     std::string GetValuesRepr();
+    void FillStream(std::stringstream& rStream);
 
     int* GetIntData() const
     {

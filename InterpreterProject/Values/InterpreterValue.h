@@ -56,6 +56,7 @@ namespace Interpreter
 
         std::string GetTypeRepr();
         std::string GetValueRepr();
+        void FillStream(std::stringstream& rStream);
 
         // Helper methods for conversion
         static int ConvertBinary(const char* pStr);
