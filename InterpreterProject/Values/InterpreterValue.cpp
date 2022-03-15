@@ -431,6 +431,20 @@ namespace Interpreter
         return true;
     }
 
+    bool Value::Bneg()
+    {
+        std::type_index mytype = GetType();
+
+        if (mytype == typeid(std::string) || mytype == typeid(float))
+        {
+            return false;
+        }
+
+        assert(mytype == typeid(int));
+        m_IntValue = ~m_IntValue;
+        return true;
+    }
+
     std::optional<bool> Value::Les(Value p)
     {
         std::type_index mytype = GetType();

@@ -29,6 +29,7 @@ namespace Interpreter
             XOR,
             LSH,
             RSH,
+            BNEG,
             LOR,
             LAND
         };

@@ -43,6 +43,7 @@ namespace Interpreter
         bool Xor(Value p);
         bool Lsh(Value p);
         bool Rsh(Value p);
+        bool Bneg();
 
         std::optional<bool> Les(Value p);
         std::optional<bool> Leq(Value p);

@@ -701,6 +701,33 @@ namespace Interpreter
         }
     };
 
+    class BnegFunc : public BinaryFunc
+    {
+        virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices,ErrorInterface* pErrorInterface)
+        {
+            assert(pRight == nullptr);
+            std::unique_ptr<ValueNode> lhs(GetRvalue(pLeft, pServices, pErrorInterface));
+            if (lhs == nullptr)
+            {
+                return nullptr;
+            }
+
+            bool status = lhs->GetValueRef().Bneg();
+            if (status == false)
+            {
+                ErrorInterface::ErrorInfo err(pLeft);
+                char buf[512];
+                sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_UNARY_OPERATION_FAILED);
+                err.m_Msg = buf;
+                
+                pErrorInterface->SetErrorInfo(err);
+                return nullptr;
+            }
+
+            return new ValueNode(lhs->GetValue());
+        }
+    };
+
     // Make a new symbol
     // a = dim[10]
     class DimFunc : public BinaryFunc
@@ -984,6 +1011,7 @@ namespace Interpreter
         new XorFunc,
         new LshFunc,
         new RshFunc,
+        new BnegFunc,
         new LorFunc,
         new LandFunc
     };

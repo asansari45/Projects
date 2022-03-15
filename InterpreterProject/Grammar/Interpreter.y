@@ -104,6 +104,7 @@ class Node;
 %token XOR_
 %token LSH_
 %token RSH_
+%token BNEG_
 %token LOR_
 %token LAND_
 %token LPAREN_
@@ -637,6 +638,14 @@ expression:
     {
         Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
         pNode->SetOperator(Interpreter::BinaryNode::NEG);
+        pNode->SetLeft($2);
+        $$ = pNode;
+    }
+    |
+    BNEG_ expression %prec UMINUS_
+    {
+        Interpreter::BinaryNode* pNode = new Interpreter::BinaryNode;
+        pNode->SetOperator(Interpreter::BinaryNode::BNEG);
         pNode->SetLeft($2);
         $$ = pNode;
     }

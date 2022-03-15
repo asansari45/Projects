@@ -238,7 +238,7 @@ int print_parens = 0;
             m_pYylval->m_pNode = pNode;
             return token::NUM_;
         }
-
+"~"  {return token::BNEG_;}
 "<<" {return token::LSH_;}
 ">>" {return token::RSH_;}
 "||" {return token::LOR_;}
