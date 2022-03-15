@@ -318,7 +318,7 @@ class EquTests(unittest.TestCase):
                           'b=dim[10]',
                           'b[8]=8'
                           'a=b',
-                          'for (i=0,i<10,i=i+1){ print(a[i]) }'],
+                          'for (i=0,i<10,i=i+1){ print(a[i], endl) }'],
                          result)
         
         self.ExecuteErrorTest(['clear()',
@@ -489,9 +489,9 @@ class SrandRandTests(unittest.TestCase):
     def test_srand_rand(self):
         self.ExecuteTest(['clear()',
                           'srand(123)',
-                          'print(rand())',
-                          'print(rand())',
-                          'print(rand())'],
+                          'print(rand(),endl)',
+                          'print(rand(),endl)',
+                          'print(rand(),endl)'],
                          ['440',
                           '19053',
                           '23075'])
@@ -501,9 +501,9 @@ class SrandRandTests(unittest.TestCase):
                           'a=rand()',
                           'b=rand()',
                           'c=rand()',
-                          'print(a)',
-                          'print(b)',
-                          'print(c)'],
+                          'print(a,endl)',
+                          'print(b,endl)',
+                          'print(c,endl)'],
                          ['440',
                           '19053',
                           '23075'])
@@ -977,7 +977,7 @@ class StackFunctionsTests(unittest.TestCase):
                           'status=StackPush(mystack,mytop,5)',
                           'status=StackPush(mystack,mytop,7)',
                           'status=StackPush(mystack,mytop,11)',
-                          'print(mytop)',
+                          'print(mytop,endl)',
                           'status=StackDump(mystack,mytop)'
                           ],
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
@@ -1005,7 +1005,7 @@ class StackFunctionsTests(unittest.TestCase):
                           'status=StackPush(mystack,mytop,17)',
                           'status=StackPush(mystack,mytop,19)',
                           'status=StackPush(mystack,mytop,23)',
-                          'print(mytop)',
+                          'print(mytop,endl)',
                           'status=StackDump(mystack,mytop)'
                           ],
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
@@ -1037,7 +1037,7 @@ class StackFunctionsTests(unittest.TestCase):
                           'status=StackPush(mystack,mytop,17)',
                           'status=StackPush(mystack,mytop,19)',
                           'status=StackPush(mystack,mytop,23)',
-                          'print(mytop)',
+                          'print(mytop,endl)',
                           'status=StackDump(mystack,mytop)'
                           ],
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
@@ -1070,8 +1070,8 @@ class StackFunctionsTests(unittest.TestCase):
                           'status=StackPush(mystack,mytop,19)',
                           'status=StackPush(mystack,mytop,23)',
                           'status=StackPush(mystack,mytop,29)',
-                          'print(status)',
-                          'print(mytop)',
+                          'print(status,endl)',
+                          'print(mytop,endl)',
                           'status=StackDump(mystack,mytop)'
                           ],
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
@@ -1102,7 +1102,7 @@ class StackFunctionsTests(unittest.TestCase):
                           'status=StackPush(mystack,mytop,7)',
                           'status=StackPush(mystack,mytop,11)',
                           '{status,myitem}=StackPop(mystack,mytop)',
-                          'print(myitem)',
+                          'print(myitem,endl)',
                           'status=StackDump(mystack,mytop)'
                           ],
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
@@ -1126,9 +1126,9 @@ class StackFunctionsTests(unittest.TestCase):
                           'status=StackPush(mystack,mytop,7)',
                           'status=StackPush(mystack,mytop,11)',
                           '{status,myitem}=StackPop(mystack,mytop)',
-                          'print(myitem)',
+                          'print(myitem,endl)',
                           '{status,myitem}=StackPop(mystack,mytop)',
-                          'print(myitem)',
+                          'print(myitem,endl)',
                           'StackDump(mystack,mytop)'
                           ],
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
@@ -1146,9 +1146,9 @@ class StackFunctionsTests(unittest.TestCase):
                           'mystack=StackInit(10)',
                           'mytop=0',
                           '{status,myitem}=StackPop(mystack,mytop)',
-                          'print(status)',
-                          'print(myitem)',
-                          'print(mytop)',
+                          'print(status, endl)',
+                          'print(myitem, endl)',
+                          'print(mytop, endl)',
                           ],
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
                            '0',
@@ -1298,10 +1298,10 @@ class RadixSortTests(unittest.TestCase):
                           'array[8]=400',
                           'array[9]=300',
                           'status=RadixSort(array)',
-                          'print(status)',
+                          'print(status,endl)',
                           'for (i = 0, i < 10, i=i+1)',
                           '{',
-                          '    print(array[i])',
+                          '    print(array[i],endl)',
                           '}'],
                           ['Parsing from file:  ..\Functions\RadixSort.txt',
                            '1',
@@ -1328,7 +1328,7 @@ class PerformanceTests(unittest.TestCase):
         commands = ['clear()']
         commands += 'x=0'
         commands.extend(['x=x+1'] * 1000)
-        commands.extend(['print(x)'])
+        commands.extend(['print(x,endl)'])
         self.ExecuteTest(commands,
                           ['1000'])
 
@@ -1336,18 +1336,18 @@ class FileIoTests(unittest.TestCase):
     def test_fileio_basic(self):
         testLines = """clear()
                        {status,f}=fopen(\"file.bin\", \"wb\")
-                       print(status)
+                       print(status,endl)
                        status=fwrite(f,5*6)
-                       print(status)
+                       print(status,endl)
                        status=fclose(f)
-                       print(status)
+                       print(status,endl)
                        {status,f}=fopen(\"file.bin\", \"rb\")
-                       print(status)
+                       print(status,endl)
                        {status,x}=fread(f)
-                       print(status)
+                       print(status,endl)
                        status=fclose(f)
-                       print(status)
-                       print(x)
+                       print(status,endl)
+                       print(x,endl)
                        """
                     
         expectedOutput = ['1'] * 6 + ['30']
@@ -1356,36 +1356,36 @@ class FileIoTests(unittest.TestCase):
     def test_fileio_atomics(self):
         testLines = """clear()
                      {status,f}=fopen(\"file.bin\", \"wb\")
-                     print(status)
+                     print(status,endl)
                      status=fwrite(f,5.3)
-                     print(status)
+                     print(status,endl)
                      status = fclose(f)
-                     print(status)
+                     print(status,endl)
                      {status,f}=fopen(\"file.bin\", \"rb\")
-                     print(status)
+                     print(status,endl)
                      {status,x}=fread(f)
-                     print(status)
+                     print(status,endl)
                      status=fclose(f)
-                     print(status)
-                     print(x)
+                     print(status,endl)
+                     print(x,endl)
                      """
         expectedOutput = ['1'] * 6 + ['5.3']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
         testLines = """clear()
                      {status,f}=fopen(\"file.bin\", \"wb\")
-                     print(status)
+                     print(status,endl)
                      status=fwrite(f,\"jagrjagr\")
-                     print(status)
+                     print(status,endl)
                      status=fclose(f)
-                     print(status)
+                     print(status,endl)
                      {status,f}=fopen(\"file.bin\", \"rb\")
-                     print(status)
+                     print(status,endl)
                      {status,x}=fread(f)
-                     print(status)
+                     print(status,endl)
                      status = fclose(f)
-                     print(status)
-                     print(x)
+                     print(status,endl)
+                     print(x,endl)
                      """
         expectedOutput = ['1'] * 6 + ['jagrjagr']
         TestExecutor(self, testLines, expectedOutput).Execute()
@@ -1398,20 +1398,20 @@ class FileIoTests(unittest.TestCase):
                          x[i] = i
                      }
                      {status,f}=fopen(\"file.bin\", \"wb\")
-                     print(status)
+                     print(status,endl)
                      status=fwrite(f,x)
-                     print(status)
+                     print(status,endl)
                      status=fclose(f)
-                     print(status)
+                     print(status,endl)
                      {status,f}=fopen(\"file.bin\", \"rb\")
-                     print(status)
+                     print(status,endl)
                      {status,q}=fread(f)
-                     print(status)
+                     print(status,endl)
                      status=fclose(f)
-                     print(status)
+                     print(status,endl)
                      for (i=0, i<10, i=i+1)
                      {
-                         print(q[i])
+                         print(q[i],endl)
                      }
                      """
         expectedOutput = ['1']*6 + ['%d' % x for x in range(10)]
@@ -1424,20 +1424,20 @@ class FileIoTests(unittest.TestCase):
                          x[i] = i*1.5
                      }
                      {status,f}=fopen(\"file.bin\", \"wb\")
-                     print(status)
+                     print(status,endl)
                      status=fwrite(f,x)
-                     print(status)
+                     print(status,endl)
                      status=fclose(f)
-                     print(status)
+                     print(status,endl)
                      {status,f}=fopen(\"file.bin\", \"rb\")
-                     print(status)
+                     print(status,endl)
                      {status,q}=fread(f)
-                     print(status)
+                     print(status,endl)
                      status=fclose(f)
-                     print(status)
+                     print(status,endl)
                      for (i=0, i<10, i=i+1)
                      {
-                         print(q[i])
+                         print(q[i],endl)
                      }
                      """
         expectedOutput = ['1']*6 + ['0','1.5', '3', '4.5', '6', '7.5', '9', '10.5', '12', '13.5']
@@ -1450,20 +1450,20 @@ class FileIoTests(unittest.TestCase):
                          x[i] = "jagr"
                      }
                      {status,f}=fopen(\"file.bin\", \"wb\")
-                     print(status)
+                     print(status,endl)
                      status=fwrite(f,x)
-                     print(status)
+                     print(status,endl)
                      status=fclose(f)
-                     print(status)
+                     print(status,endl)
                      {status,f}=fopen(\"file.bin\", \"rb\")
-                     print(status)
+                     print(status,endl)
                      {status,q}=fread(f)
-                     print(status)
+                     print(status,endl)
                      status=fclose(f)
-                     print(status)
+                     print(status,endl)
                      for (i=0, i<10, i=i+1)
                      {
-                         print(q[i])
+                         print(q[i],endl)
                      }
                      """
         expectedOutput = ['1']*6  + ['jagr'] * 10
@@ -1488,18 +1488,18 @@ class FileIoTests(unittest.TestCase):
             }
         }
         {status,f}=fopen(\"file.bin\", \"wb\")
-        print(status)
+        print(status,endl)
         status=fwrite(f,x)
-        print(status)
+        print(status,endl)
         status=fclose(f)
-        print(status)
+        print(status,endl)
         {status,f}=fopen(\"file.bin\", \"rb\")
-        print(status)
+        print(status,endl)
         {status,q}=fread(f)
-        print(status)
+        print(status,endl)
         status=fclose(f)
-        print(status)
-        print(len(q,0))
+        print(status,endl)
+        print(len(q,0),endl)
         """
         expectedOutput = ['1'] * 6 + ['10']
         TestExecutor(self, testLines, expectedOutput).Execute()
@@ -1525,11 +1525,11 @@ class FileIoTests(unittest.TestCase):
         {status,r} = fread(f)
         {status,s} = fread(f)
         status=fclose(f)
-        print(q)
-        print(r)
+        print(q,endl)
+        print(r,endl)
         for (i=0, i < 10, i=i+1)
         {
-            print(s[i])
+            print(s[i],endl)
         }
         status=fclose(f)
         """
@@ -1548,12 +1548,12 @@ class FileIoTests(unittest.TestCase):
 
         {status,f} = fopen(\"file.bin\", \"rb\")
         {status,x} = fread(f)
-        print(x)
+        print(x,endl)
         {status,eofstatus}=feof(f)
         while (eofstatus == 0)
         {
             {status,x} = fread(f)
-            print(x)
+            print(x,endl)
             {status,eofstatus}=feof(f)
         }
         status=fclose(f)
@@ -1568,27 +1568,27 @@ class BitWiseOperators(unittest.TestCase):
                        a = b1001
                        b = b0110
                        c = a | b
-                       print(c)
+                       print(c,endl)
 
                        a = b1001
                        b = b0110
                        c = a & b
-                       print(c)
+                       print(c,endl)
 
                        a = b1111
                        b = b0110
                        c = a ^ b
-                       print(c)
+                       print(c,endl)
 
                        a = b1111
                        b = 2
                        c = a >> b
-                       print(c)
+                       print(c,endl)
 
                        a = 1
                        b = 2
                        c = a << b
-                       print(c)
+                       print(c,endl)
                        """
                     
         expectedOutput = ['15', '0', '9', '3', '4']
@@ -1600,27 +1600,27 @@ class LogicalOperators(unittest.TestCase):
                        a=1
                        b=0
                        c=a && b
-                       print(c)
+                       print(c,endl)
 
                        a=1
                        b=1
                        c=a && b
-                       print(c)
+                       print(c,endl)
 
                        a=1
                        b=0
                        c=a || b
-                       print(c)
+                       print(c,endl)
 
                        a=1
                        b=1
                        c=a || b
-                       print(c)
+                       print(c,endl)
 
                        a=0
                        b=0
                        c=a || b
-                       print(c)
+                       print(c,endl)
                     """
         expectedOutput = ['0', '1', '1', '1', '0']
         TestExecutor(self, testLines, expectedOutput).Execute()

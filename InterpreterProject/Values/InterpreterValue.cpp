@@ -772,4 +772,33 @@ namespace Interpreter
         }
         return result;
     }
+
+    std::string Value::HarvestControlChars(const char* pStr)
+    {
+        std::string s;
+        int i = 0;
+        size_t len = strlen(pStr);
+        while (len >= 2)
+        {
+            if (pStr[i] == '\\' && pStr[i+1] == 'n')
+            {
+                s += '\n';
+                i += 2;
+                len -= 2;
+            }
+            else
+            {
+                s += pStr[i];
+                i++;
+                len--;
+            }
+        }
+        assert(len == 0 || len == 1);
+        if (len != 0)
+        {
+            s += pStr[strlen(pStr)-1];
+        }
+
+        return s;
+    }
 }

@@ -6,12 +6,12 @@ function compare(name, expected, actual)
     testnum = testnum + 1
     if (expected == actual)
     {
-        print(name, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        print(name, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual, endl)
         successes = successes + 1
     }
     else
     {
-        print("###", name, " FAILED ", "Expected:  ", expected, " Actual:  ", actual)
+        print("###", name, " FAILED ", "Expected:  ", expected, " Actual:  ", actual, endl)
         failures = failures + 1
     }
 }
@@ -86,6 +86,6 @@ r = 2.0
 s = q + r
 compare("Floating Point Test 19", 3.0, s)
 
-print( "Tests Complete" )
-print( "Successes:  ", successes)
-print( "Failures:   ", failures)
+print( "Tests Complete\n" )
+print( "Successes:  ", successes, endl)
+print( "Failures:   ", failures, endl)

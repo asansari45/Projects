@@ -60,6 +60,7 @@ namespace Interpreter
 
         // Helper methods for conversion
         static int ConvertBinary(const char* pStr);
+        static std::string HarvestControlChars(const char* pStr);
 
     private:
         std::type_index m_Type;

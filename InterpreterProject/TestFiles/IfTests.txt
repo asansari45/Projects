@@ -6,12 +6,12 @@ function compare(name, expected, actual)
     testnum = testnum + 1
     if (expected == actual)
     {
-        print(name, " Test ", testnum, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual)
+        print(name, " Test ", testnum, " SUCCESS ", "Expected:  ", expected, " Actual:  ", actual, endl)
         successes = successes + 1
     }
     else
     {
-        print("###  ", name, " Test ", testnum, " FAILURE ", "Expected:  ", expected, " Actual:  ", actual)
+        print("###  ", name, " Test ", testnum, " FAILURE ", "Expected:  ", expected, " Actual:  ", actual, endl)
         failures = failures + 1
     }
 }
@@ -88,7 +88,7 @@ if ( b == "JAGR")
 }
 compare("If String", c, 40)
 
-print( "Tests Complete" )
-print( "Successes:  ", successes)
-print( "Failures:   ", failures)
-print( "Totals:  ", testnum)
+print( "Tests Complete", endl )
+print( "Successes:  ", successes, endl)
+print( "Failures:   ", failures, endl)
+print( "Totals:  ", testnum, endl)

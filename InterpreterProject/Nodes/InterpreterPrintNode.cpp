@@ -28,6 +28,18 @@ namespace Interpreter
     {
     }
 
+    PrintNode::PrintNode(const PrintNode& rProto):
+        Node(rProto),
+        m_Format(rProto.m_Format),
+        m_FormatArg(rProto.m_FormatArg),
+        m_pChild(nullptr)
+    {
+        if (rProto.m_pChild != nullptr)
+        {
+            m_pChild = rProto.m_pChild->CloneList();
+        }
+    }
+
     PrintNode::~PrintNode()
     {
         if (m_pChild)
@@ -39,12 +51,7 @@ namespace Interpreter
 
     Node* PrintNode::Clone()
     {
-        PrintNode* pNode = new PrintNode;
-        if (m_pChild)
-        {
-            pNode->SetChild(m_pChild->CloneList());
-        }
-        return pNode;
+        return new PrintNode(*this);
     }
 
     void PrintNode::Free()

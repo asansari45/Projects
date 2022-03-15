@@ -170,6 +170,11 @@ namespace Interpreter
                 Log::GetInst()->AddMessage("a=b*c -- multiplication");
                 Log::GetInst()->AddMessage("a=b/c -- division");
                 Log::GetInst()->AddMessage("a=-b  -- negation");
+                Log::GetInst()->AddMessage("a=b|c -- bitwise or");
+                Log::GetInst()->AddMessage("a=b&c -- bitwise and");
+                Log::GetInst()->AddMessage("a=b^c -- bitwise xor");
+                Log::GetInst()->AddMessage("a=b||c -- logical or");
+                Log::GetInst()->AddMessage("a=b&&c -- logical and");
                 Log::GetInst()->AddMessage("result=b<c -- less than");
                 Log::GetInst()->AddMessage("result=b>c -- greater than");
                 Log::GetInst()->AddMessage("result=b<=c -- less than or equal to");
@@ -248,14 +253,15 @@ namespace Interpreter
         Log::GetInst()->AddMessage("a=3");
         Log::GetInst()->AddMessage("myfunc(a)");
         Log::GetInst()->AddMessage("");
-        Log::GetInst()->AddMessage("print(\"String\" a, b, c) -- print statement");
+        Log::GetInst()->AddMessage("print(\"String\", a, dec, b, oct, c, endl) -- print statement");
+        Log::GetInst()->AddMessage("print(\"String\", width=10, fill=0, a, hex, b, c, endl) -- print statement");
         Log::GetInst()->AddMessage("// This is a one-line comment -- comments");
         Log::GetInst()->AddMessage("load(filename.txt) -- load and execute from a file");
         Log::GetInst()->AddMessage("clear()            -- clear all variables and functions");
-        Log::GetInst()->AddMessage("file = fopen(\"file.bin\", \"rb\")");
-        Log::GetInst()->AddMessage("fwrite(file, x)");
-        Log::GetInst()->AddMessage("q=fread(file)");
-        Log::GetInst()->AddMessage("fclose(file)");
+        Log::GetInst()->AddMessage("{status,file} = fopen(\"file.bin\", \"rb\")");
+        Log::GetInst()->AddMessage("status=fwrite(file, x)");
+        Log::GetInst()->AddMessage("{status,q}=fread(file)");
+        Log::GetInst()->AddMessage("status=fclose(file)");
     }
 
     void ExecutionNodeVisitor::VisitLoadNode(Interpreter::LoadNode* pLoadNode)

@@ -56,17 +56,17 @@ function StackDump(&s, &t)
     result = StackIsEmpty(s,t)
     if (result == 1)
     {
-        print("STACK EMPTY!!!")
+        print("STACK EMPTY!!!", endl)
         return()
     }
 
     for (i=0, i<t, i=i+1)
     {
-        print(i, ".  ", s[i])
+        print(i, ".  ", s[i], endl)
     }
     stacksize = len(s)
-    print("STACK ITEM COUNT:  ", t)
-    print("STACK SIZE:        ", stacksize)
+    print("STACK ITEM COUNT:  ", t, endl)
+    print("STACK SIZE:        ", stacksize, endl)
 }
 
 if (main==1)

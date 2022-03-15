@@ -24,6 +24,8 @@ using token = yy::InterpreterParser::token;
 // update location on matching
 int yycolumn = 1;
 
+int print_parens = 0;
+
 #define YY_USER_ACTION location->columns(yyleng); Interpreter::contextStack.back()->IncColumn(yyleng);
 #define YYABORT        goto yyabortlab
 
@@ -157,7 +159,12 @@ int yycolumn = 1;
 <print>"dec" { return token::DEC_; }
 <print>"oct" { return token::OCT_; }
 <print>"endl" { return token::ENDL_; }
-<print>"\)" { BEGIN INITIAL;
+<print>"\(" { print_parens++; return token::LPAREN_; }
+<print>"\)" { print_parens--;
+              if (print_parens == 0 )
+              {
+                  BEGIN INITIAL;
+              }
               return token::RPAREN_; }
 <print>"width="[0-9]+ { char* ptr = strchr(yytext, '=');
                         ptr++;
@@ -194,7 +201,7 @@ int yycolumn = 1;
             strcpy_s(noquotes, sizeof(noquotes), &yytext[1]);
             noquotes[strlen(noquotes)-1] = '\0';
             Interpreter::Value v;
-            v.SetStringValue(noquotes);
+            v.SetStringValue(Interpreter::Value::HarvestControlChars(noquotes));
             m_pYylval->m_pNode = new Interpreter::ValueNode(v);
             return token::STRING_;
 }

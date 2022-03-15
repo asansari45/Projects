@@ -21,6 +21,7 @@ namespace Interpreter
         PrintNode();
         PrintNode(Format fmt);
         PrintNode(Format fmt, int arg);
+        PrintNode(const PrintNode& rProto);
         virtual ~PrintNode();
         virtual Node* Clone();
         virtual void Free();
