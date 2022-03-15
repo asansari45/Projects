@@ -1589,9 +1589,13 @@ class BitWiseOperators(unittest.TestCase):
                        b = 2
                        c = a << b
                        print(c,endl)
+
+                       a = 0x7fffffff
+                       b = ~a
+                       print(hex,b,endl)
                        """
                     
-        expectedOutput = ['15', '0', '9', '3', '4']
+        expectedOutput = ['15', '0', '9', '3', '4', '80000000']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
 class LogicalOperators(unittest.TestCase):
