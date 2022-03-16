@@ -614,6 +614,15 @@ assignment:
         $$ = pEquNode;
     }
     |
+    NAME_ EQUALS_ rval_list
+    {
+        Interpreter::BinaryNode* pEquNode = new Interpreter::BinaryNode;
+        pEquNode->SetOperator(Interpreter::BinaryNode::EQU);
+        pEquNode->SetLeft($1);
+        pEquNode->SetRight($3);
+        $$ = pEquNode;
+    }
+    |
     lval_list EQUALS_ rval_list
     {
         Interpreter::BinaryNode* pEquNode = new Interpreter::BinaryNode;

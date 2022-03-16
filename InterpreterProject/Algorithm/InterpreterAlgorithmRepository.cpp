@@ -162,9 +162,23 @@ namespace Interpreter
             // Check for variable lists.
             VarListNode* pLeftVarList = dynamic_cast<VarListNode*>(pLeft);
             VarListNode* pRightVarList = dynamic_cast<VarListNode*>(pRight);
-            if (pLeftVarList == nullptr && pRightVarList != nullptr || 
-                pLeftVarList != nullptr && pRightVarList == nullptr)
+            if (pLeftVarList != nullptr && pRightVarList != nullptr)
             {
+                // {a,b} = {c,d}
+                ProcessVarLists(pLeftVarList, pRightVarList, pServices, pErrorInterface);
+                return nullptr;
+            }
+
+            if (pLeftVarList == nullptr && pRightVarList != nullptr)
+            {
+                // a ={0,1,3,3,4}
+                ProcessInitializer(pLeft, pRightVarList, pServices, pErrorInterface);
+                return nullptr;
+            }
+
+            if (pLeftVarList != nullptr && pRightVarList == nullptr)
+            {
+                // {a,b} = c
                 ErrorInterface::ErrorInfo err(pLeft);
                 char buf[512];
                 sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_VARLIST_BOTH_SIDES);
@@ -173,13 +187,8 @@ namespace Interpreter
                 return nullptr;
             }
 
-            if (pLeftVarList != nullptr)
-            {
-                ProcessVarLists(pLeftVarList, pRightVarList, pServices, pErrorInterface);
-                return nullptr;
-            }
 
-            // Figure it if we're operating with arrays or not.
+            // Figure if we're operating with arrays or not.
             // Either both have to represent arrays or not.
             std::unique_ptr<ValueNode> pRval(GetRvalue(pRight, pServices, pErrorInterface));
             if (pRval == nullptr)
@@ -197,6 +206,86 @@ namespace Interpreter
             return nullptr;
         }
     private:
+
+        // a = {0,1,2,3}
+        void ProcessInitializer(Node* pLeft, VarListNode* pRight, 
+                                ExecutionNodeVisitorServices* pServices, 
+                                ErrorInterface* pErrorInterface)
+        {
+            ErrorInterface::ErrorInfo errInfo(pLeft);
+
+            // We need to convert the VarList to a linked-list of value nodes.
+            ValueNode* pHead = nullptr;
+            ValueNode* pCurr = nullptr;
+            int count = 0;
+            for (Node* pNode = pRight->GetList(); pNode != nullptr; pNode=pNode->GetNext())
+            {
+                ValueNode* pValueNode = GetRvalue(pNode, pServices, pErrorInterface);
+                if (pValueNode == nullptr)
+                {
+                    if (pHead != nullptr)
+                    {
+                        pHead->FreeList();
+                        return;
+                    }
+                }
+
+                if (pHead == nullptr)
+                {
+                    pHead = pValueNode;
+                    pCurr = pHead;
+                }
+                else
+                {
+                    pCurr->SetNext(pValueNode);
+                    pCurr = pValueNode;
+                }
+                count++;
+            }
+
+            std::unique_ptr<Lvalue> pLvalue;
+            VarNode* pVarNode = dynamic_cast<VarNode*>(pLeft);
+            assert(pVarNode != nullptr);
+
+            SymbolTable::SymbolInfo* pInfo = pServices->ReadSymbol(pVarNode->GetName(), true);
+            if (pInfo == nullptr)
+            {
+                pLvalue.reset(new NoSymbolLvalue(pVarNode->GetName(), 
+                                                 pVarNode->GetArraySpecifier(),
+                                                 pServices->GetNoSymbolTable(), 
+                                                 pErrorInterface, errInfo));
+            }
+            else
+            {
+                if (pInfo->m_IsArray)
+                {
+                    if (pVarNode->GetArraySpecifier().size() != 0)
+                    {
+                        errInfo.m_Msg = pErrorInterface->ERROR_ARRAY_UNEXPECTED;
+                        pErrorInterface->SetErrorInfo(errInfo);
+                        pHead->FreeList();
+                        return;
+                    }
+
+                    pLvalue.reset(new WholeArrayLvalue(pVarNode->GetName(), pInfo->m_pTable, pErrorInterface, 
+                                                       errInfo));
+
+                }
+                else
+                {
+                    errInfo.m_Msg = pErrorInterface->ERROR_ENTIRE_ARRAY_EXPECTED;
+                    pErrorInterface->SetErrorInfo(errInfo);
+                    pHead->FreeList();
+                    return;
+                }
+            }
+
+            assert(pLvalue.get() != nullptr);
+            pLvalue->EquList(count, pHead);
+            pHead->FreeList();
+        }
+
+        // {a,b} = {b,c}
         void ProcessVarLists(VarListNode* pLeft, VarListNode* pRight, ExecutionNodeVisitorServices* pServices, ErrorInterface* pErrorInterface)
         {
             // Argument count check

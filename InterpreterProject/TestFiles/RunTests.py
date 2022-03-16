@@ -482,6 +482,70 @@ class VarListTests(unittest.TestCase):
                           'print(a,b,c)'],
                          ['123'])
 
+    def test_initializers(self):
+        # no symbol
+        testLines = """
+        clear()
+        a = {0,1,2,3,4,5}
+        print(len(a), endl)
+        for(i=0, i<6, i=i+1)
+        {
+            print(a[i], endl)
+        }
+        """
+        expectedOutput = ['6', '0', '1', '2', '3', '4', '5']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # no symbol, floats
+        testLines = """
+        clear()
+        a = {0.1,1.1,2.2,3.3,4.4,5.5}
+        print(len(a), endl)
+        for(i=0, i<6, i=i+1)
+        {
+            print(a[i], endl)
+        }
+        """
+        expectedOutput = ['6', '0.1', '1.1', '2.2', '3.3', '4.4', '5.5']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # no symbol, strings
+        testLines = """
+        clear()
+        a = {"abc", "def", "ghi", "jkl", "mno", "pqr"}
+        print(len(a), endl)
+        for(i=0, i<6, i=i+1)
+        {
+            print(a[i], endl)
+        }
+        """
+        expectedOutput = ['6', 'abc', 'def', 'ghi', 'jkl', 'mno', 'pqr']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # existing symbol
+        testLines = """
+        clear()
+        a = dim[20]
+        a = {0,1,2,3,4,5}
+        print(len(a), endl)
+        for(i=0, i<6, i=i+1)
+        {
+            print(a[i], endl)
+        }
+        """
+        expectedOutput = ['6', '0', '1', '2', '3', '4', '5']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def test_initializer_errors(self):
+        # mixture of symbols
+        testLines = """
+        clear()
+        a = {0,1,2.2,"jagr"}
+        """
+        expectedError = 'LINE:  2, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'
+        TestExecutor(self, testLines, expectedError, True).Execute()
+        pass
+
 class SrandRandTests(unittest.TestCase):
     def ExecuteTest(self, testLines, expectedOutput):
         TestExecutor(self, testLines, expectedOutput).Execute()

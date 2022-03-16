@@ -113,6 +113,7 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
 
         m_Type = typeid(int);
         m_Data.m_pInts = new int[GetElementCount()];
+        std::memset(m_Data.m_pInts, 0, sizeof(int) * GetElementCount());
         assert(m_Data.m_pInts != nullptr);
         m_Data.m_pInts[*index] = v.GetIntValue();
         return true;
@@ -142,6 +143,7 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
         delete [] m_Data.m_pStrings;
 
         m_Data.m_pFloats = new float[GetElementCount()];
+        std::memset(m_Data.m_pFloats, 0, sizeof(float) * GetElementCount());
         assert(m_Data.m_pFloats != nullptr);
         m_Data.m_pFloats[*index] = v.GetFloatValue();
         return true;

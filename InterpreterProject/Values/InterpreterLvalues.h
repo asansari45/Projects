@@ -10,6 +10,7 @@ namespace Interpreter
     class Node;
     class VarNode;
     class ValueNode;
+    class VarList;
 
     class Lvalue
     {
@@ -21,6 +22,9 @@ namespace Interpreter
 
         // Perform the equals operation a=b
         virtual void Equ(ValueNode* pRvalue) = 0;
+
+        // Perform the equals operation a={0,1,2,...}
+        virtual void EquList(int count, ValueNode* pList) = 0;
 
         // Perfrom the dim function.
         // a = dim[9+8]
@@ -34,6 +38,8 @@ namespace Interpreter
             m_ErrInfo(rErrInfo)
         {
         }
+
+        ArrayValue* ConvertValueNodes(int count, ValueNode* pList);
 
     protected:
         std::string m_Name;
@@ -59,8 +65,9 @@ namespace Interpreter
         virtual ~NoSymbolLvalue()
         {
         }
-        virtual void Equ(ValueNode* pRvalue);
-        virtual void Dim(ValueNode* pRvalue);
+        void Equ(ValueNode* pRvalue) override;
+        void EquList(int count, ValueNode* pList) override;
+        void Dim(ValueNode* pRvalue) override;
 
     private:
         std::vector<int> m_ArraySpecifier;
@@ -80,8 +87,12 @@ namespace Interpreter
         {
         }
 
-        virtual void Equ(ValueNode* pRvalue);
-        virtual void Dim(ValueNode* pRvalue)
+        void Equ(ValueNode* pRvalue) override;
+        void EquList(int count, ValueNode* pList) override
+        {
+            assert(false);
+        }
+        void Dim(ValueNode* pRvalue) override
         {
             assert(false);
         }
@@ -102,8 +113,9 @@ namespace Interpreter
         {
         }
 
-        virtual void Equ(ValueNode* pRvalue);
-        virtual void Dim(ValueNode* pRvalue);
+        void Equ(ValueNode* pRvalue);
+        void EquList(int count, ValueNode* pList) override;
+        void Dim(ValueNode* pRvalue);
     private:
     };
 
@@ -119,50 +131,14 @@ namespace Interpreter
         {
         }
 
-        virtual void Equ(ValueNode* pRvalue);
-        virtual void Dim(ValueNode* pRvalue);
-
-    private:
-    };
-
-
-    class RefLvalue : public Lvalue
-    {
-    public:
-        RefLvalue(std::string name, SymbolTable* pSymbolTable, ErrorInterface* pErrorInterface, ErrorInterface::ErrorInfo& rErrInfo) :
-            Lvalue(name, pSymbolTable, pErrorInterface, rErrInfo)
-        {
-        }
-
-        virtual ~RefLvalue()
-        {
-        }
-
-        virtual void Equ(ValueNode* pRvalue);
-        virtual void Dim(ValueNode* pRvalue);
-    };
-
-    class RefArraySpecifierLvalue : public Lvalue
-    {
-    public:
-        RefArraySpecifierLvalue(std::string name, SymbolTable* pSymbolTable, ErrorInterface* pErrorInterface, 
-                                ErrorInterface::ErrorInfo& rErrInfo,
-                                std::vector<int>& rArraySpecifier) :
-            Lvalue(name, pSymbolTable, pErrorInterface, rErrInfo),
-            m_ArraySpecifier(rArraySpecifier)
-        {
-        }
-
-        virtual ~RefArraySpecifierLvalue()
-        {
-        }
-
-        virtual void Equ(ValueNode* pRvalue);
-        virtual void Dim(ValueNode* pRvalue)
+        void Equ(ValueNode* pRvalue) override;
+        void EquList(int count, ValueNode* pList) override
         {
             assert(false);
         }
+        void Dim(ValueNode* pRvalue) override;
+
     private:
-        std::vector<int> m_ArraySpecifier;
     };
+
 }
