@@ -7,42 +7,6 @@
 
 namespace Interpreter
 {
-    ArrayValue* Lvalue::ConvertValueNodes(int count, ValueNode* pList)
-    {
-        assert(pList != nullptr);
-        std::vector<int> dims;
-        dims.push_back(count);
-        std::type_index t = pList->GetValueRef().GetType();
-        std::unique_ptr<ArrayValue> pArrayValue(ArrayValue::Create(dims, t));
-
-        int element = 0;
-        for (ValueNode* pValueNode = pList; pValueNode != nullptr; pValueNode=dynamic_cast<ValueNode*>(pValueNode->GetNext()))
-        {
-            // Check for entire array.
-            if (pValueNode->IsArray())
-            {
-                ErrorInterface::ErrorInfo err(pValueNode);
-                err.m_Msg = m_pErrIf->ERROR_ARRAY_SPECIFIER_EXPECTED;
-                m_pErrIf->SetErrorInfo(err);
-                return nullptr;
-            }
-
-            dims.clear();
-            dims.push_back(element);
-            element++;
-            bool status = pArrayValue->SetValue(dims, pValueNode->GetValue());
-            if (!status)
-            {
-                ErrorInterface::ErrorInfo err(pValueNode);
-                err.m_Msg = m_pErrIf->ERROR_INCORRECT_TYPE;
-                m_pErrIf->SetErrorInfo(err);
-                return nullptr;
-            }
-        }
-
-        return pArrayValue.release();
-    }
-
     // There is no symbol for the given rvalue in the symbol table.
     // Create it and set the value.
     // a = b where a does not exist, b is an array or value.
@@ -83,18 +47,15 @@ namespace Interpreter
 
     // There is no symbol for the given:  a = {0,1,2,3...}
     // Create the symbol as an array of sizeof(pValueList).
-    void NoSymbolLvalue::EquList(int listCount, ValueNode* pValueList)
+    void NoSymbolLvalue::EquList(ArrayValue* pArrayValue)
     {
-        // Convert the list into an array.
-        std::unique_ptr<ArrayValue> pArrayValue(ConvertValueNodes(listCount, pValueList));
-
         // Create a symbol of that many elements.
         assert(m_pSymbolTable != nullptr);
         assert(m_pSymbolTable->IsSymbolPresent(m_Name) == false);
         std::unique_ptr<SymbolTable::SymbolInfo> pInfo(new SymbolTable::SymbolInfo);
         pInfo->m_Name = m_Name;
         pInfo->m_IsArray = true;
-        pInfo->m_pArrayValue = pArrayValue.release();
+        pInfo->m_pArrayValue = pArrayValue->Clone();
 
         // No arrays specifiers when no symbol is specified.
         if (m_ArraySpecifier.size() != 0)
@@ -195,22 +156,20 @@ namespace Interpreter
     // There is a symbol in the symbol table.  It is an array.
     // We are setting the value of the entire array here.
     // a = {0,1,2,3,4,...}.
-    void WholeArrayLvalue::EquList(int count, ValueNode* pList)
+    void WholeArrayLvalue::EquList(ArrayValue* pArrayValue)
     {
-        std::unique_ptr<ArrayValue> pArrayValue(ConvertValueNodes(count, pList));
-        if (pArrayValue.get() == nullptr)
-        {
-            return;
-        }
-
-        m_pSymbolTable->DeleteSymbol(m_Name);
-        SymbolTable::SymbolInfo* pInfo = new SymbolTable::SymbolInfo;
+        SymbolTable::SymbolInfo* pInfo = m_pSymbolTable->ReadSymbol(m_Name, true);
         assert(pInfo != nullptr);
-        pInfo->m_Name = m_Name;
-        pInfo->m_IsArray = true;
-        pInfo->m_pArrayValue = pArrayValue.release();
-        bool status = m_pSymbolTable->CreateSymbol(m_Name, pInfo);
-        assert(status);
+        assert(pInfo->m_IsArray == true);
+        
+        for (int i = 0; i < pArrayValue->GetElementCount(); i++)
+        {
+            bool status = pInfo->m_pArrayValue->SetValue(i, *pArrayValue->GetValue(i));
+            if (!status)
+            {
+                return;
+            }
+        }
     }
 
     // There is a symbol in the symbol table.  It is an array.

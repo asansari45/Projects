@@ -266,7 +266,12 @@ namespace Interpreter
 
     void ExecutionNodeVisitor::VisitLoadNode(Interpreter::LoadNode* pLoadNode)
     {
-        std::string filename = pLoadNode->GetChild()->GetName();
+        ValueNode* pFileNameNode = pLoadNode->GetChild();
+        assert(pFileNameNode != nullptr);
+        assert(pFileNameNode->IsArray() == false);
+        Value v = pFileNameNode->GetValue();
+        assert(v.GetType() == typeid(std::string));
+        std::string filename = v.GetStringValue();
 
         // Check if file exists first.
         struct stat info;

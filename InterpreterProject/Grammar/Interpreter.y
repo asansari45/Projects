@@ -148,7 +148,6 @@ class Node;
 %token <m_pNode> FILL_
 %token <m_pNode> STRING_
 %token <m_pNode> NAME_
-%token <m_pNode> FILENAME_
 %nterm <m_pNode> expression
 %nterm <m_pNode> assignment
 %nterm <m_pNode> command
@@ -895,17 +894,10 @@ array_specifier :
 command:
     print
     |
-    LOAD_ LPAREN_ NAME_ RPAREN_
+    LOAD_ LPAREN_ STRING_ RPAREN_
     {
         Interpreter::LoadNode* pNode = new Interpreter::LoadNode;
-        pNode->SetChild(dynamic_cast<Interpreter::VarNode*>($3));
-        $$ = pNode;
-    }
-    |
-    LOAD_ LPAREN_ FILENAME_ RPAREN_
-    {
-        Interpreter::LoadNode* pNode = new Interpreter::LoadNode;
-        pNode->SetChild(dynamic_cast<Interpreter::VarNode*>($3));
+        pNode->SetChild(dynamic_cast<Interpreter::ValueNode*>($3));
         $$ = pNode;
     }
     |

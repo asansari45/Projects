@@ -218,6 +218,8 @@ namespace Interpreter
             ValueNode* pHead = nullptr;
             ValueNode* pCurr = nullptr;
             int count = 0;
+            bool listTypeSet = false;
+            std::type_index listType(typeid(int));
             for (Node* pNode = pRight->GetList(); pNode != nullptr; pNode=pNode->GetNext())
             {
                 ValueNode* pValueNode = GetRvalue(pNode, pServices, pErrorInterface);
@@ -241,7 +243,80 @@ namespace Interpreter
                     pCurr = pValueNode;
                 }
                 count++;
+
+                // Calculate the overall list type.  It will be string if all entries are string.
+                // It will be ints if all entries are ints.  It will be floats if all entries are either
+                // float or ints.
+                std::type_index valueType(typeid(int));
+                if (pValueNode->IsArray())
+                {
+                    errInfo.m_Msg = pErrorInterface->ERROR_ARRAY_UNEXPECTED;
+                    pErrorInterface->SetErrorInfo(errInfo);
+                    pHead->FreeList();
+                    return;
+                }
+
+                valueType = pValueNode->GetValueRef().GetType();
+
+                if (listTypeSet == false)
+                {
+                    listType = valueType;
+                    listTypeSet = true;
+                }
+                else
+                {
+                    if (listType == typeid(std::string))
+                    {
+                        // We have strings so far.  It must be a string.
+                        if (valueType != typeid(std::string))
+                        {
+                            errInfo.m_Msg = pErrorInterface->ERROR_INCORRECT_TYPE;
+                            pErrorInterface->SetErrorInfo(errInfo);
+                            pHead->FreeList();
+                            return;
+                        }
+                    }
+                    else if (listType == typeid(int))
+                    {
+                        if (valueType == typeid(float))
+                        {
+                            listType = typeid(float);
+                        }
+                        else if (valueType == typeid(std::string))
+                        {
+                            errInfo.m_Msg = pErrorInterface->ERROR_INCORRECT_TYPE;
+                            pErrorInterface->SetErrorInfo(errInfo);
+                            pHead->FreeList();
+                            return;
+                        }
+                    }
+                    else if (listType == typeid(float))
+                    {
+                        if (valueType == typeid(std::string))
+                        {
+                            errInfo.m_Msg = pErrorInterface->ERROR_INCORRECT_TYPE;
+                            pErrorInterface->SetErrorInfo(errInfo);
+                            pHead->FreeList();
+                            return;
+                        }
+                    }
+                }
             }
+
+            // Let's store all the values in a single dimension array value.
+            std::vector<int> dims;
+            dims.push_back(count);
+            std::unique_ptr<ArrayValue> pArrayValue(ArrayValue::Create(dims, listType));
+            count = 0;
+            for (ValueNode* pNode = pHead; pNode != nullptr; pNode = dynamic_cast<ValueNode*>(pNode->GetNext()))
+            {
+                dims.clear();
+                dims.push_back(count);
+                count++;
+                bool status = pArrayValue->SetValue(dims, pNode->GetValueRef());
+                assert(status);
+            }
+            pHead->FreeList();
 
             std::unique_ptr<Lvalue> pLvalue;
             VarNode* pVarNode = dynamic_cast<VarNode*>(pLeft);
@@ -263,7 +338,6 @@ namespace Interpreter
                     {
                         errInfo.m_Msg = pErrorInterface->ERROR_ARRAY_UNEXPECTED;
                         pErrorInterface->SetErrorInfo(errInfo);
-                        pHead->FreeList();
                         return;
                     }
 
@@ -275,14 +349,12 @@ namespace Interpreter
                 {
                     errInfo.m_Msg = pErrorInterface->ERROR_ENTIRE_ARRAY_EXPECTED;
                     pErrorInterface->SetErrorInfo(errInfo);
-                    pHead->FreeList();
                     return;
                 }
             }
 
             assert(pLvalue.get() != nullptr);
-            pLvalue->EquList(count, pHead);
-            pHead->FreeList();
+            pLvalue->EquList(pArrayValue.get());
         }
 
         // {a,b} = {b,c}

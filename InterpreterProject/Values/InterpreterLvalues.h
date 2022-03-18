@@ -24,7 +24,7 @@ namespace Interpreter
         virtual void Equ(ValueNode* pRvalue) = 0;
 
         // Perform the equals operation a={0,1,2,...}
-        virtual void EquList(int count, ValueNode* pList) = 0;
+        virtual void EquList(ArrayValue* pArrayValue) = 0;
 
         // Perfrom the dim function.
         // a = dim[9+8]
@@ -38,8 +38,6 @@ namespace Interpreter
             m_ErrInfo(rErrInfo)
         {
         }
-
-        ArrayValue* ConvertValueNodes(int count, ValueNode* pList);
 
     protected:
         std::string m_Name;
@@ -66,7 +64,7 @@ namespace Interpreter
         {
         }
         void Equ(ValueNode* pRvalue) override;
-        void EquList(int count, ValueNode* pList) override;
+        void EquList(ArrayValue* pArrayValue) override;
         void Dim(ValueNode* pRvalue) override;
 
     private:
@@ -88,7 +86,7 @@ namespace Interpreter
         }
 
         void Equ(ValueNode* pRvalue) override;
-        void EquList(int count, ValueNode* pList) override
+        void EquList(ArrayValue* pArrayValue) override
         {
             assert(false);
         }
@@ -114,7 +112,7 @@ namespace Interpreter
         }
 
         void Equ(ValueNode* pRvalue);
-        void EquList(int count, ValueNode* pList) override;
+        void EquList(ArrayValue* pArrayValue) override;
         void Dim(ValueNode* pRvalue);
     private:
     };
@@ -132,7 +130,7 @@ namespace Interpreter
         }
 
         void Equ(ValueNode* pRvalue) override;
-        void EquList(int count, ValueNode* pList) override
+        void EquList(ArrayValue* pArrayValue) override
         {
             assert(false);
         }

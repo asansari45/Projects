@@ -120,7 +120,8 @@ void PreprocessLine(const char* pLine, std::string& rNewLine, bool& rPostProcess
         strstr(pLine, "print") == nullptr &&
         strstr(pLine, "clear") == nullptr &&
         strstr(pLine, "load") == nullptr &&
-        strstr(pLine, "srand") == nullptr)
+        strstr(pLine, "srand") == nullptr &&
+        strstr(pLine, "function") == nullptr )
     {
         // = not found in the current line, need to convert it.
         // .command also not found in the current line.

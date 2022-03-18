@@ -18,9 +18,12 @@ public:
 
     // Simple accessor
     std::vector<int> GetDims() { return m_Dims; }
+    int GetElementCount();
 
     std::optional<Value> GetValue(std::vector<int> element);
+    std::optional<Value> GetValue(int flatElement);
     bool SetValue(std::vector<int> element, Value v);
+    bool SetValue(int flatElement, Value v);
 
     std::type_index GetType();
 
@@ -57,8 +60,6 @@ private:
 
     // Perform likeness checks between 2 arrays.
     bool LikenessChecks(ArrayValue* v);
-
-    int GetElementCount();
 
     template<class A, class B, class C>
     void AddArrays(A* pArray1, B* pArray2, C* pResult, int elementCount )

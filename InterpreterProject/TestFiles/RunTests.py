@@ -528,23 +528,40 @@ class VarListTests(unittest.TestCase):
         a = dim[20]
         a = {0,1,2,3,4,5}
         print(len(a), endl)
-        for(i=0, i<6, i=i+1)
+        for(i=0, i<20, i=i+1)
         {
             print(a[i], endl)
         }
         """
-        expectedOutput = ['6', '0', '1', '2', '3', '4', '5']
+        expectedOutput = ['20', '0', '1', '2', '3', '4', '5'] + ['0'] * 14
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """
+        clear()
+        a = dim[3]
+        a = {0,1,2,3,4,5}
+        print(len(a), endl)
+        for(i=0, i<len(a), i=i+1)
+        {
+            print(a[i], endl)
+        }
+        """
+        expectedOutput = ['3', '0', '1', '2']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
     def test_initializer_errors(self):
         # mixture of symbols
-        testLines = """
-        clear()
+        testLines = """clear()
         a = {0,1,2.2,"jagr"}
         """
-        expectedError = 'LINE:  2, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'
+        expectedError = 'LINE:  2, COLUMN:  10  Wrong type specified for the operation.'
         TestExecutor(self, testLines, expectedError, True).Execute()
-        pass
+
+        testLines = """clear()
+        a = {"jagr",0,1,2.2}
+        """
+        expectedError = 'LINE:  2, COLUMN:  10  Wrong type specified for the operation.'
+        TestExecutor(self, testLines, expectedError, True).Execute()
 
 class SrandRandTests(unittest.TestCase):
     def ExecuteTest(self, testLines, expectedOutput):

@@ -64,18 +64,28 @@ std::optional<Value> ArrayValue::GetValue(std::vector<int> element)
         return {};
     }
 
+    return GetValue(*index);
+}
+
+std::optional<Value> ArrayValue::GetValue(int flatElement)
+{
+    if (flatElement >= GetElementCount())
+    {
+        return {}; 
+    }
+
     Value v;
     if (m_Type == typeid(int))
     {
-        v.SetIntValue(m_Data.m_pInts[*index]);
+        v.SetIntValue(m_Data.m_pInts[flatElement]);
     }
     else if (m_Type == typeid(float))
     {
-        v.SetFloatValue(m_Data.m_pFloats[*index]);
+        v.SetFloatValue(m_Data.m_pFloats[flatElement]);
     }
     else if (m_Type == typeid(std::string))
     {
-        v.SetStringValue(m_Data.m_pStrings[*index]);
+        v.SetStringValue(m_Data.m_pStrings[flatElement]);
     }
     else
     {
@@ -93,17 +103,27 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
         return false;
     }
 
+    return SetValue(*index, v);
+}
+
+bool ArrayValue::SetValue(int flatElement, Value v)
+{
+    if (flatElement >= GetElementCount())
+    {
+        return {};
+    }
+
     if (v.GetType() == typeid(int))
     {
         if (m_Type == typeid(int))
         {
-            m_Data.m_pInts[*index] = v.GetIntValue();
+            m_Data.m_pInts[flatElement] = v.GetIntValue();
             return true;
         }
         
         if (m_Type == typeid(float))
         {
-            m_Data.m_pFloats[*index] = static_cast<float>(v.GetIntValue());
+            m_Data.m_pFloats[flatElement] = static_cast<float>(v.GetIntValue());
             return true;
         }
 
@@ -115,7 +135,7 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
         m_Data.m_pInts = new int[GetElementCount()];
         std::memset(m_Data.m_pInts, 0, sizeof(int) * GetElementCount());
         assert(m_Data.m_pInts != nullptr);
-        m_Data.m_pInts[*index] = v.GetIntValue();
+        m_Data.m_pInts[flatElement] = v.GetIntValue();
         return true;
    }
 
@@ -129,13 +149,13 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
             delete [] m_Data.m_pInts;
             m_Type = typeid(float);
             m_Data.m_pFloats = pFloats;
-            m_Data.m_pFloats[*index] = v.GetFloatValue();
+            m_Data.m_pFloats[flatElement] = v.GetFloatValue();
             return true;
         }
 
         if (m_Type == typeid(float))
         {
-            m_Data.m_pFloats[*index] = v.GetFloatValue();
+            m_Data.m_pFloats[flatElement] = v.GetFloatValue();
             return true;
         }
 
@@ -145,14 +165,14 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
         m_Data.m_pFloats = new float[GetElementCount()];
         std::memset(m_Data.m_pFloats, 0, sizeof(float) * GetElementCount());
         assert(m_Data.m_pFloats != nullptr);
-        m_Data.m_pFloats[*index] = v.GetFloatValue();
+        m_Data.m_pFloats[flatElement] = v.GetFloatValue();
         return true;
     }
 
     assert(v.GetType() == typeid(std::string));
     if (m_Type == typeid(std::string))
     {
-        m_Data.m_pStrings[*index] = v.GetStringValue();
+        m_Data.m_pStrings[flatElement] = v.GetStringValue();
         return true;
     }
 
@@ -161,7 +181,7 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
         delete [] m_Data.m_pInts;
         m_Type = typeid(std::string);
         m_Data.m_pStrings = new std::string[GetElementCount()];
-        m_Data.m_pStrings[*index] = v.GetStringValue();
+        m_Data.m_pStrings[flatElement] = v.GetStringValue();
         return true;
     }
 
@@ -169,7 +189,7 @@ bool ArrayValue::SetValue(std::vector<int> element, Value v)
     delete [] m_Data.m_pFloats;
     m_Type = typeid(std::string);
     m_Data.m_pStrings = new std::string[GetElementCount()];
-    m_Data.m_pStrings[*index] = v.GetStringValue();
+    m_Data.m_pStrings[flatElement] = v.GetStringValue();
     return true;
 }
 

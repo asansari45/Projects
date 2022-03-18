@@ -3,6 +3,7 @@
 
 namespace Interpreter
 {
+    class ValueNode;
 
     class LoadNode : public Node
     {
@@ -17,10 +18,9 @@ namespace Interpreter
 
         virtual void Accept(Interpreter::NodeVisitor& rVisitor);
 
-        VarNode* GetChild() { return m_pChild; }
-        void SetChild(VarNode* pChild) { m_pChild = pChild; }
+        ValueNode* GetChild() { return m_pChild; }
+        void SetChild(ValueNode* pChild) { m_pChild = pChild; }
     private:
-        VarNode* m_pChild;
+        ValueNode* m_pChild;
     };
-
 };

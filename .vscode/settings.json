@@ -4,6 +4,7 @@
         "system_error": "cpp",
         "typeindex": "cpp",
         "xlocale": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "variant": "cpp"
     }
 }
