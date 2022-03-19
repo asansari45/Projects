@@ -143,7 +143,7 @@ b[0-1]+ {
             return token::NAME_;
           }
 
-\".*\" {
+\"[^"]*\" {
             char noquotes[256];
             strcpy_s(noquotes, sizeof(noquotes), &yytext[1]);
             noquotes[strlen(noquotes)-1] = '\0';

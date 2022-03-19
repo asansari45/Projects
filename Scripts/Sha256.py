@@ -12,12 +12,6 @@ class Sha256:
 
     def Ror(self, x, n):
         return (x >> n) | ((x << (32-n)) & 0xffff_ffff)
-        for i in range(n):
-            if r & 1 == 1:
-                r = (r >> 1) | (1 << 31)
-            else:
-                r = r >> 1
-        return r
     
     def Calculate(self, msg):
         """
@@ -81,11 +75,13 @@ class Sha256:
             for i in range(16):
                 start = chunk*(512//8)+i*4
                 w[i] = struct.unpack('>I', msgWithPad[start:start+4])[0]
+                print('word[{0}]={1:8}'.format(i,hex(w[i])))
             
             for i in range(16, 64):
                 s0 = self.Ror(w[i-15],7) ^ self.Ror(w[i-15],18) ^ (w[i-15] >> 3)
                 s1 = self.Ror(w[i-2],17) ^ self.Ror(w[i-2],19) ^ (w[i-2] >> 10)
                 w[i] = (w[i-16] + s0 + w[i-7] + s1) & 0xffff_ffff
+                print('word[{0}]={1:8}'.format(i, hex(w[i])))
             
             # Initialize working variables to current hash value:
             a = h0
@@ -136,7 +132,8 @@ class Sha256:
         return digest
 
 
-print(Sha256().Calculate(bytearray('hello world', 'utf-8')))
+# print(Sha256().Calculate(bytearray('hello world', 'utf-8')))
+print('result=', hex(Sha256().Ror(0x86d0c031,17)))
 
 
 

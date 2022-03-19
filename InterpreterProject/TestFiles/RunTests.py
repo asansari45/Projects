@@ -1033,14 +1033,14 @@ class StackFunctionsTests(unittest.TestCase):
 
     def test_stack_init(self):
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(10)',
                           'mytop=0',
                           'print(len(mystack),mytop)'],
                           ['Parsing from file:  ..\Functions\StackFunctions.txt', 
                            '100'])
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(100)',
                           'mytop=0',
                           'print(len(mystack),mytop)'],
@@ -1049,7 +1049,7 @@ class StackFunctionsTests(unittest.TestCase):
 
     def test_stack_push(self):
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(10)',
                           'mytop=0',
                           'status=StackPush(mystack,mytop,1)',
@@ -1073,7 +1073,7 @@ class StackFunctionsTests(unittest.TestCase):
                            'STACK SIZE:        10'])
 
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(10)',
                           'mytop=0',
                           'status=StackPush(mystack,mytop,1)',
@@ -1105,7 +1105,7 @@ class StackFunctionsTests(unittest.TestCase):
                            'STACK SIZE:        10'])
 
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(10)',
                           'mytop=0',
                           'status=StackPush(mystack,mytop,1)',
@@ -1137,7 +1137,7 @@ class StackFunctionsTests(unittest.TestCase):
                            'STACK SIZE:        10'])
 
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(10)',
                           'mytop=0',
                           'status=StackPush(mystack,mytop,1)',
@@ -1173,7 +1173,7 @@ class StackFunctionsTests(unittest.TestCase):
 
     def test_stack_pop(self):
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(10)',
                           'mytop=0',
                           'status=StackPush(mystack,mytop,1)',
@@ -1197,7 +1197,7 @@ class StackFunctionsTests(unittest.TestCase):
                            'STACK SIZE:        10'])
         
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(10)',
                           'mytop=0',
                           'status=StackPush(mystack,mytop,1)',
@@ -1223,7 +1223,7 @@ class StackFunctionsTests(unittest.TestCase):
                            'STACK SIZE:        10'])
 
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\StackFunctions.txt)',
+                          'load("..\Functions\StackFunctions.txt")',
                           'mystack=StackInit(10)',
                           'mytop=0',
                           '{status,myitem}=StackPop(mystack,mytop)',
@@ -1366,7 +1366,7 @@ class RadixSortTests(unittest.TestCase):
 
     def test_radix_sort(self):
         self.ExecuteTest(['clear()',
-                          'load(..\Functions\RadixSort.txt)',
+                          'load("..\Functions\RadixSort.txt")',
                           'array=dim[10]',
                           'array[0]=5400',
                           'array[1]=405',

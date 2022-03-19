@@ -1,42 +1,81 @@
-// rightrotate
+// Custom ror function that deals with signed integers.
 function ror(x, n)
 {
-    r = x
-    for (i=0, i < n, i=i+1)
+    sbit = 0
+    if (x<0)
     {
-        if ((r&1) == 1)
-        {
-            r = (r >> 1) | (1 << 31)
-        }
-        else
-        {
-            r = r >> 1
-        }
+        sbit = 1
+    }
+
+    r = x & 0x7fffffff
+    r = (r >> n) | (r << (32-n))
+    if (sbit == 1)
+    {
+        r = r | (1 << (31-n))
     }
 
     return(r)
 }
 
-function rev(x)
+// Custom shr function that deals with signed integers.
+function shr(x, n)
 {
-    q = ((x&0xff) << 24) | ((x&0xff00)<<8) | ((x&0x00ff0000)>>8) | ((x&0xff000000)>>24)
-    return(q)
+    sbit = 0
+    if (x<0)
+    {
+        sbit = 1
+    }
+
+    r = x & 0x7fffffff
+    r = r >> n
+
+    if (sbit == 1)
+    {
+        r = r | (1 <<(31-n))
+    }
+    return(r)
 }
 
-function revlist(&x)
+// Custom add function deals with signed integers.
+function add(a,b)
 {
-    for (i=0, i<len(x), i=i+1)
+    a1 = a & 0x7fffffff
+    b2 = b & 0x7fffffff
+    c1 = (a1 + b2) & 0x7fffffff
+    abit = 0
+    if (a<0)
     {
-        x[i] = rev(x[i])
+        abit = 1
     }
+
+    bbit = 0
+    if (b<0)
+    {
+        bbit = 1
+    }
+
+    cbit = 0
+    if ((a1+b2)<0)
+    {
+        cbit = 1
+    }
+
+    sumbit = abit + bbit + cbit
+    if ((sumbit & 1)==1)
+    {
+        c1 = c1 | 0x80000000
+    }
+
+    return(c1)
 }
 
 function DumpMsg(m, count)
 {
     for (i=0, i < count, i=i+1)
     {
-        print(width=2, i, ".  ", width=8, hex, m[i], endl)
+        print(width=2, fill=0, hex, m[i], " ")
     }
+    print(endl)
 }
 
 // msg is an array of ints, each one is a byte long.
@@ -44,14 +83,14 @@ function Sha256(&msg)
 {
     // Initialize hash values
     // first 32 bits of the fractional parts of the square roots of the first 8 primes 2 through 19
-    h0 = rev(0x6a09e667)
-    h1 = rev(0xbb67ae85)
-    h2 = rev(0x3c6ef372)
-    h3 = rev(0xa54ff53a)
-    h4 = rev(0x510e527f)
-    h5 = rev(0x9b05688c)
-    h6 = rev(0x1f83d9ab)
-    h7 = rev(0x5be0cd19)
+    h0 = 0x6a09e667
+    h1 = 0xbb67ae85
+    h2 = 0x3c6ef372
+    h3 = 0xa54ff53a
+    h4 = 0x510e527f
+    h5 = 0x9b05688c
+    h6 = 0x1f83d9ab
+    h7 = 0x5be0cd19
 
     // Initialize array of round constants
     // first 32 bits of the fractional parts of the cube roots of the first 64 primes 2 through 311
@@ -64,8 +103,7 @@ function Sha256(&msg)
           0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
           0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
           0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2}
-    revlist(k)
-
+    
     // Padding
     msgLenBits = len(msg) * 8
 
@@ -120,6 +158,8 @@ function Sha256(&msg)
     print("K Length      Bits:  ", kpadbits, endl)
     print("L+1+K+64      Bits:  ", msgLenBits + 1 + kpadbits + 64, endl)
     print("currBytes         :  ", currBytes, endl)
+    print("Message with Pad:", endl)
+    DumpMsg(msgWithPad, currBytes)
 
     // Process the message in successive 512-bit chunks
     w = dim[64]
@@ -140,13 +180,13 @@ function Sha256(&msg)
         print("Extending the first 16 words...", endl)
         for (i=16, i < 64, i=i+1)
         {
-            s0 = (ror(w[i-15], 7) ^ ror(w[i-15],18) ^ (w[i-15]>>3))
-            s1 = (ror(w[i-2], 17) ^ ror(w[i-2], 19) ^ (w[i-2]>>10))
-            w[i] = w[i-16] + s0 + w[i-7] + s1
+            s0 = ror(w[i-15], 7) ^ ror(w[i-15],18) ^ shr(w[i-15],3)
+            s1 = ror(w[i-2], 17) ^ ror(w[i-2], 19) ^ shr(w[i-2],10)
+            t1 = add(w[i-16], s0)
+            t1 = add(t1, w[i-7])
+            t1 = add(t1, s1)
+            w[i] = t1
         }
-
-        print("After extension...", endl)
-        DumpMsg(w, 64)
 
         a = h0
         b = h1
@@ -162,29 +202,32 @@ function Sha256(&msg)
         {
             s1 = ror(e,6) ^ ror(e,11) ^ ror(e,25)
             ch = (e & f) ^ ((~e) & g)
-            temp1 = h + s1 + ch + k[i] + w[i]
+            t1 = add(h,s1)
+            t1 = add(t1, ch)
+            t1 = add(t1, k[i])
+            temp1 = add(t1, w[i])
             s0 = ror(a,2) ^ ror(a,13) ^ ror(a,22)
             maj = (a&b) ^ (a&c) ^ (b&c)
-            temp2 = s0 + maj
+            temp2 = add(s0, maj)
 
             h = g
             g = f
             f = e
-            e = d + temp1
+            e = add(d, temp1)
             d = c
             c = b
             b = a
-            a = temp1 + temp2
+            a = add(temp1, temp2)
         }
 
-        h0 = h0 + a
-        h1 = h1 + b
-        h2 = h2 + c
-        h3 = h3 + d
-        h4 = h4 + e
-        h5 = h5 + f
-        h6 = h6 + g
-        h7 = h7 + h
+        h0 = add(h0, a)
+        h1 = add(h1, b)
+        h2 = add(h2, c)
+        h3 = add(h3, d)
+        h4 = add(h4, e)
+        h5 = add(h5, f)
+        h6 = add(h6, g)
+        h7 = add(h7, h)
     }
 
     digest = dim[32]
@@ -206,6 +249,7 @@ if (main==1)
     print("digest", endl)
     for (i=0, i < 32, i=i+1)
     {
-        print(width=2, i, ".  ", width=2, fill=0, hex, mydigest[i], endl)
+        print(width=2, fill=0, hex, mydigest[i])
     }
+    print(endl)
 }
