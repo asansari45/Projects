@@ -17,3 +17,19 @@ Directory Structure
 9.  Values    -- files that represent arrays, integers, floats, and strings
 10. Visitors  -- files that visit the Nodes
 
+There's more left to do!
+1.  Grammar with Multiple Start rules -- Cleans up interactive mode.
+2.  Change txt files in TestFiles to have an irp suffix.
+3.  Allow underscores as separators in literals.
+4.  Create unsigned integer type
+5.  Better error messages from functions that contain errors.
+6.  String utilities
+    - len
+    - cmp
+    - find
+    - slicing
+    - indexing
+7.  Improved File IO
+    - general fread() function to read data from a file.
+    
+
