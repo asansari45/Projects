@@ -12,6 +12,9 @@
 #include "Driver/InterpreterContext.h"
 #include "DebugMemory/DebugMemory.h"
 
+// This global variable is used to determine the appropriate start grammar rule.
+int f_StartToken = 0;
+
 #undef  YY_DECL
 #define YY_DECL int InterpreterScanner::yylex( yy::InterpreterParser::semantic_type * const lval, yy::InterpreterParser::location_type *location )
 
@@ -41,7 +44,13 @@ int print_parens = 0;
 %%
 %{
     m_pYylval = lval;
+    if (f_StartToken != 0)
+    {
+        f_StartToken = 0;
+        return token::INTERACTIVE_;
+    }
 %}
+
 ".pwd" {return token::PWD_;}
 ".functions" { return token::FUNCTIONS_;}
 ".vars" { return token::VARS_;}

@@ -52,6 +52,32 @@ namespace Interpreter
         }
     }
 
+    std::optional<std::string> ExecutionNodeVisitor::GetResult()
+    {
+        if (m_Nodes.size() == 0)
+        {
+            // Nothing on the stack to report.
+            return {};
+        }
+
+        // Pop the node off the stack.
+        std::unique_ptr<Node> pTop(m_Nodes.back());
+        m_Nodes.pop_back();
+
+        std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
+        if (pValueNode.get() == nullptr)
+        {
+            return {};
+        }
+
+        if (pValueNode->IsArray())
+        {
+            return pValueNode->GetArrayValue()->GetValuesRepr();
+        }
+
+        return pValueNode->GetValueRef().GetValueRepr();
+    }
+
     void ExecutionNodeVisitor::VisitValueNode(Interpreter::ValueNode* pNode)
     {
         m_Nodes.push_back(pNode->Clone());

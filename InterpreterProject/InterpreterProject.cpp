@@ -40,7 +40,7 @@ void ProcessError(Interpreter::ErrorInterface::ErrorInfo err, bool interactive)
     }
 }
 
-bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
+bool ExecuteNodes(InterpreterDriver& driver, std::string* pResult, bool interactive)
 {
     Interpreter::ErrorInterface err = driver.GetErrorInfo();
     if (err.IsErrorFlagSet())
@@ -62,6 +62,7 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
     }
 
     Interpreter::Node* pNode = driver.GetResult();
+    Interpreter::ExecutionNodeVisitor nodeVisitor(driver.GetGlobalSymbols());
     while (pNode != nullptr)
     {
         // If we see the quit node, we're done.
@@ -73,7 +74,6 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
             return false;
         }
 
-        Interpreter::ExecutionNodeVisitor nodeVisitor(driver.GetGlobalSymbols());
         pNode->Accept(nodeVisitor);
 
         if (nodeVisitor.IsErrorFlagSet())
@@ -86,22 +86,16 @@ bool ExecuteNodes(InterpreterDriver& driver, bool interactive)
             break;
         }
 
-#if 0
-        if (pNode->GetNext() == nullptr)
-        {
-            std::optional<Interpreter:: Value> v = nodeVisitor.GetResult();
-            if (v != std::nullopt)
-            {
-                char buf[512];
-                sprintf_s(buf, sizeof(buf), "=%s", v.value().GetValueRepr().c_str());
-                Interpreter::Log::GetInst()->AddMessage(buf);
-            }
-        }
-#endif
-
         Interpreter::Node* pNext = pNode->GetNext();
         pNode->Free();
         pNode = pNext;
+    }
+
+    // Check result
+    std::optional<std::string> result = nodeVisitor.GetResult();
+    if (result != std::nullopt && pResult != nullptr)
+    {
+        *pResult = *result;
     }
 
     // Continue
@@ -162,6 +156,7 @@ int PerformInteractive()
     // read from stdin until EOF
     char input[256];
     char* pRet = gets_s(input, sizeof(input));
+    std::string result;
     while (pRet != nullptr)
     {
         // Create a new context for this line.
@@ -170,19 +165,14 @@ int PerformInteractive()
         pContext->SetLine(1);
         pContext->SetColumn(1);
         Interpreter::contextStack.push_back(pContext);
+
+        // Allow the grammar to have expressions.
+        extern int f_StartToken;
+        f_StartToken = 1;
         InterpreterDriver driver(pGlobalSymbols);
+        driver.Parse(input);
 
-        bool postProcessingRequired = false;
-        std::string newLine;
-        PreprocessLine(input, newLine, postProcessingRequired);
-        driver.Parse(newLine.c_str());
-
-        bool cont = ExecuteNodes(driver, true);
-
-        if (postProcessingRequired)
-        {
-            PostprocessLine(pGlobalSymbols);
-        }
+        bool cont = ExecuteNodes(driver, &result, true);
 
         delete Interpreter::contextStack.back();
         Interpreter::contextStack.pop_back();
@@ -193,10 +183,18 @@ int PerformInteractive()
         }
 
         // Prompt
-        if (!postProcessingRequired)
+        if (result.size() != 0)
+        {
+            Interpreter::Log::GetInst()->AddNoNewlineMessage("=" + result + ">");
+        }
+        else
         {
             Interpreter::Log::GetInst()->AddNoNewlineMessage(">");
         }
+
+        // Clear the result
+        result.clear();
+
         pRet = gets_s(input, sizeof(input));
     }
 
@@ -240,7 +238,7 @@ int PerformFromFile(const std::string filename)
     t1 = std::chrono::high_resolution_clock::now();
 #endif
 
-    ExecuteNodes(driver, false);
+    ExecuteNodes(driver, nullptr, false);
 
 #if defined(METRICS)
     t2 = std::chrono::high_resolution_clock::now();

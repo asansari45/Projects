@@ -713,35 +713,6 @@ class ReturnTests(unittest.TestCase):
                           'print(x)'],
                           ['20'])
 
-    def test_while_return(self):
-        self.ExecuteTest(['clear()',
-                          'function foo()',
-                          '{',
-                          '    i=4',
-                          '    while(i<10)'
-                          '    {',
-                          '        return(i)',
-                          '    }',
-                          '    return(20)',
-                          '}',
-                          'x=foo()',
-                          'print(x)'],
-                          ['4'])
-
-        self.ExecuteTest(['clear()',
-                          'function foo()',
-                          '{',
-                          '    i=10',
-                          '    while(i<10)'
-                          '    {',
-                          '        return(i)',
-                          '    }',
-                          '    return(20)',
-                          '}',
-                          'x=foo()',
-                          'print(x)'],
-                          ['20'])
-
     def test_for_return(self):
         self.ExecuteTest(['clear()',
                           'function foo()',

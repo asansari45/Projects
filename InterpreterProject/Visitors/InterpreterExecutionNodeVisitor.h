@@ -48,48 +48,11 @@ public:
     virtual void VisitFileWriteNode(FileWriteNode* pNode);
     virtual void VisitFileEofNode(FileEofNode* pNode);
 
-#if 0
-    std::optional<Value> GetResult()
-    {
-        if (m_Nodes.size() != 0)
-        {
-            return GetRvalue(m_Nodes.back());
-        }
-        return {};
-    }
-#endif
+    std::optional<std::string> GetResult();
 
 private:
 
     ValueNode* GetTopOfStackValue(Node* pTop);
-
-#if 0
-    bool IsArray(Node* pNode)
-    {
-        ValueNode* pValueNode = dynamic_cast<ValueNode*>(pNode);
-        if (pValueNode != nullptr)
-        {
-            return pValueNode->IsArray();
-        }
-
-        VarNode* pVarNode = dynamic_cast<VarNode*>(pNode);
-        if (pVarNode != nullptr)
-        {
-            if (pVarNode->GetArraySpecifier().size() != 0)
-            {
-                return false;
-            }
-
-            assert(pVarNode->IsSymbolPresent());
-            SymbolTable::SymbolInfo* pInfo = pVarNode->GetSymbolInfo();
-            assert(pInfo != nullptr);
-            assert(!pInfo->m_IsRef);
-            return pInfo->m_IsArray;
-        }
-
-        return false;
-    }
-#endif
 
     bool ExecuteIfNode(IfNode* pIfNode);
 

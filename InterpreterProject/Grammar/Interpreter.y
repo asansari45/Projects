@@ -144,6 +144,7 @@ class Node;
 %token DEC_
 %token OCT_
 %token ENDL_
+%token INTERACTIVE_
 %token <m_pNode> WIDTH_
 %token <m_pNode> FILL_
 %token <m_pNode> STRING_
@@ -186,6 +187,7 @@ class Node;
 %nterm <m_pNode> print_param_comma_list
 %nterm <m_pNode> print_param_comma
 %nterm <m_pNode> print_param
+%nterm <m_pNode> interactive_line
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
@@ -204,6 +206,19 @@ program :
         driver.SetResult($1);
     }
     |
+    INTERACTIVE_ interactive_line
+    {
+        driver.SetResult($2);
+    }
+    |
+    ;
+
+interactive_line:
+    command
+    |
+    assignment
+    |
+    expression
     ;
 
 lines:
@@ -239,8 +254,6 @@ line:
     srand
     |
     break
-    |
-    return
     ;
 
 funclines : funclines funcline
@@ -343,7 +356,7 @@ elif : ELIF_ expression LBRACKET_ funclines RBRACKET_
     }
     ;
 
-while : WHILE_ LPAREN_ expression RPAREN_ LBRACKET_ lines RBRACKET_
+while : WHILE_ LPAREN_ expression RPAREN_ LBRACKET_ funclines RBRACKET_
     {
         Interpreter::WhileNode* pNode = new Interpreter::WhileNode;
         pNode->SetExpr($3);
@@ -352,7 +365,7 @@ while : WHILE_ LPAREN_ expression RPAREN_ LBRACKET_ lines RBRACKET_
     }
     ;
 
-for : FOR_ LPAREN_ assignment COMMA_ expression COMMA_ assignment RPAREN_ LBRACKET_ lines RBRACKET_
+for : FOR_ LPAREN_ assignment COMMA_ expression COMMA_ assignment RPAREN_ LBRACKET_ funclines RBRACKET_
     {
         Interpreter::ForNode* pNode = new Interpreter::ForNode;
         pNode->SetInit($3);
