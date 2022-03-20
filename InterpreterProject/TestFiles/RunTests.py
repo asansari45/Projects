@@ -11,6 +11,7 @@ class FileBasedTests(unittest.TestCase) :
     # These are class variables in python.
     FILELOC = r'.'
     LOGFILE = r'InterpreterLog.log'
+    SKIPFILE = r'TestFile.irp'
     _tstfiles = []
 
     @classmethod
@@ -18,7 +19,7 @@ class FileBasedTests(unittest.TestCase) :
         for filename in os.listdir(cls.FILELOC):
             f = os.path.join(cls.FILELOC, filename)
             if os.path.isfile(f):
-                if '.txt' in f:
+                if '.irp' in f and filename != cls.SKIPFILE:
                     cls._tstfiles.append(f)
 
     def ProcessTestOutput(self, f, s):
@@ -58,7 +59,7 @@ class FileBasedTests(unittest.TestCase) :
 
 class TestExecutor :
     # class variables
-    FILENAME = 'TestFile.tqt'
+    FILENAME = 'TestFile.irp'
 
     def __init__(self, test, testLines, expectedOutputLines, prefixFile=False):
         self._test = test
