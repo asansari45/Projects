@@ -60,8 +60,9 @@ namespace Interpreter
         void FillStream(std::stringstream& rStream);
 
         // Helper methods for conversion
-        static int ConvertBinary(const char* pStr);
+        static int ConvertBinary(const std::string s);
         static std::string HarvestControlChars(const char* pStr);
+        static std::string RemoveUnderscores(const char* pStr);
 
     private:
         std::type_index m_Type;

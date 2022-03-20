@@ -1682,5 +1682,73 @@ class LogicalOperators(unittest.TestCase):
         expectedOutput = ['0', '1', '1', '1', '0']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
+class Literals(unittest.TestCase):
+    def test_binary(self):
+        testLines = """clear()
+                       a=b1000
+                       print(a,endl)
+        """
+        expectedOutput = ['8']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a=b1000_0
+                       print(a,endl)
+        """
+        expectedOutput = ['16']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a=b1_000_0
+                       print(a,endl)
+        """
+        expectedOutput = ['16']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def test_dec(self):
+        testLines = """clear()
+                       a=1000
+                       print(a,endl)
+        """
+        expectedOutput = ['1000']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a=1_000_0
+                       print(a,endl)
+        """
+        expectedOutput = ['10000']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a=1_000_000
+                       print(a,endl)
+        """
+        expectedOutput = ['1000000']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def test_hex(self):
+        testLines = """clear()
+                       a=0x1000
+                       print(a,endl)
+        """
+        expectedOutput = ['4096']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a=0x1_00_0
+                       print(a,endl)
+        """
+        expectedOutput = ['4096']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a=0x1_000_000
+                       print(a,endl)
+        """
+        expectedOutput = ['16777216']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+
 if __name__ == '__main__':
     unittest.main()

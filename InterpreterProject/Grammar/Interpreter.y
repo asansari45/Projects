@@ -211,6 +211,8 @@ program :
         driver.SetResult($2);
     }
     |
+    INTERACTIVE_
+    |
     ;
 
 interactive_line:

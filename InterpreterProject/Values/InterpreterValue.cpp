@@ -775,16 +775,33 @@ namespace Interpreter
             rStream << GetStringValue();
         }
     } 
-    int Value::ConvertBinary(const char* pStr)
+
+    int Value::ConvertBinary(const std::string s)
     {
-        int len = static_cast<int>(strlen(pStr));
         int result = 0;
-        for (int i = len-1; i >= 0; i--)
+        for (int i = 0; i < s.size(); i++)
         {
-            int v = pStr[i] == '1' ? 1 : 0;
-            result = result | (v<<i);
+            if (s[i] == '1' || s[i] == '0')
+            {
+                result = result | ((s[i] - '0')<<(s.size()-1-i));
+            }
         }
         return result;
+    }
+
+    std::string Value::RemoveUnderscores(const char* pStr)
+    {
+        std::string s;
+        int len = static_cast<int>(strlen(pStr));
+        for ( int i = 0; i < len; i++)
+        {
+            if (pStr[i] != '_')
+            {
+                s += pStr[i];
+            }
+        }
+
+        return s;
     }
 
     std::string Value::HarvestControlChars(const char* pStr)

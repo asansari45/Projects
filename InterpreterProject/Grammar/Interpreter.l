@@ -136,8 +136,9 @@ int print_parens = 0;
                         m_pYylval->m_pNode = pNode;
                         return token::FILL_; }
 
-b[0-1]+ {
-    int result = Interpreter::Value::ConvertBinary(&yytext[1]);
+b[0-1_]+ {
+    std::string s = Interpreter::Value::RemoveUnderscores(&yytext[1]);
+    int result = Interpreter::Value::ConvertBinary(s);
     Interpreter::Value v;
     v.SetIntValue(result); 
     Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
@@ -162,9 +163,10 @@ b[0-1]+ {
             return token::STRING_;
 }
 
-0[xX][0-9a-fA-F]+ {
+0[xX][0-9a-fA-F_]+ {
             Interpreter::Value v;
-            v.SetIntValue(std::stoul(yytext, nullptr, 16));
+            std::string s = Interpreter::Value::RemoveUnderscores(yytext);
+            v.SetIntValue(std::stoul(s.c_str(), nullptr, 16));
             Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
             m_pYylval->m_pNode = pNode;
             return token::NUM_;
@@ -178,9 +180,10 @@ b[0-1]+ {
             return token::NUM_;
         }
 
-[0-9]+   {
+[0-9_]+   {
             Interpreter::Value v;
-            v.SetIntValue(atoi(yytext));
+            std::string s = Interpreter::Value::RemoveUnderscores(yytext);
+            v.SetIntValue(atoi(s.c_str()));
             Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
             m_pYylval->m_pNode = pNode;
             return token::NUM_;
