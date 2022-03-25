@@ -10,7 +10,13 @@ ArrayValue::ArrayValue(std::vector<int> dims, std::type_index t):
     m_Dims(dims),
     m_Type(t)
 {
-    if (m_Type == typeid(int))
+    if (m_Type == typeid(unsigned int))
+    {
+        m_Data.m_pUnsignedInts = new unsigned int[GetElementCount()];
+        std::memset(m_Data.m_pUnsignedInts, 0, sizeof(unsigned int) * GetElementCount());
+        assert(m_Data.m_pUnsignedInts != nullptr);
+    }
+    else if (m_Type == typeid(int))
     {
         m_Data.m_pInts = new int[GetElementCount()];
         std::memset(m_Data.m_pInts, 0, sizeof(int) * GetElementCount());
@@ -35,6 +41,11 @@ ArrayValue::ArrayValue(std::vector<int> dims, std::type_index t):
 
 ArrayValue::~ArrayValue()
 {
+    if (m_Type == typeid(unsigned int))
+    {
+        delete [] m_Data.m_pUnsignedInts;
+    }
+
     if (m_Type == typeid(int))
     {
         delete [] m_Data.m_pInts;
@@ -75,6 +86,10 @@ std::optional<Value> ArrayValue::GetValue(int flatElement)
     }
 
     Value v;
+    if (m_Type == typeid(unsigned int))
+    {
+        v.SetUnsignedIntValue(m_Data.m_pUnsignedInts[flatElement]);
+    }
     if (m_Type == typeid(int))
     {
         v.SetIntValue(m_Data.m_pInts[flatElement]);
@@ -112,85 +127,147 @@ bool ArrayValue::SetValue(int flatElement, Value v)
     {
         return {};
     }
-
-    if (v.GetType() == typeid(int))
+    
+    if (v.GetType() == typeid(std::string))
     {
+        if (m_Type == typeid(std::string))
+        {
+            m_Data.m_pStrings[flatElement] = v.GetStringValue();
+            return true;
+        }
+
+        return false;
+    }
+
+    if (v.GetType() == m_Type)
+    {
+        if (m_Type == typeid(unsigned int))
+        {
+            m_Data.m_pUnsignedInts[flatElement] = v.GetUnsignedIntValue();
+            return true;
+        }
+
         if (m_Type == typeid(int))
         {
             m_Data.m_pInts[flatElement] = v.GetIntValue();
             return true;
         }
-        
+
         if (m_Type == typeid(float))
         {
-            m_Data.m_pFloats[flatElement] = static_cast<float>(v.GetIntValue());
+            m_Data.m_pFloats[flatElement] = v.GetFloatValue();
             return true;
         }
+    }
 
-        assert(m_Type == typeid(std::string));
-        delete [] m_Data.m_pStrings;
-        m_Data.m_pStrings = nullptr;
-
+    // Types are not equal and are not string
+    if (v.GetType() == typeid(unsigned int))
+    {
+        unsigned int* pData = ConvertFreeUnsignedInt();
+        pData[flatElement] = v.GetUnsignedIntValue();
+        m_Data.m_pUnsignedInts = pData;
+        m_Type = typeid(unsigned int);
+    }
+    else if (v.GetType() == typeid(int))
+    {
+        int* pData = ConvertFreeInt();
+        pData[flatElement] = v.GetIntValue();
+        m_Data.m_pInts = pData;
         m_Type = typeid(int);
-        m_Data.m_pInts = new int[GetElementCount()];
-        std::memset(m_Data.m_pInts, 0, sizeof(int) * GetElementCount());
-        assert(m_Data.m_pInts != nullptr);
-        m_Data.m_pInts[flatElement] = v.GetIntValue();
-        return true;
-   }
-
-    if (v.GetType() == typeid(float))
+    }
+    else if (v.GetType() == typeid(float))
     {
-        if (m_Type == typeid(int))
-        {
-            // Convert ints over to floats.
-            float* pFloats = new float[GetElementCount()];
-            AssignArrays(pFloats, m_Data.m_pInts, GetElementCount());
-            delete [] m_Data.m_pInts;
-            m_Type = typeid(float);
-            m_Data.m_pFloats = pFloats;
-            m_Data.m_pFloats[flatElement] = v.GetFloatValue();
-            return true;
-        }
-
-        if (m_Type == typeid(float))
-        {
-            m_Data.m_pFloats[flatElement] = v.GetFloatValue();
-            return true;
-        }
-
-        assert(m_Data.m_pStrings != nullptr);
-        delete [] m_Data.m_pStrings;
-
-        m_Data.m_pFloats = new float[GetElementCount()];
-        std::memset(m_Data.m_pFloats, 0, sizeof(float) * GetElementCount());
-        assert(m_Data.m_pFloats != nullptr);
-        m_Data.m_pFloats[flatElement] = v.GetFloatValue();
-        return true;
+        float* pData = ConvertFreeFloat();
+        pData[flatElement] = v.GetFloatValue();
+        m_Data.m_pFloats = pData;
+        m_Type = typeid(float);
     }
 
-    assert(v.GetType() == typeid(std::string));
-    if (m_Type == typeid(std::string))
-    {
-        m_Data.m_pStrings[flatElement] = v.GetStringValue();
-        return true;
-    }
+    return true;
+}
 
+unsigned int* ArrayValue::ConvertFreeUnsignedInt()
+{
+    assert(m_Type != typeid(std::string));
+    assert(m_Type != typeid(unsigned int));
+
+    unsigned int* pData = new unsigned int[GetElementCount()];
+    assert(pData != nullptr);
     if (m_Type == typeid(int))
     {
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            pData[i] = (unsigned int)m_Data.m_pInts[i];
+        }
         delete [] m_Data.m_pInts;
-        m_Type = typeid(std::string);
-        m_Data.m_pStrings = new std::string[GetElementCount()];
-        m_Data.m_pStrings[flatElement] = v.GetStringValue();
-        return true;
     }
 
-    assert(m_Type == typeid(float));
-    delete [] m_Data.m_pFloats;
-    m_Type = typeid(std::string);
-    m_Data.m_pStrings = new std::string[GetElementCount()];
-    m_Data.m_pStrings[flatElement] = v.GetStringValue();
-    return true;
+    if (m_Type == typeid(float))
+    {
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            pData[i] = (unsigned int)m_Data.m_pFloats[i];
+        }
+        delete [] m_Data.m_pFloats;
+    }
+
+    return pData;
+}
+
+int* ArrayValue::ConvertFreeInt()
+{
+    assert(m_Type != typeid(std::string));
+    assert(m_Type != typeid(int));
+
+    int* pData = new int[GetElementCount()];
+    assert(pData != nullptr);
+    if (m_Type == typeid(unsigned int))
+    {
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            pData[i] = (int)m_Data.m_pUnsignedInts[i];
+        }
+        delete [] m_Data.m_pUnsignedInts;
+    }
+
+    if (m_Type == typeid(float))
+    {
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            pData[i] = (int)m_Data.m_pFloats[i];
+        }
+        delete [] m_Data.m_pFloats;
+    }
+
+    return pData;
+}
+
+float* ArrayValue::ConvertFreeFloat()
+{
+    assert(m_Type != typeid(std::string));
+    assert(m_Type != typeid(float));
+
+    float* pData = new float[GetElementCount()];
+    assert(pData != nullptr);
+    if (m_Type == typeid(int))
+    {
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            pData[i] = (float)m_Data.m_pInts[i];
+        }
+        delete [] m_Data.m_pInts;
+    }
+
+    if (m_Type == typeid(unsigned int))
+    {
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            pData[i] = (float)m_Data.m_pUnsignedInts[i];
+        }
+        delete [] m_Data.m_pUnsignedInts;
+    }
+
+    return pData;
 }
 
 // Only 3 dimensions are allowed.  2-dimensions are just rows concatenated together.
@@ -258,106 +335,6 @@ std::optional<int> ArrayValue::ConvertElementIndex(std::vector<int> element)
 std::type_index ArrayValue::GetType()
 {
     return m_Type;
-}
-
-// Add 2 arrays together.
-bool ArrayValue::Add(ArrayValue* v)
-{
-    bool status = LikenessChecks(v);
-    if (!status)
-    {
-        return false;
-    }
-
-    std::type_index ourType = GetType();
-    std::type_index theirType = v->GetType();
-    if (ourType == typeid(int))
-    {
-        if (theirType == typeid(int))
-        {
-            AddArrays(m_Data.m_pInts, v->GetIntData(), m_Data.m_pInts, GetElementCount());
-            return true;
-        }
-
-        if (theirType == typeid(float))
-        {
-            // Convert results to be all floats.
-            float* pFloats = new float[GetElementCount()];
-            assert(m_Data.m_pFloats != nullptr);
-            AddArrays(m_Data.m_pInts, v->GetFloatData(), pFloats, GetElementCount());
-            delete [] m_Data.m_pInts;
-            m_Type = typeid(float);
-            m_Data.m_pFloats = pFloats;
-            return true;
-        }
-
-        return false;
-    }
-
-    if (ourType == typeid(float))
-    {
-        if (theirType == typeid(int))
-        {
-            AddArrays(m_Data.m_pFloats, v->GetIntData(), m_Data.m_pFloats, GetElementCount());
-            return true;
-        }
-
-        if (theirType == typeid(float))
-        {
-            AddArrays(m_Data.m_pFloats, v->GetFloatData(), m_Data.m_pFloats, GetElementCount());
-            return true;
-        }
-
-        return false;
-    }
-
-    assert(ourType == typeid(std::string));
-    if (theirType == typeid(std::string))
-    {
-        AddArrays(m_Data.m_pStrings, v->GetStringData(), m_Data.m_pStrings, GetElementCount());
-    }
-
-    return true;
-}
-
-bool ArrayValue::LikenessChecks(ArrayValue* v)
-{
-    // The dimensions must match.
-    if (m_Dims != v->GetDims())
-    {
-        return false;
-    }
-
-    // The type of each element must match.
-    std::type_index ourType = GetType();
-    std::type_index theirType = v->GetType();
-    if (ourType == typeid(int))
-    {
-        if (theirType == typeid(std::string))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    if (ourType == typeid(float))
-    {
-        if (theirType == typeid(std::string))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
-    assert(ourType == typeid(std::string));
-    if (theirType == typeid(int) || theirType == typeid(float))
-    {
-        return false;
-    }
-
-    return true;
 }
 
 int ArrayValue::GetElementCount()
@@ -467,20 +444,23 @@ ArrayValue* ArrayValue::Clone()
     assert(pClone != nullptr);
 
     // copy data over to clone's buffer.
+    if (m_Type == typeid(unsigned int))
+    {
+        std::memcpy(pClone->m_Data.m_pUnsignedInts, m_Data.m_pUnsignedInts, sizeof(unsigned int) * GetElementCount());
+    }
     if (m_Type == typeid(int))
     {
-        std::memcpy(pClone->GetIntData(), m_Data.m_pInts, sizeof(int) * GetElementCount());
+        std::memcpy(pClone->m_Data.m_pInts, m_Data.m_pUnsignedInts, sizeof(unsigned int) * GetElementCount());
     }
     else if (m_Type == typeid(float))
     {
-        std::memcpy(pClone->GetFloatData(), m_Data.m_pFloats, sizeof(float) * GetElementCount());
+        std::memcpy(pClone->m_Data.m_pFloats, m_Data.m_pUnsignedInts, sizeof(unsigned int) * GetElementCount());
     }
     else if (m_Type == typeid(std::string))
     {
-        std::string* pCloneData = pClone->GetStringData();
         for (int i = 0; i < GetElementCount(); i++)
         {
-            pCloneData[i] = m_Data.m_pStrings[i];
+            pClone->m_Data.m_pStrings[i] = m_Data.m_pStrings[i];
         }
     }
     

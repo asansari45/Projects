@@ -6,6 +6,7 @@
 #include "Nodes/InterpreterFunctionDefNode.h"
 #include "Tables/InterpreterSymbolTable.h"
 #include "Algorithm/InterpreterAlgorithmRepository.h"
+#include "Algorithm/InterpreterBinaryFunc.h"
 #include "Driver/InterpreterDriver.hpp"
 #include "Tables/InterpreterFunctionTable.h"
 #include "Log/InterpreterLog.h"
@@ -128,7 +129,8 @@ namespace Interpreter
 
         // rnode operator lnode
         BinaryFunc* pFunc = AlgorithmRepository::GetInst()->Lookup(pNode->GetOperator());
-        Node* pResult = pFunc->Perform(pLeft, 
+        Node* pResult = pFunc->Perform(pNode->GetOperator(),
+                                       pLeft, 
                                        pRight, 
                                        this,
                                        this);

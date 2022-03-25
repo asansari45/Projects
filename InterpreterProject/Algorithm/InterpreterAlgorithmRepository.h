@@ -8,24 +8,8 @@
 
 namespace Interpreter
 {
-class SymbolTable;
-class ErrorInterface;
-class ValueNode;
-class ExecutionNodeVisitorServices;
 
-class BinaryFunc
-{
-public:
-    virtual Node* Perform(Node* pLeft, Node* pRight, ExecutionNodeVisitorServices* pServices, 
-                          ErrorInterface* pErrorInterface) = 0;
-
-protected:
-    ValueNode* GetRvalue(Node * pNode, ExecutionNodeVisitorServices* pServices, 
-                         ErrorInterface* pErrorInterface);
-    Lvalue* GetLvalue(Node* pNode, ValueNode* pRvalue,
-                      ExecutionNodeVisitorServices* pServices,
-                      ErrorInterface* pErrorInterface);
-};
+class BinaryFunc;
 
 class AlgorithmRepository
 {

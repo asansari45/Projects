@@ -22,6 +22,8 @@ namespace Interpreter
             DEQ,
             NEQ,
             NEG,
+            LOR,
+            LAND,
             DIM,
             ARY,
             OR,
@@ -29,9 +31,7 @@ namespace Interpreter
             XOR,
             LSH,
             RSH,
-            BNEG,
-            LOR,
-            LAND
+            BNEG
         };
 
         BinaryNode();

@@ -25,31 +25,18 @@ public:
     bool SetValue(std::vector<int> element, Value v);
     bool SetValue(int flatElement, Value v);
 
-    std::type_index GetType();
+    unsigned int* GetUnsignedIntData(){ return m_Data.m_pUnsignedInts; }
+    int* GetIntData(){ return m_Data.m_pInts; }
+    float* GetFloatData() { return m_Data.m_pFloats; }
+    std::string* GetStringData() { return m_Data.m_pStrings; }
 
-    // Operations
-    bool Add(ArrayValue* v);
+    std::type_index GetType();
 
     // For debug purposes
     std::string GetTypeRepr();
     std::string GetDimsRepr();
     std::string GetValuesRepr();
     void FillStream(std::stringstream& rStream);
-
-    int* GetIntData() const
-    {
-        return m_Data.m_pInts;
-    }
-
-    float* GetFloatData() const
-    {
-        return m_Data.m_pFloats;
-    }
-
-    std::string* GetStringData() const
-    {
-        return m_Data.m_pStrings;
-    }
 
 private:
     ArrayValue(std::vector<int> dims, std::type_index t);
@@ -58,35 +45,10 @@ private:
     // Convert element index to flag index
     std::optional<int> ConvertElementIndex(std::vector<int> element);
 
-    // Perform likeness checks between 2 arrays.
-    bool LikenessChecks(ArrayValue* v);
-
-    template<class A, class B, class C>
-    void AddArrays(A* pArray1, B* pArray2, C* pResult, int elementCount )
-    {
-        for (int i=0; i < elementCount; i++)
-        {
-            pResult[i] = static_cast<C>(pArray1[i]) + static_cast<C>(pArray2[i]);
-        }
-    }
-
-    template<class A>
-    void AssignArrays(A* pArray1, A* pArray2, int elementCount)
-    {
-        for (int i=0; i < elementCount; i++)
-        {
-            pArray1[i] = pArray2[i];
-        }
-    }
-
-    template<class A, class B>
-    void AssignArrays(A* pArray1, B* pArray2, int elementCount)
-    {
-        for (int i=0; i < elementCount; i++)
-        {
-            pArray1[i] = static_cast<A>(pArray2[i]);
-        }
-    }
+    // Convert and then free.
+    unsigned int* ConvertFreeUnsignedInt();
+    int* ConvertFreeInt();
+    float* ConvertFreeFloat();
 
     // Flat array for the values based on the dimension.
     std::vector<int> m_Dims;
@@ -95,6 +57,7 @@ private:
     std::type_index m_Type;
     union Type
     {
+        unsigned int* m_pUnsignedInts;
         int* m_pInts;
         float* m_pFloats;
         std::string* m_pStrings;
