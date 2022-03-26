@@ -35,6 +35,7 @@ class FileWriteNode;
 class FileReadNode;
 class FileCloseNode;
 class FileEofNode;
+class TypeIdNode;
 
 class NodeVisitor
 {
@@ -125,6 +126,9 @@ public:
     {
     }
     virtual void VisitFileCloseNode(FileCloseNode* pNode)
+    {
+    }
+    virtual void VisitTypeIdNode(TypeIdNode* pNode)
     {
     }
 };

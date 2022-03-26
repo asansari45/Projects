@@ -82,6 +82,7 @@ int print_parens = 0;
 "fread" { return token::FREAD_;}
 "fclose" { return token::FCLOSE_;}
 "feof" { return token::FEOF_;}
+"typeid" { return token::TYPEID_; }
 ","  { return token::COMMA_;}
 "~"  {return token::BNEG_;}
 "<<" {return token::LSH_;}

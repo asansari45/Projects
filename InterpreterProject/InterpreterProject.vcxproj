@@ -182,6 +182,7 @@
     <ClCompile Include="Nodes\InterpreterReturnNode.cpp" />
     <ClCompile Include="Nodes\InterpreterSrandNode.cpp" />
     <ClCompile Include="Nodes\InterpreterStopNode.cpp" />
+    <ClCompile Include="Nodes\InterpreterTypeIdNode.cpp" />
     <ClCompile Include="Nodes\InterpreterValueNode.cpp" />
     <ClCompile Include="Nodes\InterpreterVarListNode.cpp" />
     <ClCompile Include="Nodes\InterpreterVarNode.cpp" />

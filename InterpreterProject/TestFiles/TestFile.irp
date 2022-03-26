@@ -1,4 +1,6 @@
 clear()
-                       a=0
-                       print(a,endl)
+                       a=dim[10]
+                       a[0]="To blaze across the heavans..."
+                       a[1]="JAGR"
+                       print(typeid(a),endl)
         

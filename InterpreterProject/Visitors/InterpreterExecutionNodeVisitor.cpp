@@ -30,6 +30,7 @@
 #include "Nodes/InterpreterFileWriteNode.h"
 #include "Nodes/InterpreterFileCloseNode.h"
 #include "Nodes/InterpreterFileEofNode.h"
+#include "Nodes/InterpreterTypeIdNode.h"
 #include "File/InterpreterFile.h"
 
 #include "DebugMemory/DebugMemory.h"
@@ -1485,6 +1486,39 @@ namespace Interpreter
         Value eofValue(status);
         pResultNode->SetValue(eofValue);
         m_Nodes.push_back(pVarListNode);
+    }
+
+    // a = typeid(b)
+    void ExecutionNodeVisitor::VisitTypeIdNode(TypeIdNode* pNode)
+    {
+        pNode->GetExpr()->Accept(*this);
+        if (m_Nodes.size() == 0)
+        {
+            ErrorInterface::ErrorInfo err(pNode);
+            err.m_Msg = ErrorInterface::ERROR_INCORRECT_TYPE;
+            SetErrorInfo(err);
+            return;
+        }
+
+        std::unique_ptr<Node> pTop(m_Nodes.back());
+        m_Nodes.pop_back();
+        std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
+
+        // Take the type and place it as a string on the stack.
+        std::string s;
+        if (pValueNode->IsArray())
+        {
+            s = pValueNode->GetArrayValue()->GetTypeRepr();
+        }
+        else
+        {
+            s = pValueNode->GetValueRef().GetTypeRepr();
+        }
+
+        Value v(s);
+        ValueNode* pTypeIdNode = new ValueNode(v);
+        assert(pTypeIdNode != nullptr);
+        m_Nodes.push_back(pTypeIdNode);
     }
 
     bool ExecutionNodeVisitor::CreateSymbol(std::string name, SymbolTable::SymbolInfo* pSymbolInfo)

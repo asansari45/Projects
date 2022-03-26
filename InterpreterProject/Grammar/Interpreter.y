@@ -76,6 +76,7 @@ class Node;
 #include "Nodes/InterpreterFileReadNode.h"
 #include "Nodes/InterpreterFileWriteNode.h"
 #include "Nodes/InterpreterFileEofNode.h"
+#include "Nodes/InterpreterTypeIdNode.h"
 
 #include "DebugMemory/DebugMemory.h"
 
@@ -144,6 +145,7 @@ class Node;
 %token DEC_
 %token OCT_
 %token ENDL_
+%token TYPEID_
 %token INTERACTIVE_
 %token <m_pNode> WIDTH_
 %token <m_pNode> FILL_
@@ -188,6 +190,7 @@ class Node;
 %nterm <m_pNode> print_param_comma
 %nterm <m_pNode> print_param
 %nterm <m_pNode> interactive_line
+%nterm <m_pNode> typeid
 
 %left DEQ_ NEQ_
 %left LES_ LEQ_ GRT_ GEQ_
@@ -851,6 +854,17 @@ expression:
     rand
     |
     len
+    |
+    typeid
+    ;
+
+typeid :
+    TYPEID_ LPAREN_ expression RPAREN_
+    {
+        Interpreter::TypeIdNode* pNode = new Interpreter::TypeIdNode;
+        pNode->SetExpr($3);
+        $$ = pNode;
+    }
     ;
 
 len :

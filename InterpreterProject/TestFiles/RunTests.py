@@ -1750,14 +1750,198 @@ class Literals(unittest.TestCase):
         TestExecutor(self, testLines, expectedOutput).Execute()
     
     def test_unsigned(self):
+        # Expect sign extension with signed integer
         testLines = """clear()
-                       a=0
-                       print(a,endl)
+                       a=-2147483648
+                       b=a>>1
+                       print(hex,b,endl)
         """
-        expectedOutput = ['0']
+        expectedOutput = ['c0000000']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # No sign extension with unsigned integer
+        testLines = """clear()
+                       a=0x80000000
+                       b=a>>1
+                       print(hex,b,endl)
+        """
+        expectedOutput = ['40000000']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def test_unsigned_arrays(self):
+        # element access
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]=8u
+                       print(a[3],endl)
+        """
+        expectedOutput = ['8']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # default array type
+        testLines = """clear()
+                       a=dim[10]
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['INT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion unsigned int==> unsigned int
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]=0x8000_0000
+                       a[4]=9u
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['UINT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion unsigned int==> int
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]=0x8000_0000
+                       a[4]=9
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['INT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion unsigned int==> float
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]=1u
+                       a[4]=9.03
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['FLT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion unsigned int==> string
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]=1u
+                       a[4]="Right down the line..."
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['STR']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
 
+        # conversion int==> unsigned int
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]=8u
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['UINT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion int==> int
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]=8
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['INT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion int==> float
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]=8.5
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['FLT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion int==> string
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]="Jagr..."
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['STR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion flt==> unsigned int
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]=8.5
+                       a[1]=1u
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['UINT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion flt==> int
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]=8.5
+                       a[1]=1
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['INT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion float==> float
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]=8.5
+                       a[1]=8.9
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['FLT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion flt==> string
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]="8.5"
+                       a[1]="JAGR"
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['STR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion str==> unsigned int
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]="But he's still heading down those tracks..."
+                       a[1]=1u
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['UINT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion str==> int
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]="Dreams flow across the heartland..."
+                       a[1]=1
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['INT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion str==> float
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]="Boy walks with his best friend..."
+                       a[1]=8.9
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['FLT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion str==> string
+        testLines = """clear()
+                       a=dim[10]
+                       a[0]="To blaze across the heavans..."
+                       a[1]="JAGR"
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['STR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
 
 if __name__ == '__main__':
     unittest.main()

@@ -47,6 +47,7 @@ public:
     virtual void VisitFileReadNode(FileReadNode* pNode);
     virtual void VisitFileWriteNode(FileWriteNode* pNode);
     virtual void VisitFileEofNode(FileEofNode* pNode);
+    void VisitTypeIdNode(TypeIdNode* pNode) override;
 
     std::optional<std::string> GetResult();
 
