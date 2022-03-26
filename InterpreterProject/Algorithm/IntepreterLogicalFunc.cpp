@@ -194,7 +194,7 @@ namespace Interpreter
         }
 
         // Array operations are not allowed with binary add, sub, etc...
-        if (lhs->IsArray() || rhs-IsArray())
+        if (lhs->IsArray() || rhs->IsArray())
         {
             ErrorInterface::ErrorInfo err(pRight);
             char buf[512];

@@ -46,9 +46,12 @@ private:
     std::optional<int> ConvertElementIndex(std::vector<int> element);
 
     // Convert and then free.
-    unsigned int* ConvertFreeUnsignedInt();
-    int* ConvertFreeInt();
-    float* ConvertFreeFloat();
+    template<typename T>
+    T* ConvertT();
+
+    // Template specialization for std::string.
+    template<>
+    std::string* ConvertT();
 
     // Flat array for the values based on the dimension.
     std::vector<int> m_Dims;

@@ -240,13 +240,13 @@ class ErrorTests(unittest.TestCase) :
         self.ExecuteErrorTest(['a=dim[8]', 
                                'b=dim[9]',
                                'c=a+b'],
-                               ['LINE:  3, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'])
+                               ['LINE:  3, COLUMN:  6  Array operation failed on array.  Wrong dimensions or element values of different types.'])
 
         self.ExecuteErrorTest(['a=dim[9]', 
                                'b=dim[9]',
-                               'b[1] = \"gadzooks\"',
+                               'b[1] = "gadzooks"',
                                'c=a+b'],
-                               ['LINE:  4, COLUMN:  4  Array operation failed on array.  Wrong dimensions or element values of different types.'])
+                               ['LINE:  4, COLUMN:  6  Array operation failed on array.  Wrong dimensions or element values of different types.'])
 
 class FunctionsCommandTests(unittest.TestCase):
 
@@ -1748,6 +1748,15 @@ class Literals(unittest.TestCase):
         """
         expectedOutput = ['16777216']
         TestExecutor(self, testLines, expectedOutput).Execute()
+    
+    def test_unsigned(self):
+        testLines = """clear()
+                       a=0
+                       print(a,endl)
+        """
+        expectedOutput = ['0']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
 
 
 if __name__ == '__main__':

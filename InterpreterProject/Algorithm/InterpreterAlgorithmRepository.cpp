@@ -34,7 +34,7 @@ namespace Interpreter
 
     void AlgorithmRepository::Shutdown()
     {
-        for (int i = 0; i <= BinaryNode::LAND; i++)
+        for (int i = 0; i <= BinaryNode::BNEG; i++)
         {
             delete m_pFunctionTable[i];
         }

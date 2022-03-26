@@ -108,7 +108,7 @@ namespace Interpreter
         char buf[256];
         if (m_Type == typeid(unsigned int))
         {
-            sprintf_s(buf, sizeof(buf), "%u", m_IntValue);
+            sprintf_s(buf, sizeof(buf), "%uU", m_UnsignedIntValue);
             return std::string(buf);
         }
 
@@ -175,6 +175,9 @@ namespace Interpreter
         {
             return static_cast<unsigned int>(m_FloatValue);
         }
+
+        assert(false);
+        return 0;
     }
     
     Value::operator int()
@@ -194,6 +197,9 @@ namespace Interpreter
         {
             return static_cast<int>(m_FloatValue);
         }
+
+        assert(false);
+        return 0;
     }
     
     Value::operator float()
@@ -213,6 +219,9 @@ namespace Interpreter
         {
             return m_FloatValue;
         }
+
+        assert(false);
+        return 0.0;
     }
 
     Value::operator std::string()
@@ -259,7 +268,11 @@ namespace Interpreter
 
     void Value::FillStream(std::stringstream& rStream)
     {
-        if (m_Type == typeid(int))
+        if (m_Type == typeid(unsigned int))
+        {
+            rStream << GetUnsignedIntValue();
+        }
+        else if (m_Type == typeid(int))
         {
             rStream << GetIntValue();
         }

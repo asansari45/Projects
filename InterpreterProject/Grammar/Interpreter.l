@@ -166,7 +166,7 @@ b[0-1_]+ {
 0[xX][0-9a-fA-F_]+ {
             Interpreter::Value v;
             std::string s = Interpreter::Value::RemoveUnderscores(yytext);
-            v.SetIntValue(std::stoul(s.c_str(), nullptr, 16));
+            v.SetUnsignedIntValue(std::stoul(s.c_str(), nullptr, 16));
             Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
             m_pYylval->m_pNode = pNode;
             return token::NUM_;
@@ -180,10 +180,21 @@ b[0-1_]+ {
             return token::NUM_;
         }
 
-[0-9_]+   {
+[0-9_]+[uU]?   {
             Interpreter::Value v;
             std::string s = Interpreter::Value::RemoveUnderscores(yytext);
-            v.SetIntValue(atoi(s.c_str()));
+            if (strchr(s.c_str(), 'u') != nullptr || strchr(s.c_str(), 'U') != nullptr)
+            {
+                // Get rid of the u or U
+                s.erase(s.size()-1);
+
+                // This is an unsigned integer
+                v.SetUnsignedIntValue(std::stoul(s.c_str(), nullptr, 10));
+            }
+            else
+            {
+                v.SetIntValue(atoi(s.c_str()));
+            }
             Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
             m_pYylval->m_pNode = pNode;
             return token::NUM_;

@@ -145,6 +145,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Algorithm\IntepreterArithmeticFunc.cpp" />
+    <ClCompile Include="Algorithm\IntepreterBitwiseFunc.cpp" />
+    <ClCompile Include="Algorithm\IntepreterLogicalFunc.cpp" />
     <ClCompile Include="Algorithm\InterpreterAlgorithmRepository.cpp" />
     <ClCompile Include="DebugMemory\DebugMemory.cpp" />
     <ClCompile Include="Driver\InterpreterContext.cpp" />

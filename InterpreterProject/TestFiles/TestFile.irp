@@ -1,4 +1,4 @@
 clear()
-                       a=0x1_000_000
+                       a=0
                        print(a,endl)
         

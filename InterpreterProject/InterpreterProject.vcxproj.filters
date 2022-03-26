@@ -147,6 +147,15 @@
     <ClCompile Include="Nodes\InterpreterFileWriteNode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Algorithm\IntepreterArithmeticFunc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Algorithm\IntepreterBitwiseFunc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Algorithm\IntepreterLogicalFunc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="InterpreterNodeVisitor.hpp">
