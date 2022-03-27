@@ -147,6 +147,7 @@ class Node;
 %token ENDL_
 %token TYPEID_
 %token INTERACTIVE_
+%token <m_pNode> CHAR_
 %token <m_pNode> WIDTH_
 %token <m_pNode> FILL_
 %token <m_pNode> STRING_
@@ -850,6 +851,8 @@ expression:
     }
     |
     STRING_
+    |
+    CHAR_
     |
     rand
     |

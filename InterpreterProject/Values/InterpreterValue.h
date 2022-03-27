@@ -13,6 +13,7 @@ namespace Interpreter
     public:
         Value();
         Value(File* pFile);
+        Value(char c);
         Value(unsigned int ui);
         Value(int i);
         Value(float f);
@@ -23,34 +24,26 @@ namespace Interpreter
         ~Value();
 
         std::type_index GetType() { return m_Type; }
-        #if 0
-        void SetUnsignedIntValue(unsigned int value) { m_Type = typeid(unsigned int); m_UnsignedIntValue = value; }
-        unsigned int GetUnsignedIntValue() { return m_UnsignedIntValue; }
-        void SetIntValue(int value) { m_Type = typeid(int); m_IntValue = value; }
-        int GetIntValue() { return m_IntValue; }
-        void SetFloatValue(float value) { m_Type = typeid(float); m_FloatValue = value; }
-        float GetFloatValue() { return m_FloatValue; }
-        void SetStringValue(std::string value) { m_Type = typeid(std::string); m_StringValue = value; }
-        std::string GetStringValue() { return m_StringValue; }
-        void SetFileValue(File* pFile) { m_Type = typeid(File*);  m_pFile = pFile; }
-        File* GetFileValue() { return m_pFile; }
-        #endif
-        
+
         template<typename T>
         void SetValue(T v)
         {
             m_Type = typeid(T);
-            if (m_Type == typeid(unsigned int))
+            if (m_Type == typeid(char))
             {
-                m_UnsignedIntValue = v;
+                m_CharValue = static_cast<char>(v);
+            }
+            else if (m_Type == typeid(unsigned int))
+            {
+                m_UnsignedIntValue = static_cast<unsigned int>(v);
             }
             else if (m_Type == typeid(int))
             {
-                m_IntValue = v;
+                m_IntValue = static_cast<int>(v);
             }
             else if (m_Type == typeid(float))
             {
-                m_FloatValue = v;
+                m_FloatValue = static_cast<float>(v);
             }
         }
 
@@ -71,7 +64,11 @@ namespace Interpreter
         template<typename T>
         T GetValue()
         {
-            if (m_Type == typeid(unsigned int))
+            if (m_Type == typeid(char))
+            {
+                return (T) m_CharValue;
+            }
+            else if (m_Type == typeid(unsigned int))
             {
                 return (T) m_UnsignedIntValue;
             }
@@ -100,6 +97,7 @@ namespace Interpreter
         }
 
         // Conversion routines
+        operator char();
         operator unsigned int();
         operator int();
         operator float();
@@ -120,6 +118,7 @@ namespace Interpreter
 
     private:
         std::type_index m_Type;
+        char m_CharValue;
         unsigned int m_UnsignedIntValue;
         int m_IntValue;
         float m_FloatValue;

@@ -10,7 +10,13 @@ ArrayValue::ArrayValue(std::vector<int> dims, std::type_index t):
     m_Dims(dims),
     m_Type(t)
 {
-    if (m_Type == typeid(unsigned int))
+    if (m_Type == typeid(char))
+    {
+        m_Data.m_pChars = new char[GetElementCount()];
+        std::memset(m_Data.m_pChars, 0, sizeof(char) * GetElementCount());
+        assert(m_Data.m_pChars != nullptr);
+    }
+    else if (m_Type == typeid(unsigned int))
     {
         m_Data.m_pUnsignedInts = new unsigned int[GetElementCount()];
         std::memset(m_Data.m_pUnsignedInts, 0, sizeof(unsigned int) * GetElementCount());
@@ -41,6 +47,11 @@ ArrayValue::ArrayValue(std::vector<int> dims, std::type_index t):
 
 ArrayValue::~ArrayValue()
 {
+    if (m_Type == typeid(char))
+    {
+        delete [] m_Data.m_pChars;
+    }
+
     if (m_Type == typeid(unsigned int))
     {
         delete [] m_Data.m_pUnsignedInts;
@@ -86,7 +97,11 @@ std::optional<Value> ArrayValue::GetValue(int flatElement)
     }
 
     Value v;
-    if (m_Type == typeid(unsigned int))
+    if (m_Type == typeid(char))
+    {
+        v.SetValue(m_Data.m_pChars[flatElement]);
+    }
+    else if (m_Type == typeid(unsigned int))
     {
         v.SetValue(m_Data.m_pUnsignedInts[flatElement]);
     }
@@ -130,6 +145,12 @@ bool ArrayValue::SetValue(int flatElement, Value v)
     
     if (v.GetType() == m_Type)
     {
+        if (m_Type == typeid(char))
+        {
+            m_Data.m_pChars[flatElement] = v.GetValue<char>();
+            return true;
+        }
+
         if (m_Type == typeid(unsigned int))
         {
             m_Data.m_pUnsignedInts[flatElement] = v.GetValue<unsigned int>();
@@ -156,7 +177,14 @@ bool ArrayValue::SetValue(int flatElement, Value v)
     }
 
     // Types are not equal and are not string
-    if (v.GetType() == typeid(unsigned int))
+    if (v.GetType() == typeid(char))
+    {
+        char* pData = ConvertT<char>();
+        pData[flatElement] = v.GetValue<char>();
+        m_Data.m_pChars = pData;
+        m_Type = typeid(char);
+    }
+    else if (v.GetType() == typeid(unsigned int))
     {
         unsigned int* pData = ConvertT<unsigned int>();
         pData[flatElement] = v.GetValue<unsigned int>();
@@ -197,6 +225,11 @@ std::string* ArrayValue::ConvertT()
     assert(pData != nullptr);
 
     // if T is string, there is no conversion, just free what's there.
+    if (m_Type == typeid(char))
+    {
+        delete[] m_Data.m_pChars;
+    }
+
     if (m_Type == typeid(int))
     {
         delete[] m_Data.m_pInts;
@@ -224,6 +257,15 @@ T* ArrayValue::ConvertT()
     assert(pData != nullptr);
 
     // if T is string, there is no conversion, just free what's there.
+    if (m_Type == typeid(char))
+    {
+        for (int i = 0; i < GetElementCount(); i++)
+        {
+            pData[i] = (T)m_Data.m_pChars[i];
+        }
+        delete[] m_Data.m_pChars;
+    }
+
     if (m_Type == typeid(int))
     {
         for (int i = 0; i < GetElementCount(); i++)
@@ -340,6 +382,11 @@ int ArrayValue::GetElementCount()
 
 std::string ArrayValue::GetTypeRepr()
 {
+    if (m_Type == typeid(char))
+    {
+        return "CHAR";
+    }
+
     if (m_Type == typeid(unsigned int))
     {
         return "UINT";
@@ -393,7 +440,11 @@ std::string ArrayValue::GetValuesRepr()
     std::string s;
     for (int i = 0; i < ELEMENT_COUNT && i < GetElementCount(); i++)
     {
-        if ( m_Type == typeid(unsigned int))
+        if ( m_Type == typeid(char))
+        {
+            sprintf_s(buf, sizeof(buf), "%c ", m_Data.m_pChars[i]);
+        }
+        else if ( m_Type == typeid(unsigned int))
         {
             sprintf_s(buf, sizeof(buf), "%uU ", m_Data.m_pUnsignedInts[i]);
         }
@@ -420,7 +471,11 @@ void ArrayValue::FillStream(std::stringstream& rStream)
     const int ELEMENT_COUNT = 10;
     for (int i = 0; i < ELEMENT_COUNT && i < GetElementCount(); i++)
     {
-        if (m_Type == typeid(unsigned int))
+        if (m_Type == typeid(char))
+        {
+            rStream << m_Data.m_pChars[i];
+        }
+        else if (m_Type == typeid(unsigned int))
         {
             rStream << m_Data.m_pUnsignedInts[i];
         }
@@ -447,11 +502,15 @@ ArrayValue* ArrayValue::Clone()
     assert(pClone != nullptr);
 
     // copy data over to clone's buffer.
-    if (m_Type == typeid(unsigned int))
+    if (m_Type == typeid(char))
+    {
+        std::memcpy(pClone->m_Data.m_pChars, m_Data.m_pChars, sizeof(char) * GetElementCount());
+    }
+    else if (m_Type == typeid(unsigned int))
     {
         std::memcpy(pClone->m_Data.m_pUnsignedInts, m_Data.m_pUnsignedInts, sizeof(unsigned int) * GetElementCount());
     }
-    if (m_Type == typeid(int))
+    else if (m_Type == typeid(int))
     {
         std::memcpy(pClone->m_Data.m_pInts, m_Data.m_pInts, sizeof(int) * GetElementCount());
     }

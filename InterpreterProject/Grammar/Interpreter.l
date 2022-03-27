@@ -164,6 +164,16 @@ b[0-1_]+ {
             return token::STRING_;
 }
 
+\'[^']\' {
+            char noquotes[256];
+            strcpy_s(noquotes, sizeof(noquotes), &yytext[1]);
+            noquotes[strlen(noquotes)-1] = '\0';
+            Interpreter::Value v;
+            v.SetValue<char>(Interpreter::Value::HarvestControlChars(noquotes)[0]);
+            m_pYylval->m_pNode = new Interpreter::ValueNode(v);
+            return token::CHAR_;
+}
+
 0[xX][0-9a-fA-F_]+ {
             Interpreter::Value v;
             std::string s = Interpreter::Value::RemoveUnderscores(yytext);

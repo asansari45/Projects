@@ -5,6 +5,34 @@
 
 namespace Interpreter
 {
+    char cor(char a, char b)
+    {
+        return a | b;
+    }
+    char cand(char a, char b)
+    {
+        return a & b;
+    }
+    char cxor(char a, char b)
+    {
+        return a ^ b;
+    }
+    char clsh(char a, char b)
+    {
+        return a << b;
+    }
+    char crsh(char a, char b)
+    {
+        return a >> b;
+    }
+    static char (*cbfuncptr[])(char, char) = {
+        cor,  // or
+        cand, // and
+        cxor, // xor
+        clsh, // lsh
+        crsh  // rsh
+    };
+
     unsigned int uior(unsigned int a, unsigned int b)
     {
         return a | b;
@@ -100,7 +128,13 @@ namespace Interpreter
         // Get the type that operation should be performed in
         std::type_index opertype = GetResultantType(lhs.get(), rhs.get());
         Value resultValue;
-        if (opertype == typeid(unsigned int))
+        if (opertype == typeid(char))
+        {
+            char result = cbfuncptr[oper-BinaryNode::OR]((char)lhs->GetValueRef(), 
+                                                         (char)rhs->GetValueRef());
+            resultValue.SetValue(result);
+        }
+        else if (opertype == typeid(unsigned int))
         {
             unsigned int result = uibfuncptr[oper-BinaryNode::OR]((unsigned int)lhs->GetValueRef(), 
                                                                   (unsigned int)rhs->GetValueRef());
@@ -136,7 +170,7 @@ namespace Interpreter
             return false;
         }
 
-        // The only types are integer and float which are allowed.
+        // The only types are integer and char are allowed.
         return true;
     }
 

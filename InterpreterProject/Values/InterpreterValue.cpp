@@ -6,6 +6,18 @@ namespace Interpreter
 {
     Value::Value() :
         m_Type(typeid(int)),
+        m_CharValue(),
+        m_UnsignedIntValue(),
+        m_IntValue(),
+        m_FloatValue(),
+        m_StringValue(),
+        m_pFile(nullptr)
+    {
+    }
+
+    Value::Value(char c) :
+        m_Type(typeid(char)),
+        m_CharValue(c),
         m_UnsignedIntValue(),
         m_IntValue(),
         m_FloatValue(),
@@ -16,6 +28,7 @@ namespace Interpreter
 
     Value::Value(unsigned int ui) :
         m_Type(typeid(unsigned int)),
+        m_CharValue(),
         m_UnsignedIntValue(ui),
         m_IntValue(),
         m_FloatValue(),
@@ -26,6 +39,7 @@ namespace Interpreter
 
     Value::Value(int i) :
         m_Type(typeid(int)),
+        m_CharValue(),
         m_UnsignedIntValue(),
         m_IntValue(i),
         m_FloatValue(),
@@ -36,6 +50,7 @@ namespace Interpreter
 
     Value::Value(float f) :
         m_Type(typeid(float)),
+        m_CharValue(),
         m_UnsignedIntValue(),
         m_IntValue(),
         m_FloatValue(f),
@@ -46,6 +61,7 @@ namespace Interpreter
 
     Value::Value(std::string s) :
         m_Type(typeid(std::string)),
+        m_CharValue(),
         m_UnsignedIntValue(),
         m_IntValue(),
         m_FloatValue(),
@@ -56,6 +72,7 @@ namespace Interpreter
 
     Value::Value(File* pFile) :
         m_Type(typeid(File*)),
+        m_CharValue(),
         m_UnsignedIntValue(),
         m_IntValue(),
         m_FloatValue(),
@@ -66,6 +83,7 @@ namespace Interpreter
 
     Value::Value(const Value& v) :
         m_Type(v.m_Type),
+        m_CharValue(v.m_CharValue),
         m_UnsignedIntValue(v.m_UnsignedIntValue),
         m_IntValue(v.m_IntValue),
         m_FloatValue(v.m_FloatValue),
@@ -80,6 +98,11 @@ namespace Interpreter
 
     std::string Value::GetTypeRepr()
     {
+        if (m_Type == typeid(char))
+        {
+            return "CHAR";
+        }
+
         if (m_Type == typeid(unsigned int))
         {
             return "UINT";
@@ -106,6 +129,12 @@ namespace Interpreter
     std::string Value::GetValueRepr()
     {
         char buf[256];
+        if (m_Type == typeid(char))
+        {
+            sprintf_s(buf, sizeof(buf), "%c", m_CharValue);
+            return std::string(buf);
+        }
+
         if (m_Type == typeid(unsigned int))
         {
             sprintf_s(buf, sizeof(buf), "%uU", m_UnsignedIntValue);
@@ -135,6 +164,11 @@ namespace Interpreter
 
     bool Value::IfEval()
     {
+        if (m_Type == typeid(char))
+        {
+            return m_CharValue != 0;
+        }
+
         if (m_Type == typeid(unsigned int))
         {
             return m_UnsignedIntValue != 0;
@@ -158,9 +192,41 @@ namespace Interpreter
         return m_StringValue.size() != 0;
     }
 
+    Value::operator char()
+    {
+        assert(m_Type != typeid(std::string));
+        if (m_Type == typeid(char))
+        {
+            return m_CharValue;
+        }
+
+        if (m_Type == typeid(unsigned int))
+        {
+            return m_UnsignedIntValue;
+        }
+
+        if (m_Type == typeid(int))
+        {
+            return static_cast<unsigned int>(m_IntValue);
+        }
+
+        if (m_Type == typeid(float))
+        {
+            return static_cast<unsigned int>(m_FloatValue);
+        }
+
+        assert(false);
+        return 0;
+    }
+
     Value::operator unsigned int()
     {
         assert(m_Type != typeid(std::string));
+        if (m_Type == typeid(char))
+        {
+            return m_CharValue;
+        }
+
         if (m_Type == typeid(unsigned int))
         {
             return m_UnsignedIntValue;
@@ -183,6 +249,11 @@ namespace Interpreter
     Value::operator int()
     {
         assert(m_Type != typeid(std::string));
+        if (m_Type == typeid(char))
+        {
+            return m_CharValue;
+        }
+
         if (m_Type == typeid(unsigned int))
         {
             return static_cast<int>(m_UnsignedIntValue);
@@ -205,6 +276,11 @@ namespace Interpreter
     Value::operator float()
     {
         assert(m_Type != typeid(std::string));
+        if (m_Type == typeid(char))
+        {
+            return m_CharValue;
+        }
+
         if (m_Type == typeid(unsigned int))
         {
             return static_cast<float>(m_UnsignedIntValue);
@@ -244,6 +320,11 @@ namespace Interpreter
             return false;
         }
 
+        if (mytype == typeid(char))
+        {
+            m_CharValue = -m_CharValue;
+        }
+
         if (mytype == typeid(int))
         {
             m_IntValue = -m_IntValue;
@@ -266,6 +347,12 @@ namespace Interpreter
             return false;
         }
 
+        if (m_Type == typeid(char))
+        {
+            m_CharValue = ~m_CharValue;
+            return true;
+        }
+
         if (m_Type == typeid(unsigned int))
         {
             m_UnsignedIntValue = ~m_UnsignedIntValue;
@@ -279,6 +366,10 @@ namespace Interpreter
 
     void Value::FillStream(std::stringstream& rStream)
     {
+        if (m_Type == typeid(char))
+        {
+            rStream << GetValue<char>();
+        }
         if (m_Type == typeid(unsigned int))
         {
             rStream << GetValue<unsigned int>();

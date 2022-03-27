@@ -25,6 +25,7 @@ public:
     bool SetValue(std::vector<int> element, Value v);
     bool SetValue(int flatElement, Value v);
 
+    char* GetCharData(){ return m_Data.m_pChars; }
     unsigned int* GetUnsignedIntData(){ return m_Data.m_pUnsignedInts; }
     int* GetIntData(){ return m_Data.m_pInts; }
     float* GetFloatData() { return m_Data.m_pFloats; }
@@ -32,7 +33,6 @@ public:
 
     std::type_index GetType();
 
-    // For debug purposes
     std::string GetTypeRepr();
     std::string GetDimsRepr();
     std::string GetValuesRepr();
@@ -60,6 +60,7 @@ private:
     std::type_index m_Type;
     union Type
     {
+        char* m_pChars;
         unsigned int* m_pUnsignedInts;
         int* m_pInts;
         float* m_pFloats;

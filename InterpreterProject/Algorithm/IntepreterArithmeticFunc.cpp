@@ -5,6 +5,30 @@
 
 namespace Interpreter
 {
+    char cadd(char a, char b)
+    {
+        return a + b;
+    }
+    char csub(char a, char b)
+    {
+        return a - b;
+    }
+    char cmul(char a, char b)
+    {
+        return a * b;
+    }
+    char cdiv(char a, char b)
+    {
+        return a / b;
+    }
+    static char (*cfuncptr[])(char, char) = 
+    {
+        cadd,
+        csub,
+        cmul,
+        cdiv
+    };
+
     unsigned int uiadd(unsigned int a, unsigned int b)
     {
         return a + b;
@@ -125,7 +149,13 @@ namespace Interpreter
         // Get the type that operation should be performed in
         std::type_index opertype = GetResultantType(lhs.get(), rhs.get());
         Value resultValue;
-        if (opertype == typeid(unsigned int))
+        if (opertype == typeid(char))
+        {
+            char result = cfuncptr[oper-BinaryNode::ADD]((char)lhs->GetValueRef(), 
+                                                         (char)rhs->GetValueRef());
+            resultValue.SetValue(result);
+        }
+        else if (opertype == typeid(unsigned int))
         {
             unsigned int result = uifuncptr[oper-BinaryNode::ADD]((unsigned int)lhs->GetValueRef(), 
                                                                   (unsigned int)rhs->GetValueRef());

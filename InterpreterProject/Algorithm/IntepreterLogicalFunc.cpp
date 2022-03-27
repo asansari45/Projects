@@ -5,6 +5,49 @@
 
 namespace Interpreter
 {
+    bool cles(char a, char b)
+    {
+        return a < b;
+    }
+    bool cleq(char a, char b)
+    {
+        return a <= b;
+    }
+    bool cgrt(char a, char b)
+    {
+        return a > b;
+    }
+    bool cgeq(char a, char b)
+    {
+        return a >= b;
+    }
+    bool cdeq(char a, char b)
+    {
+        return a == b;
+    }
+    bool cneq(char a, char b)
+    {
+        return a != b;
+    }
+    bool clor(char a, char b)
+    {
+        return a || b;
+    }
+    bool cland(char a, char b)
+    {
+        return a && b;
+    }
+    static bool (*clfuncptr[])(char, char) = {
+        cles,
+        cleq,
+        cgrt,
+        cgeq,
+        cdeq,
+        cneq,
+        clor,
+        cland
+    };
+
     bool uiles(unsigned int a, unsigned int b)
     {
         return a < b;
@@ -216,7 +259,13 @@ namespace Interpreter
         // Get the type that operation should be performed in
         std::type_index opertype = GetResultantType(lhs.get(), rhs.get());
         Value resultValue;
-        if (opertype == typeid(unsigned int))
+        if (opertype == typeid(char))
+        {
+            bool result = clfuncptr[oper-BinaryNode::LES]((char)lhs->GetValueRef(),
+                                                          (char)rhs->GetValueRef());
+            resultValue.SetValue<int>(result);
+        }
+        else if (opertype == typeid(unsigned int))
         {
             bool result = uilfuncptr[oper-BinaryNode::LES]((unsigned int)lhs->GetValueRef(),
                                                            (unsigned int)rhs->GetValueRef());
