@@ -1,4 +1,5 @@
 #pragma once
+#include <cassert>
 #include <string>
 #include <typeindex>
 #include <optional>
@@ -22,6 +23,7 @@ namespace Interpreter
         ~Value();
 
         std::type_index GetType() { return m_Type; }
+        #if 0
         void SetUnsignedIntValue(unsigned int value) { m_Type = typeid(unsigned int); m_UnsignedIntValue = value; }
         unsigned int GetUnsignedIntValue() { return m_UnsignedIntValue; }
         void SetIntValue(int value) { m_Type = typeid(int); m_IntValue = value; }
@@ -32,6 +34,70 @@ namespace Interpreter
         std::string GetStringValue() { return m_StringValue; }
         void SetFileValue(File* pFile) { m_Type = typeid(File*);  m_pFile = pFile; }
         File* GetFileValue() { return m_pFile; }
+        #endif
+        
+        template<typename T>
+        void SetValue(T v)
+        {
+            m_Type = typeid(T);
+            if (m_Type == typeid(unsigned int))
+            {
+                m_UnsignedIntValue = v;
+            }
+            else if (m_Type == typeid(int))
+            {
+                m_IntValue = v;
+            }
+            else if (m_Type == typeid(float))
+            {
+                m_FloatValue = v;
+            }
+        }
+
+        template<>
+        void SetValue(std::string s)
+        {
+            m_Type = typeid(std::string);
+            m_StringValue = s;
+        }
+
+        template<>
+        void SetValue(File* pFile)
+        {
+            m_Type = typeid(File*);
+            m_pFile = pFile;
+        }
+
+        template<typename T>
+        T GetValue()
+        {
+            if (m_Type == typeid(unsigned int))
+            {
+                return (T) m_UnsignedIntValue;
+            }
+            else if (m_Type == typeid(int))
+            {
+                return (T) m_IntValue;
+            }
+            else if (m_Type == typeid(float))
+            {
+                return (T) m_FloatValue;
+            }
+            assert(false);
+            return (T)0;
+        }
+
+        template<>
+        std::string GetValue()
+        {
+            return m_StringValue;
+        }
+
+        template<>
+        File* GetValue()
+        {
+            return m_pFile;
+        }
 
         // Conversion routines
         operator unsigned int();

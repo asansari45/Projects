@@ -300,7 +300,7 @@ namespace Interpreter
         assert(pFileNameNode->IsArray() == false);
         Value v = pFileNameNode->GetValue();
         assert(v.GetType() == typeid(std::string));
-        std::string filename = v.GetStringValue();
+        std::string filename = v.GetValue<std::string>();
 
         // Check if file exists first.
         struct stat info;
@@ -1146,7 +1146,7 @@ namespace Interpreter
         }
 
         // Invoke srand()
-        srand(v.GetIntValue());
+        srand(v.GetValue<int>());
     }
 
     void ExecutionNodeVisitor::VisitRandNode(RandNode* pNode)
@@ -1155,7 +1155,7 @@ namespace Interpreter
         int result = rand();
         ValueNode* pValueNode = new ValueNode;
         Value v;
-        v.SetIntValue(result);
+        v.SetValue<int>(result);
         pValueNode->SetValue(v);
         m_Nodes.push_back(pValueNode);
     }
@@ -1216,7 +1216,7 @@ namespace Interpreter
 
         ValueNode* pValueNode = new ValueNode;
         Value v;
-        v.SetIntValue(symbolDims[pNode->GetDim()]);
+        v.SetValue<int>(symbolDims[pNode->GetDim()]);
         pValueNode->SetValue(v);
         m_Nodes.push_back(pValueNode);
     }
@@ -1259,7 +1259,7 @@ namespace Interpreter
             return {};
         }
 
-        return fileNameValue.GetStringValue();
+        return fileNameValue.GetValue<std::string>();
     }
 
     // {status,f} = fopen("filename", "wb")
@@ -1287,7 +1287,7 @@ namespace Interpreter
         ValueNode* pStatus = new ValueNode(v);
         assert(pStatus != nullptr);
 
-        v.SetFileValue(pFile);
+        v.SetValue(pFile);
         ValueNode* pFileResult = new ValueNode(v);
         assert(pFileResult != nullptr);
 
@@ -1330,7 +1330,7 @@ namespace Interpreter
             return nullptr;
         }
 
-        return v.GetFileValue();
+        return v.GetValue<File*>();
     }
 
     // status = fwrite(f,x)
@@ -1343,7 +1343,7 @@ namespace Interpreter
         File* pFile = GetFile(pNode->GetFileNode());
         if (pFile == nullptr)
         {
-            statusValue.SetIntValue(0);
+            statusValue.SetValue<int>(0);
             pStatusNode->SetValue(statusValue);
             m_Nodes.push_back(pStatusNode.release());
             return;
@@ -1376,7 +1376,7 @@ namespace Interpreter
             status = pFile->Write(pValueNode->GetValue());
         }
 
-        statusValue.SetIntValue(status);
+        statusValue.SetValue<int>(status);
         pStatusNode->SetValue(statusValue);
         m_Nodes.push_back(pStatusNode.release());
     }
@@ -1416,7 +1416,7 @@ namespace Interpreter
         }
 
         // File operation succeeded.
-        statusValue.SetIntValue(1);
+        statusValue.SetValue<int>(1);
         pStatusNode->SetValue(statusValue);
 
         if (isArray)
@@ -1447,7 +1447,7 @@ namespace Interpreter
             return;
         }
 
-        statusValue.SetIntValue(1);
+        statusValue.SetValue<int>(1);
         pStatusNode->SetValue(statusValue);
 
         pFile->Close();
@@ -1479,7 +1479,7 @@ namespace Interpreter
             return;
         }
 
-        statusValue.SetIntValue(1);
+        statusValue.SetValue<int>(1);
         pStatusNode->SetValue(statusValue);
 
         bool status = pFile->Eof();

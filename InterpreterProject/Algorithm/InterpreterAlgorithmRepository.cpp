@@ -490,7 +490,7 @@ namespace Interpreter
                     return nullptr;
                 }
 
-                dims.push_back(rval->GetValue().GetIntValue());
+                dims.push_back(rval->GetValue().GetValue<int>());
             }
 
             std::unique_ptr<ValueNode> pValueNode(new ValueNode);
@@ -544,7 +544,7 @@ namespace Interpreter
                         return nullptr;
                     }
 
-                    dims.push_back(v->GetValue().GetIntValue());
+                    dims.push_back(v->GetValue().GetValue<int>());
                 }
             }
 

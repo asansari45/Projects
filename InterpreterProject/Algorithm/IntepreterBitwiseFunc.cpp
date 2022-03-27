@@ -104,13 +104,13 @@ namespace Interpreter
         {
             unsigned int result = uibfuncptr[oper-BinaryNode::OR]((unsigned int)lhs->GetValueRef(), 
                                                                   (unsigned int)rhs->GetValueRef());
-            resultValue.SetUnsignedIntValue(result);
+            resultValue.SetValue(result);
         }
         else if (opertype == typeid(int))
         {
             int result = ibfuncptr[oper-BinaryNode::OR]((int)lhs->GetValueRef(),
                                                         (int)rhs->GetValueRef());
-            resultValue.SetIntValue(result);
+            resultValue.SetValue(result);
         }
         else
         {

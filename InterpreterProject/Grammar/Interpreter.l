@@ -125,14 +125,14 @@ int print_parens = 0;
 <print>"width="[0-9]+ { char* ptr = strchr(yytext, '=');
                         ptr++;
                         Interpreter::Value v;
-                        v.SetIntValue(atoi(ptr));
+                        v.SetValue<int>(atoi(ptr));
                         Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
                         m_pYylval->m_pNode = pNode;
                         return token::WIDTH_; }
 <print>"fill="[a-zA-Z0-9\*] { char* ptr = strchr(yytext, '=');
                         ptr++;
                         Interpreter::Value v;
-                        v.SetIntValue(static_cast<int>(*ptr));
+                        v.SetValue<int>(static_cast<int>(*ptr));
                         Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
                         m_pYylval->m_pNode = pNode;
                         return token::FILL_; }
@@ -141,7 +141,7 @@ b[0-1_]+ {
     std::string s = Interpreter::Value::RemoveUnderscores(&yytext[1]);
     int result = Interpreter::Value::ConvertBinary(s);
     Interpreter::Value v;
-    v.SetIntValue(result); 
+    v.SetValue<int>(result); 
     Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
     m_pYylval->m_pNode = pNode;
     return token::NUM_;
@@ -159,7 +159,7 @@ b[0-1_]+ {
             strcpy_s(noquotes, sizeof(noquotes), &yytext[1]);
             noquotes[strlen(noquotes)-1] = '\0';
             Interpreter::Value v;
-            v.SetStringValue(Interpreter::Value::HarvestControlChars(noquotes));
+            v.SetValue<std::string>(Interpreter::Value::HarvestControlChars(noquotes));
             m_pYylval->m_pNode = new Interpreter::ValueNode(v);
             return token::STRING_;
 }
@@ -167,7 +167,7 @@ b[0-1_]+ {
 0[xX][0-9a-fA-F_]+ {
             Interpreter::Value v;
             std::string s = Interpreter::Value::RemoveUnderscores(yytext);
-            v.SetUnsignedIntValue(std::stoul(s.c_str(), nullptr, 16));
+            v.SetValue<unsigned int>(std::stoul(s.c_str(), nullptr, 16));
             Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
             m_pYylval->m_pNode = pNode;
             return token::NUM_;
@@ -175,7 +175,7 @@ b[0-1_]+ {
 
 [0-9]*[\.][0-9]+ {
             Interpreter::Value v;
-            v.SetFloatValue(std::stof(yytext));
+            v.SetValue<float>(std::stof(yytext));
             Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
             m_pYylval->m_pNode = pNode;
             return token::NUM_;
@@ -190,11 +190,11 @@ b[0-1_]+ {
                 s.erase(s.size()-1);
 
                 // This is an unsigned integer
-                v.SetUnsignedIntValue(std::stoul(s.c_str(), nullptr, 10));
+                v.SetValue<unsigned int>(std::stoul(s.c_str(), nullptr, 10));
             }
             else
             {
-                v.SetIntValue(atoi(s.c_str()));
+                v.SetValue<int>(atoi(s.c_str()));
             }
             Interpreter::ValueNode* pNode = new Interpreter::ValueNode(v);
             m_pYylval->m_pNode = pNode;

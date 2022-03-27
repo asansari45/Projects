@@ -245,7 +245,7 @@ SymbolTable* SymbolTable::CreateGlobalSymbols()
     SymbolInfo* pInfo = new SymbolInfo;
     assert(pInfo != nullptr);
 
-    pInfo->m_Value.SetIntValue(0);
+    pInfo->m_Value.SetValue<int>(0);
     pInfo->m_Name = "main";
     bool status = pSymbolTable->CreateSymbol("main", pInfo);
     assert(status);

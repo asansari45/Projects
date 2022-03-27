@@ -888,7 +888,7 @@ len :
         
         Interpreter::ValueNode* pValueNode = dynamic_cast<Interpreter::ValueNode*>($5);
         assert(pValueNode != nullptr);
-        pNode->SetDim(pValueNode->GetValue().GetIntValue());
+        pNode->SetDim(pValueNode->GetValue().GetValue<int>());
         delete pValueNode;
         $$ = pNode;
     }
@@ -1041,7 +1041,7 @@ print_param:
         Interpreter::ValueNode* pValueNode = dynamic_cast<Interpreter::ValueNode*>($1);
         assert(pValueNode != nullptr);
         assert(pValueNode->IsArray() == false);
-        int width = pValueNode->GetValue().GetIntValue();
+        int width = pValueNode->GetValue().GetValue<int>();
         delete pValueNode;
         Interpreter::PrintNode* pNode = new Interpreter::PrintNode(Interpreter::PrintNode::WIDTH,width);
         $$ = pNode;
@@ -1052,7 +1052,7 @@ print_param:
         Interpreter::ValueNode* pValueNode = dynamic_cast<Interpreter::ValueNode*>($1);
         assert(pValueNode != nullptr);
         assert(pValueNode->IsArray() == false);
-        int fill = pValueNode->GetValue().GetIntValue();
+        int fill = pValueNode->GetValue().GetValue<int>();
         delete pValueNode;
         Interpreter::PrintNode* pNode = new Interpreter::PrintNode(Interpreter::PrintNode::FILL,fill);
         $$ = pNode;

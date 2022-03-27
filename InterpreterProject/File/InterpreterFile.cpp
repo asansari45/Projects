@@ -101,18 +101,18 @@ bool File::Write(Value v)
     // Write the value second.
     if (v.GetType() == typeid(int))
     {
-        int value = v.GetIntValue();
+        int value = v.GetValue<int>();
         elementsWritten = fwrite(&value, sizeof(value), 1, m_pFile);
     }
     else if (v.GetType() == typeid(float))
     {
-        float value = v.GetFloatValue();
+        float value = v.GetValue<float>();
         elementsWritten = fwrite(&value, sizeof(value), 1, m_pFile);
     }
     else if (v.GetType() == typeid(std::string))
     {
         assert(v.GetType() == typeid(std::string));
-        size_t sz = v.GetStringValue().size();
+        size_t sz = v.GetValue<std::string>().size();
         elementsWritten = fwrite(&sz, sizeof(sz), 1, m_pFile);
         if (elementsWritten != 1)
         {
@@ -121,7 +121,7 @@ bool File::Write(Value v)
 
         if (sz != 0)
         {
-            elementsWritten = fwrite(v.GetStringValue().c_str(), 1, sz, m_pFile);
+            elementsWritten = fwrite(v.GetValue<std::string>().c_str(), 1, sz, m_pFile);
         }
 
         if (elementsWritten != sz)
@@ -329,7 +329,7 @@ bool File::Read(bool& rArray, Value& rValue, ArrayValue** ppArrayValue)
         {
             return false;
         }
-        rValue.SetIntValue(v);
+        rValue.SetValue(v);
         return true;
     }
 
@@ -341,7 +341,7 @@ bool File::Read(bool& rArray, Value& rValue, ArrayValue** ppArrayValue)
         {
             return false;
         }
-        rValue.SetFloatValue(v);
+        rValue.SetValue(v);
         return true;
     }
 
@@ -363,7 +363,7 @@ bool File::Read(bool& rArray, Value& rValue, ArrayValue** ppArrayValue)
         }
 
         std::string v(s, sz);
-        rValue.SetStringValue(v);
+        rValue.SetValue(v);
         return true;
     }
 

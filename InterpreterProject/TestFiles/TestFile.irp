@@ -1,6 +1,6 @@
-clear()
-                       a=dim[10]
-                       a[0]="To blaze across the heavans..."
-                       a[1]="JAGR"
-                       print(typeid(a),endl)
-        
+a=1
+b=3
+c=dim[10]
+d=dim[10,10]
+e=dim[5,5,5]
+.vars

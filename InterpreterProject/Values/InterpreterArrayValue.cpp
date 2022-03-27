@@ -88,19 +88,19 @@ std::optional<Value> ArrayValue::GetValue(int flatElement)
     Value v;
     if (m_Type == typeid(unsigned int))
     {
-        v.SetUnsignedIntValue(m_Data.m_pUnsignedInts[flatElement]);
+        v.SetValue(m_Data.m_pUnsignedInts[flatElement]);
     }
     else if (m_Type == typeid(int))
     {
-        v.SetIntValue(m_Data.m_pInts[flatElement]);
+        v.SetValue(m_Data.m_pInts[flatElement]);
     }
     else if (m_Type == typeid(float))
     {
-        v.SetFloatValue(m_Data.m_pFloats[flatElement]);
+        v.SetValue(m_Data.m_pFloats[flatElement]);
     }
     else if (m_Type == typeid(std::string))
     {
-        v.SetStringValue(m_Data.m_pStrings[flatElement]);
+        v.SetValue(m_Data.m_pStrings[flatElement]);
     }
     else
     {
@@ -132,25 +132,25 @@ bool ArrayValue::SetValue(int flatElement, Value v)
     {
         if (m_Type == typeid(unsigned int))
         {
-            m_Data.m_pUnsignedInts[flatElement] = v.GetUnsignedIntValue();
+            m_Data.m_pUnsignedInts[flatElement] = v.GetValue<unsigned int>();
             return true;
         }
 
         if (m_Type == typeid(int))
         {
-            m_Data.m_pInts[flatElement] = v.GetIntValue();
+            m_Data.m_pInts[flatElement] = v.GetValue<int>();
             return true;
         }
 
         if (m_Type == typeid(float))
         {
-            m_Data.m_pFloats[flatElement] = v.GetFloatValue();
+            m_Data.m_pFloats[flatElement] = v.GetValue<float>();
             return true;
         }
 
         if (m_Type == typeid(std::string))
         {
-            m_Data.m_pStrings[flatElement] = v.GetStringValue();
+            m_Data.m_pStrings[flatElement] = v.GetValue<std::string>();
             return true;
         }
     }
@@ -159,28 +159,28 @@ bool ArrayValue::SetValue(int flatElement, Value v)
     if (v.GetType() == typeid(unsigned int))
     {
         unsigned int* pData = ConvertT<unsigned int>();
-        pData[flatElement] = v.GetUnsignedIntValue();
+        pData[flatElement] = v.GetValue<unsigned int>();
         m_Data.m_pUnsignedInts = pData;
         m_Type = typeid(unsigned int);
     }
     else if (v.GetType() == typeid(int))
     {
         int* pData = ConvertT<int>();
-        pData[flatElement] = v.GetIntValue();
+        pData[flatElement] = v.GetValue<int>();
         m_Data.m_pInts = pData;
         m_Type = typeid(int);
     }
     else if (v.GetType() == typeid(float))
     {
         float* pData = ConvertT<float>();
-        pData[flatElement] = v.GetFloatValue();
+        pData[flatElement] = v.GetValue<float>();
         m_Data.m_pFloats = pData;
         m_Type = typeid(float);
     }
     else if (v.GetType() == typeid(std::string))
     {
         std::string* pData = ConvertT<std::string>();
-        pData[flatElement] = v.GetStringValue();
+        pData[flatElement] = v.GetValue<std::string>();
         m_Data.m_pStrings = pData;
         m_Type = typeid(std::string);
     }

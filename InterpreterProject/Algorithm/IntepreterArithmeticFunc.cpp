@@ -129,25 +129,25 @@ namespace Interpreter
         {
             unsigned int result = uifuncptr[oper-BinaryNode::ADD]((unsigned int)lhs->GetValueRef(), 
                                                                   (unsigned int)rhs->GetValueRef());
-            resultValue.SetUnsignedIntValue(result);
+            resultValue.SetValue(result);
         }
         else if (opertype == typeid(int))
         {
             int result = ifuncptr[oper-BinaryNode::ADD]((int)lhs->GetValueRef(),
                                                         (int)rhs->GetValueRef());
-            resultValue.SetIntValue(result);
+            resultValue.SetValue(result);
         }
         else if (opertype == typeid(float))
         {
             float result = ffuncptr[oper-BinaryNode::ADD]((float)lhs->GetValueRef(),
                                                           (float)rhs->GetValueRef());
-            resultValue.SetFloatValue(result);
+            resultValue.SetValue(result);
         }
         else if (opertype == typeid(std::string))
         {
-            std::string result = sfuncptr[oper-BinaryNode::ADD](lhs->GetValueRef().GetStringValue(),
-                                                                rhs->GetValueRef().GetStringValue());
-            resultValue.SetStringValue(result);
+            std::string result = sfuncptr[oper-BinaryNode::ADD](lhs->GetValueRef().GetValue<std::string>(),
+                                                                rhs->GetValueRef().GetValue<std::string>());
+            resultValue.SetValue(result);
         }
 
         return new ValueNode(resultValue);

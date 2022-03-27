@@ -239,6 +239,11 @@ namespace Interpreter
             return false;
         }
 
+        if (mytype == typeid(unsigned int))
+        {
+            return false;
+        }
+
         if (mytype == typeid(int))
         {
             m_IntValue = -m_IntValue;
@@ -261,7 +266,13 @@ namespace Interpreter
             return false;
         }
 
-        assert(mytype == typeid(int));
+        if (m_Type == typeid(unsigned int))
+        {
+            m_UnsignedIntValue = ~m_UnsignedIntValue;
+            return true;
+        }
+
+        assert(m_Type == typeid(int));
         m_IntValue = ~m_IntValue;
         return true;
     }
@@ -270,20 +281,20 @@ namespace Interpreter
     {
         if (m_Type == typeid(unsigned int))
         {
-            rStream << GetUnsignedIntValue();
+            rStream << GetValue<unsigned int>();
         }
         else if (m_Type == typeid(int))
         {
-            rStream << GetIntValue();
+            rStream << GetValue<int>();
         }
         else if (m_Type == typeid(float))
         {
-            rStream << GetFloatValue();
+            rStream << GetValue<float>();
         }
         else
         {
             assert(m_Type == typeid(std::string));
-            rStream << GetStringValue();
+            rStream << GetValue<std::string>();
         }
     } 
 
