@@ -1682,7 +1682,7 @@ class LogicalOperators(unittest.TestCase):
         expectedOutput = ['0', '1', '1', '1', '0']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
-class Literals(unittest.TestCase):
+class LiteralsTest(unittest.TestCase):
     def test_binary(self):
         testLines = """clear()
                        a=b1000
@@ -1748,6 +1748,15 @@ class Literals(unittest.TestCase):
         """
         expectedOutput = ['16777216']
         TestExecutor(self, testLines, expectedOutput).Execute()
+
+    def test_char(self):
+        testLines = """clear()
+                       a='a'
+                       print(a,endl)
+        """
+        expectedOutput = ['a']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
     
     def test_unsigned(self):
         # Expect sign extension with signed integer
@@ -1941,6 +1950,162 @@ class Literals(unittest.TestCase):
                        print(typeid(a),endl)
         """
         expectedOutput = ['STR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+
+    def test_char_arrays(self):
+        # element access
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='c'
+                       print(a[3],endl)
+        """
+        expectedOutput = ['c']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char==> unsigned int
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='c'
+                       a[4]=9u
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['UINT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char int==> int
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='c'
+                       a[4]=9
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['INT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char==> float
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='d'
+                       a[4]=9.03
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['FLT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char==> string
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='q'
+                       a[4]="Right down the line..."
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['STR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char==> char
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='q'
+                       a[4]='r'
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['CHAR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char==> unsigned int
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='r'
+                       a[4]=1u
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['UINT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char==> int
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='r'
+                       a[4]=1
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['INT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char==> float
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='r'
+                       a[4]=1.0
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['FLT']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        # conversion char==> float
+        testLines = """clear()
+                       a=dim[10]
+                       a[3]='r'
+                       a[4]="You are the diver..."
+                       print(typeid(a),endl)
+        """
+        expectedOutput = ['STR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+class StringsTest(unittest.TestCase):
+    def test_string_index(self):
+        testLines = """clear()
+                       a="Holy Diver!"
+                       b=a[1]
+                       print(b)
+                       print(typeid(b))
+        """
+        expectedOutput = ['oCHAR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a="Holy Diver!"
+                       b=a[0]
+                       print(b)
+                       print(typeid(b))
+        """
+        expectedOutput = ['HCHAR']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a="Holy"
+                       b=a[4]
+        """
+        expectedError = 'LINE:  3, COLUMN:  27  Holy contains an incorrect array specifier.'
+        TestExecutor(self, testLines, expectedError, True).Execute()
+    
+    def test_string_addition(self):
+        testLines = """clear()
+                       a="Holy Diver!"
+                       b="Sole Survivor!"
+                       c=a+b
+                       print(c,endl)
+        """
+        expectedOutput = ['Holy Diver!Sole Survivor!']
+        TestExecutor(self, testLines, expectedOutput).Execute()
+
+        testLines = """clear()
+                       a="Holy Diver!"
+                       b='S'
+                       c=a+b
+                       print(c,endl)
+        """
+        expectedOutput = ['Holy Diver!S']
+
+        TestExecutor(self, testLines, expectedOutput).Execute()
+        testLines = """clear()
+                       a="Holy Diver!"
+                       b='S'
+                       c=b+a
+                       print(c,endl)
+        """
+        expectedOutput = ['SHoly Diver!']
         TestExecutor(self, testLines, expectedOutput).Execute()
 
 if __name__ == '__main__':

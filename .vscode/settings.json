@@ -108,5 +108,6 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "*.ipp": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

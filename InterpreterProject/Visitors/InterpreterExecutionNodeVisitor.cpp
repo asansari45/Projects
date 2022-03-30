@@ -915,6 +915,40 @@ namespace Interpreter
         {
             if (pInfo->m_IsArray == false)
             {
+                // array specifier is only valid on strings.
+                if (pInfo->m_Value.GetType() == typeid(std::string))
+                {
+                    std::string s = (std::string)pInfo->m_Value;
+                    if (elementSpecifier.size() != 1)
+                    {
+                        ErrorInfo err(pTop);
+                        char buf[256];
+                        sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, s.c_str());
+                        err.m_Msg = buf;
+                        SetErrorInfo(err);
+                        return nullptr;
+                    }
+
+                    int index = elementSpecifier[0];
+                    if (index > s.size())
+                    {
+                        ErrorInfo err(pTop);
+                        char buf[256];
+                        sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, s.c_str());
+                        err.m_Msg = buf;
+                        SetErrorInfo(err);
+                        return nullptr;
+                    }
+
+                    Value v;
+                    v.SetValue(s[index]);
+                    return new ValueNode(v);
+                }
+            }
+
+
+            if (pInfo->m_IsArray == false)
+            {
                 ErrorInfo err(pTop);
                 char buf[256];
                 sprintf_s(buf, sizeof(buf), ERROR_UNEXPECTED_ARRAY_SPECIFIER, symbol);

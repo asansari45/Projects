@@ -92,6 +92,38 @@ namespace Interpreter
                 return new ValueNode(pInfo->m_pArrayValue->Clone());
             }
 
+            // Not array, check for string.  If string, then return an index.
+            if (pInfo->m_Value.GetType() == typeid(std::string))
+            {
+                std::string s = pInfo->m_Value.GetValue<std::string>();
+                if (arraySpecifier.size() == 1)
+                {
+                    int index = arraySpecifier[0];
+                    if (index < s.size())
+                    {
+                        return new ValueNode(static_cast<char>(s[index]));
+                    }
+
+                    // index too large
+                    ErrorInterface::ErrorInfo err(pNode);
+                    char buf[512];
+                    sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_INCORRECT_ARRAY_SPECIFIER, s.c_str());
+                    err.m_Msg = buf;
+                    pErrorInterface->SetErrorInfo(err);
+                    return nullptr;
+                }
+
+                if (arraySpecifier.size() != 0)
+                {
+                    ErrorInterface::ErrorInfo err(pNode);
+                    char buf[512];
+                    sprintf_s(buf, sizeof(buf), pErrorInterface->ERROR_INCORRECT_ARRAY_SPECIFIER, s.c_str());
+                    err.m_Msg = buf;
+                    pErrorInterface->SetErrorInfo(err);
+                    return nullptr;
+                }
+            }
+
             if (arraySpecifier.size() != 0)
             {
                 ErrorInterface::ErrorInfo err(pNode);

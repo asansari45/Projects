@@ -302,7 +302,13 @@ namespace Interpreter
 
     Value::operator std::string()
     {
-        assert(m_Type == typeid(std::string));
+        if (m_Type == typeid(char))
+        {
+            std::string s;
+            s += m_CharValue;
+            return s;
+        }
+        
         return m_StringValue;
     }
 
@@ -370,7 +376,7 @@ namespace Interpreter
         {
             rStream << GetValue<char>();
         }
-        if (m_Type == typeid(unsigned int))
+        else if (m_Type == typeid(unsigned int))
         {
             rStream << GetValue<unsigned int>();
         }

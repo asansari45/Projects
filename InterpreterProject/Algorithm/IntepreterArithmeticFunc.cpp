@@ -175,8 +175,8 @@ namespace Interpreter
         }
         else if (opertype == typeid(std::string))
         {
-            std::string result = sfuncptr[oper-BinaryNode::ADD](lhs->GetValueRef().GetValue<std::string>(),
-                                                                rhs->GetValueRef().GetValue<std::string>());
+            std::string result = sfuncptr[oper-BinaryNode::ADD]((std::string)lhs->GetValueRef(),
+                                                                (std::string)rhs->GetValueRef());
             resultValue.SetValue(result);
         }
 
@@ -191,6 +191,16 @@ namespace Interpreter
         // add operations are only allowed on strings.
         if (oper == BinaryNode::ADD)
         {
+            if (atype == typeid(std::string) && btype == typeid(char))
+            {
+                return true;
+            }
+
+            if (atype == typeid(char) && btype == typeid(std::string))
+            {
+                return true;
+            }
+
             if (atype == typeid(std::string) && btype == typeid(std::string))
             {
                 return true;
@@ -220,6 +230,12 @@ namespace Interpreter
         if (atype == typeid(float) || btype == typeid(float))
         {
             return typeid(float);
+        }
+
+        if (atype == typeid(std::string) && btype == typeid(char) ||
+            atype == typeid(char) && btype == typeid(std::string))
+        {
+            return typeid(std::string);
         }
 
         // Let's just make it unsigned
