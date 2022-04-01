@@ -55,6 +55,40 @@ for (i=0, i < 5, i = i + 1)
     }
 }
 
+c = dim[2,3,4]
+elementCount = 2 * 3 * 4
+d = dim[elementCount]
+srand(123)
+count = 0
+for (i=0, i < 2, i = i + 1)
+{
+    for (j=0, j < 3, j = j + 1)
+    {
+        for (k=0, k < 4, k = k + 1)
+        {
+            q = rand()
+            d[count] = q
+            print("i ", i, "j ", j, "k ", k, endl)
+            c[i,j,k] = q
+            count = count + 1
+        }
+    }
+}
+
+matrixSize = 3 * 4
+for (i=0, i < elementCount, i=i+1)
+{
+    // Convert element count to requestedMatrix
+    requestedMatrix = i / matrixSize
+    matrixOffset = i - requestedMatrix * matrixSize 
+    requestedRow = matrixOffset / 4
+    requestedCol = i - (requestedMatrix * matrixSize + requestedRow*4)
+    print("index ", i, " requMatrix ", requestedMatrix, " requRow ", requestedRow, " requCol ", requestedCol, endl)
+    print("3-d Element ", i)
+    compare(" Check", d[i], c[requestedMatrix, requestedRow, requestedCol])
+}
+
+
 print( "Tests Complete\n" )
 print( "Successes:  ", successes, endl)
 print( "Failures:   ", failures, endl)

@@ -346,19 +346,19 @@ std::optional<int> ArrayValue::ConvertElementIndex(std::vector<int> element)
     // 3-dimensional array
     if (element.size() == 3)
     {
-        int rowCount = m_Dims[0];
-        int columnCount = m_Dims[1];
-        int matrixCount = m_Dims[2];
+        int matrixCount = m_Dims[0];
+        int rowCount    = m_Dims[1];
+        int columnCount = m_Dims[2];
 
-        int requestedRow = element[0];
-        int requestedCol = element[1];
-        int matrixSel = element[2];
-        if (requestedRow >= rowCount || requestedCol >= columnCount || matrixSel >= matrixCount)
+        int requestedMatrix    = element[0];
+        int requestedRow       = element[1];
+        int requestedCol       = element[2];
+        if (requestedRow >= rowCount || requestedCol >= columnCount || requestedMatrix >= matrixCount)
         {
             return {};
         }
 
-        return matrixSel * rowCount* columnCount + requestedRow * columnCount + requestedCol;
+        return requestedMatrix * rowCount * columnCount + requestedRow * columnCount + requestedCol;
     }
 
     return {};

@@ -166,6 +166,10 @@ namespace Interpreter
                     std::unique_ptr<Node> pTop(m_Nodes.back());
                     m_Nodes.pop_back();
                     std::unique_ptr<ValueNode> pValueNode(GetTopOfStackValue(pTop.get()));
+                    if (IsErrorFlagSet())
+                    {
+                        return;
+                    }
                     if (pValueNode->IsArray() == false)
                     {
                         pValueNode->GetValue().FillStream(s);
@@ -946,12 +950,11 @@ namespace Interpreter
                 }
             }
 
-
             if (pInfo->m_IsArray == false)
             {
                 ErrorInfo err(pTop);
                 char buf[256];
-                sprintf_s(buf, sizeof(buf), ERROR_UNEXPECTED_ARRAY_SPECIFIER, symbol);
+                sprintf_s(buf, sizeof(buf), ERROR_UNEXPECTED_ARRAY_SPECIFIER, pInfo->m_Name.c_str());
                 err.m_Msg = buf;
                 SetErrorInfo(err);
                 return nullptr;
@@ -962,7 +965,7 @@ namespace Interpreter
             {
                 ErrorInfo err(pTop);
                 char buf[256];
-                sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, symbol);
+                sprintf_s(buf, sizeof(buf), ERROR_INCORRECT_ARRAY_SPECIFIER, symbol.c_str());
                 err.m_Msg = buf;
                 SetErrorInfo(err);
                 return nullptr;
@@ -1221,6 +1224,19 @@ namespace Interpreter
             
             SetErrorInfo(err);
             return;
+        }
+
+        // Check if it is a string, if so, return it's length on the stack.
+        if (!pInfo->m_IsArray)
+        {
+            if (pInfo->m_Value.GetType() == typeid(std::string))
+            {
+                std::string s = pInfo->m_Value.GetValue<std::string>();
+                Value v(static_cast<int>(s.size()));
+                ValueNode* pValueNode = new ValueNode(v);
+                m_Nodes.push_back(pValueNode);
+                return;
+            }
         }
 
         if (!pInfo->m_IsArray)
