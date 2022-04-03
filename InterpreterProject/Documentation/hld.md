@@ -172,7 +172,7 @@ The following table shows the operators that are currently supported, their desc
 | +        | Binary Addition                         | 4                | 9+7      |
 | -        | Binary Subtraction                      | 4                | 9-7      |
 | ~        | Unary Bitwise Negate                    | 5                | ~a       |
-| \|        | Binary Bitwise Or                      | 5                | a \| b    |
+| \|       | Binary Bitwise Or                       | 5                | a \| b    |
 | &        | Binary Bitwise And                      | 5                | a & b    |
 | ^        | Binary Bitwise Xor                      | 5                | a ^ b    |
 | <<       | Binary Bitwise Lsh                      | 5                | a << 3   |
@@ -241,7 +241,7 @@ The interpreter supports the notion of multiple assignments in one statement.  C
 
 The above sample assigns the values 0 and 1 to a and b, respectively.
 
-Multiple assignments may be used in functions to return multiple values.
+Multiple assignments may be used in functions to return multiple values.  Multiple assignments may not be used as parameters.
 
 ```
 function foo()
@@ -252,8 +252,19 @@ function foo()
 {q,r} = foo()
 ```
 
+# Design
 
+This interpreter is designed using Flex Bison Yacc and Lex.  The Flex Lex utilities returns a series of tokens to the LALR grammar that is parsed by Flex Yacc.  The Flex Yacc produces a linked list set of nodes that is traversed by a visitor to execute the logic.
 
+```plantuml
+@startuml component
+actor client
+node app
+database db
 
+db->app
+app->client
+@enduml
+```
 
 
