@@ -172,7 +172,7 @@ The following table shows the operators that are currently supported, their desc
 | +        | Binary Addition                         | 4                | 9+7      |
 | -        | Binary Subtraction                      | 4                | 9-7      |
 | ~        | Unary Bitwise Negate                    | 5                | ~a       |
-| \|        | Binary Bitwise Or                       | 5                | a | b    |
+| \|        | Binary Bitwise Or                      | 5                | a \| b    |
 | &        | Binary Bitwise And                      | 5                | a & b    |
 | ^        | Binary Bitwise Xor                      | 5                | a ^ b    |
 | <<       | Binary Bitwise Lsh                      | 5                | a << 3   |
