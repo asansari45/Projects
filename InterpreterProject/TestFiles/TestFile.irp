@@ -1,6 +1,4 @@
-a=1
-b=3
-c=dim[10]
-d=dim[10,10]
-e=dim[5,5,5]
-.vars
+function foo()
+{
+    this hate from my eyes
+}
