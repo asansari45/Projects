@@ -15,14 +15,13 @@ namespace Interpreter
 {
 class Node;
 class SymbolTable;
-};
 
-class InterpreterDriver
+class Driver
 {
 public:
 
-    InterpreterDriver(Interpreter::SymbolTable* pGlobalSymbols);
-    virtual ~InterpreterDriver();
+    Driver(Interpreter::SymbolTable* pGlobalSymbols);
+    virtual ~Driver();
 
     // Parse the input from a string
     int Parse(const std::string input);
@@ -45,4 +44,6 @@ private:
     Interpreter::Node* m_pResult;
     Interpreter::SymbolTable* m_pGlobalSymbols;
     Interpreter::ErrorInterface m_ErrorInfo;
+};
+
 };

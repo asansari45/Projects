@@ -40,7 +40,7 @@ void ProcessError(Interpreter::ErrorInterface::ErrorInfo err, bool interactive)
     }
 }
 
-bool ExecuteNodes(InterpreterDriver& driver, std::string* pResult, bool interactive)
+bool ExecuteNodes(Interpreter::Driver& driver, std::string* pResult, bool interactive)
 {
     Interpreter::ErrorInterface err = driver.GetErrorInfo();
     if (err.IsErrorFlagSet())
@@ -169,7 +169,7 @@ int PerformInteractive()
         // Allow the grammar to have expressions.
         extern int f_StartToken;
         f_StartToken = 1;
-        InterpreterDriver driver(pGlobalSymbols);
+        Interpreter::Driver driver(pGlobalSymbols);
         driver.Parse(input);
 
         bool cont = ExecuteNodes(driver, &result, true);
@@ -217,7 +217,7 @@ int PerformFromFile(const std::string filename)
 
     Interpreter::SymbolTable* pGlobalSymbols = Interpreter::SymbolTable::CreateGlobalSymbols();
 
-    InterpreterDriver driver(pGlobalSymbols);
+    Interpreter::Driver driver(pGlobalSymbols);
 
     Interpreter::Context* pContext = new Interpreter::Context;
     pContext->SetFile(filename);

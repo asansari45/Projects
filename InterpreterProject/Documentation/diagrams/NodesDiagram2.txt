@@ -1,0 +1,77 @@
+@startuml
+
+class Interpreter::Node
+{
+    Accept(NodeVisitor&)
+    Node* m_pNext
+}
+
+class Interpreter::ForNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::FunctionCallNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::FunctionDefNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::FunctionsNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::HelpNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::IfNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::LenNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::LoadNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::PrintNode
+{
+    Accept(NodeVisitor&)
+    Node* m_pNode
+}
+
+class Interpreter::PwdNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::QuitNode
+{
+    Accept(NodeVisitor&)
+}
+
+Interpreter::Node <|--Interpreter::ForNode
+Interpreter::Node <|--Interpreter::FunctionCallNode
+Interpreter::Node <|--Interpreter::FunctionDefNode
+Interpreter::Node <|--Interpreter::FunctionsNode
+Interpreter::Node <|--Interpreter::HelpNode
+Interpreter::Node <|--Interpreter::IfNode
+Interpreter::Node <|--Interpreter::LenNode
+Interpreter::Node <|--Interpreter::LoadNode
+Interpreter::Node <|--Interpreter::PrintNode
+Interpreter::Node <|--Interpreter::PwdNode
+Interpreter::Node <|--Interpreter::QuitNode
+
+@enduml

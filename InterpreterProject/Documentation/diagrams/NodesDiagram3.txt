@@ -1,0 +1,79 @@
+@startuml
+
+class Interpreter::Node
+{
+    Accept(NodeVisitor&)
+    Node* m_pNext
+}
+
+class Interpreter::RandNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::RefNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::ReturnNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::SrandNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::StopNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::TypeIdNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::ValueNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::VarListNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::VarNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::VarsCmdNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::WhileNode
+{
+    Accept(NodeVisitor&)
+    int m_Operator
+    Node* m_pExpression
+    Node* m_pStatements
+}
+
+Interpreter::Node <|--Interpreter::RandNode
+Interpreter::Node <|--Interpreter::RefNode
+Interpreter::Node <|--Interpreter::ReturnNode
+Interpreter::Node <|--Interpreter::SrandNode
+Interpreter::Node <|--Interpreter::StopNode
+Interpreter::Node <|--Interpreter::TypeIdNode
+Interpreter::Node <|--Interpreter::ValueNode
+Interpreter::Node <|--Interpreter::VarListNode
+Interpreter::Node <|--Interpreter::VarNode
+Interpreter::Node <|--Interpreter::VarsCmdNode
+Interpreter::Node <|--Interpreter::WhileNode
+
+@enduml

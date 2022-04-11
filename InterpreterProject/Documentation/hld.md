@@ -252,6 +252,73 @@ function foo()
 {q,r} = foo()
 ```
 
+## Design
+
+The following sections describe the object-oriented C++ design for the Interpreter.
+
+### Static Diagram
+
+![Interpreter Static Diagram](images/MainDiagram.png "Interpreter Static Diagram")
+
+This table describes each of the classes/modules in the diagram.  All of the classes/modules live in the Interpreter namespace except the main function.
+
+| Module/Class | Description                                                                             |
+| ------------ | --------------------------------------------------------------------------------------- |
+| main         | This is the main function in the C++ project. Uses the Driver to Parse the input stream, generate a set of Nodes, and traverse and Execute the Nodes.                                                      |
+| Driver       | Contains the main Parsing and Execution routines.  It is the owner of the Parser class. |
+| Parser       | Contains all the grammar rules for the Interpreter.  Uses the Scanner to tokenize the input stream.  Produces a set of Nodes for the main function.                                                  |
+| Scanner      | Tokenizes the input stream into a series of tokens used by the Parser.  The input stream is either a string or file.                                                                                 |
+| Node         | A hierarchy of nodes representing the Interpreter language.  They are defined in further detail later on.                                                                                                |
+| NodeVisitor | A Visitor Design Pattern used to traverse a linked list of Nodes.                        |
+| ExecutionNodeVisitor | The Visitor used to execute the Nodes present in the linked list.               |
+
+### Node Static Diagram
+
+The following diagrams show the Node hierarchy in more detail.
+
+![Interpreter Node Diagram1](images/NodesDiagram1.png "Interpreter Node Diagram1")
+
+This table desribes each of the classes in the diagram.
+
+| Module       | Description                                                                             |
+| ------------ | --------------------------------------------------------------------------------------- |
+| Node         | This is the base class for all nodes in the hierarchy.  It is a singly-linked list.  It can allow for any NodeVisitor to traverse it and its children.   |
+| BinaryNode   | This node represents all the binary expressions such as a+b, a*b, etc...  It has left and right nodes representing its children. |
+| BreakNode    | This node represents all the break statement that is present in either for or while loops. |
+| ClearNode    | This node represents the clear statement which deletes all variables and function definitions. |
+| DimNode      | This node represents the dimension statement:  a = dim[10]. |
+| FileCloseNode | This node represents the file close statement:  status = fclose(f). |
+| FileEofNode   | This node represents the file eof statement:  status = feof(f). |
+| FileNode      | This node represents the base class for all the file commands. |
+| FileOpenNode  | This node represents the file open statement:  status = fopen("myfile.txt", "r") |
+| FileReadNode  | This node represents the file read statement:  {status,x} = fread(f) |
+| FileWriteNode | This node represents the file write statement:  status = fwrite(f,x) |
+| ForNode       | This node represents the for statement:  for (i=0, i < 10, i=i+1){} |
+| FunctionCallNode | This node represents a function call:  foo(x,y,z+9) |
+| FunctionDefNode | This node represents a function definition:  function foo(x,y,z+9){} |
+| FunctionsNode | This node represents the functions command:  .functions |
+| HelpNode | This node represents the help command:  help() |
+| IfNode | This node represents the if statement:  if(x<y) { a = a + 5 } |
+| LenNode | This node represents the length statement:  a = dim[10] b = len(a) |
+| LoadNode | This node represents the load statement:  load("File.irp") |
+| PrintNode | This not represents the print statement:  print(hex, a, endl) |
+| QuitNode | This node represents the quit statement:  .quit |
+
+
+
+
+
+![Interpreter Node Diagram2](images/NodesDiagram2.png "Interpreter Node Diagram2")
+![Interpreter Node Diagram3](images/NodesDiagram3.png "Interpreter Node Diagram3")
+
+
+
+
+
+
+
+
+
 
 
 

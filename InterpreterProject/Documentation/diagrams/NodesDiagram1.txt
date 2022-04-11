@@ -1,0 +1,144 @@
+@startuml
+
+class Interpreter::Node
+{
+    Accept(NodeVisitor&)
+    Node* m_pNext
+}
+
+class Interpreter::BinaryNode
+{
+    Accept(NodeVisitor&)
+    int m_Operator
+    Node* m_pLeft
+    Node* m_pRight
+}
+
+class Interpreter::BreakNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::ClearNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::DimNode
+{
+    Accept(NodeVisitor&)
+    int m_Dims[3]
+}
+
+class Interpreter::FileCloseNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::FileEofNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::FileNode
+{
+}
+
+class Interpreter::FileOpenNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::FileReadNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::FileWriteNode
+{
+    Accept(NodeVisitor&)
+}
+
+class Interpreter::NodeVisitor
+{
+    VisitNode(Node&)
+    VisitBinaryNode(BinaryNode&)
+    VisitBreakNode(BreakNode&)
+    VisitClearNode(ClearNode&)
+    VisitDimNode(DimNode&)
+    VisitFileCloseNode(FileCloseNode&)
+    VisitFileEofNode(FileEofNode&)
+    VisitFileOpenNode(FileOpenNode&)
+    VisitFileReadNode(FileReadNode&)
+    VisitFileWriteNode(FileWriteNode&)
+    VisitForNode(ForNode&)
+    VisitFunctionCallNode(FunctionCallNode&)
+    VisitFunctionDefNode(FunctionDefNode&)
+    VisitFunctionsNode(FunctionsNode&)
+    VisitHelpNode(HelpNode&)
+    VisitIfNode(IfNode&)
+    VistLenNode(LenNode&)
+    VisitLoadNode(LoadNode&)
+    VisitPrintNode(PrintNode&)
+    VisitQuitNode(QuitNode&)
+    VisitRandNode(RandNode&)
+    VisitRefNode(RefNode&)
+    VisitReturnNode(ReturnNode&)
+    VisitSrandNode(SrandNode&)
+    VisitStopNode(StopNode&)
+    VisitTypeIdNode(TypeIdNode&)
+    VisitValueNode(ValueNode&)
+    VistVarListNode(VarListNode&)
+    VisitVarNode(VarNode&)
+    VisitVarsCmdNode(VarsCmdNode&)
+    VisitWhileNode(WhileNode&)
+}
+
+class Interpreter::ExecutionNodeVisitor
+{
+    VisitNode(Node&)
+    VisitBinaryNode(BinaryNode&)
+    VisitBreakNode(BreakNode&)
+    VisitClearNode(ClearNode&)
+    VisitDimNode(DimNode&)
+    VisitFileCloseNode(FileCloseNode&)
+    VisitFileEofNode(FileEofNode&)
+    VisitFileOpenNode(FileOpenNode&)
+    VisitFileReadNode(FileReadNode&)
+    VisitFileWriteNode(FileWriteNode&)
+    VisitForNode(ForNode&)
+    VisitFunctionCallNode(FunctionCallNode&)
+    VisitFunctionDefNode(FunctionDefNode&)
+    VisitFunctionsNode(FunctionsNode&)
+    VisitHelpNode(HelpNode&)
+    VisitIfNode(IfNode&)
+    VistLenNode(LenNode&)
+    VisitLoadNode(LoadNode&)
+    VisitPrintNode(PrintNode&)
+    VisitQuitNode(QuitNode&)
+    VisitRandNode(RandNode&)
+    VisitRefNode(RefNode&)
+    VisitReturnNode(ReturnNode&)
+    VisitSrandNode(SrandNode&)
+    VisitStopNode(StopNode&)
+    VisitTypeIdNode(TypeIdNode&)
+    VisitValueNode(ValueNode&)
+    VistVarListNode(VarListNode&)
+    VisitVarNode(VarNode&)
+    VisitVarsCmdNode(VarsCmdNode&)
+    VisitWhileNode(WhileNode&)
+}
+
+Interpreter::NodeVisitor <|-- Interpreter::ExecutionNodeVisitor
+Interpreter::Node <|--Interpreter::BinaryNode
+Interpreter::Node <|--Interpreter::BreakNode
+Interpreter::Node <|--Interpreter::ClearNode
+Interpreter::Node <|--Interpreter::DimNode
+Interpreter::Node <|--Interpreter::FileNode
+Interpreter::FileNode <|--Interpreter::FileCloseNode
+Interpreter::FileNode <|--Interpreter::FileEofNode
+Interpreter::FileNode <|--Interpreter::FileOpenNode
+Interpreter::FileNode <|--Interpreter::FileReadNode
+Interpreter::FileNode <|--Interpreter::FileWriteNode
+
+@enduml
