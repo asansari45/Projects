@@ -319,7 +319,7 @@ namespace Interpreter
             return;
         }
 
-        InterpreterDriver driver(m_pGlobalSymbolTable);
+        Driver driver(m_pGlobalSymbolTable);
         Context* pContext = new Interpreter::Context;
         pContext->SetFile(filename);
         pContext->SetLine(1);

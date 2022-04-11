@@ -1,0 +1,56 @@
+@startuml
+
+class Interpreter::Driver
+{
+    Parse()
+    ParseFromFile()
+    GetResult()
+    GetErrorInfo()
+}
+
+class yy::InterpreterParser
+{
+    parse()
+}
+
+class yy::InterpreterScanner
+{
+    yylex()
+}
+
+class yyFlexLexer
+yyFlexLexer <|-- yy::InterpreterScanner
+yy::InterpreterParser -- yy::InterpreterScanner : has >
+Interpreter::Driver -- yy::InterpreterParser : uses >
+
+package "Node Objects"
+{
+    class Interpreter::Node
+    {
+        Accept(NodeVisitor&)
+    }
+}
+
+yy::InterpreterParser -- "Node Objects" : generates >
+
+class Interpreter::NodeVisitor
+{
+    VisitNode(Node&)
+}
+
+class Interpreter::ExecutionNodeVisitor
+{
+    VisitNode(Node&)
+}
+
+Interpreter::NodeVisitor <|-- Interpreter::ExecutionNodeVisitor
+
+package "main"
+{
+}
+
+main -- Interpreter::Driver : uses >
+main -- Interpreter::ExecutionNodeVisitor : uses >
+
+
+@enduml

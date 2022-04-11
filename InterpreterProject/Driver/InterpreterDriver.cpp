@@ -6,7 +6,10 @@
 #include "InterpreterContext.h"
 #include "DebugMemory/DebugMemory.h"
 
-InterpreterDriver::InterpreterDriver(Interpreter::SymbolTable* pGlobalSymbols) :
+namespace Interpreter
+{
+
+Driver::Driver(SymbolTable* pGlobalSymbols) :
     m_pParser(nullptr),
     m_pScanner(nullptr),
     m_pResult(nullptr),
@@ -15,11 +18,11 @@ InterpreterDriver::InterpreterDriver(Interpreter::SymbolTable* pGlobalSymbols) :
 {
 }
 
-InterpreterDriver::~InterpreterDriver()
+Driver::~Driver()
 {
 }
 
-int InterpreterDriver::Parse(const std::string input)
+int Driver::Parse(const std::string input)
 {
     std::istringstream ss(input);
     m_pScanner = new InterpreterScanner(&ss);
@@ -34,11 +37,11 @@ int InterpreterDriver::Parse(const std::string input)
     return status;
 }
 
-int InterpreterDriver::ParseFromFile(const std::string filename)
+int Driver::ParseFromFile(const std::string filename)
 {
     char buf[512];
     sprintf_s(buf, sizeof(buf), "Parsing from file:  %s", filename.c_str());
-    Interpreter::Log::GetInst()->AddMessage(buf);
+    Log::GetInst()->AddMessage(buf);
 
     std::ifstream stream(filename.c_str());
     m_pScanner = new InterpreterScanner(&stream);
@@ -53,14 +56,17 @@ int InterpreterDriver::ParseFromFile(const std::string filename)
     return status;
 }
 
-void InterpreterDriver::Error(std::string file, int line, int column, std::string msg)
+void Driver::Error(std::string file, int line, int column, std::string msg)
 {
-    Interpreter::Context* pContext = Interpreter::contextStack.back();
+    Context* pContext = contextStack.back();
 
-    Interpreter::ErrorInterface::ErrorInfo err;
+    ErrorInterface::ErrorInfo err;
     err.m_File = pContext->GetFile();
     err.m_Line = line;
     err.m_Column = column;
     err.m_Msg = msg;
     m_ErrorInfo.SetErrorInfo(err);
 }
+
+}
+
