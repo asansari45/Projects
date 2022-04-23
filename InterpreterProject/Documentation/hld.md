@@ -294,6 +294,11 @@ This table desribes each of the classes in the diagram.
 | FileOpenNode  | This node represents the file open statement:  status = fopen("myfile.txt", "r") |
 | FileReadNode  | This node represents the file read statement:  {status,x} = fread(f) |
 | FileWriteNode | This node represents the file write statement:  status = fwrite(f,x) |
+
+![Interpreter Node Diagram2](images/NodesDiagram2.png "Interpreter Node Diagram2")
+
+| Module       | Description                                                                             |
+| ------------ | --------------------------------------------------------------------------------------- |
 | ForNode       | This node represents the for statement:  for (i=0, i < 10, i=i+1){} |
 | FunctionCallNode | This node represents a function call:  foo(x,y,z+9) |
 | FunctionDefNode | This node represents a function definition:  function foo(x,y,z+9){} |
@@ -305,9 +310,37 @@ This table desribes each of the classes in the diagram.
 | PrintNode | This not represents the print statement:  print(hex, a, endl) |
 | QuitNode | This node represents the quit statement:  .quit |
 
-
-
-
-
-![Interpreter Node Diagram2](images/NodesDiagram2.png "Interpreter Node Diagram2")
 ![Interpreter Node Diagram3](images/NodesDiagram3.png "Interpreter Node Diagram3")
+
+| Module       | Description                                                                             |
+| ------------ | --------------------------------------------------------------------------------------- |
+| RandNode | This node represents the rand statement:  rand() |
+| RefNode  | This node represents a reference parameter:  function foo(&s) |
+| ReturnNode | This node represents the return statement:  return(x,y,z) |
+| SrandNode | This node represents the srand statement:  srand(123) |
+| StopNode | This node represents an internal statement that indicates whether to stop execution or not. |
+| TypeIdNode | This node represents the typeid of a variable:  typeid(x).  Used for diagnostic purposes. |
+| ValueNode | This node represents the different literals such as:  8, 0x90, b100_0101. |
+| VarListNode | This node represents variable lists such as {1,2,a}. |
+| VarsCmdNode | This node represents the .var command. |
+| WhileNode | This node represents the while statement:  while (x<3){...} |
+
+### General Interactive Operation
+
+The following sequence diagram shows how the classes interact with each other to execute the user's project.  The sequence diagram shows the interactive operation; aka, offering the user a prompt after each statement.
+
+![Interpreter Interactive Sequence](images/InteractiveSequenceDiagram.png "Interpreter Interactive Sequence Diagram")
+
+[1-2]  The main() function gets invoked for the InterpreterProject C++ project.  It parses apart the command-line arguments and invokes the PerformInteractive() function.
+
+[3]  The global symbol table is created to store global symbols.
+
+[4]  A new Interpreter::Driver is created to parse the provided input string from the user in a loop.
+
+[5-10]  The Driver creates a Scanner and Parser.  Then it tells the Parser to parse the input using the Scanner to tokenize the input.  After its done parsing, it deletes the Parser and Scanner.
+
+[11-13]  The Project then retrieves the node tree from the Driver.  It asks the Node to accept the ExecutionNodeVisitor.  The ExecutionNodeVisitor traverses the Nodes and executes each one of them.
+
+[14-17]  Based on what specific type of Node is present, the appropriate ExecutionNodeVisitor method is executed.
+
+

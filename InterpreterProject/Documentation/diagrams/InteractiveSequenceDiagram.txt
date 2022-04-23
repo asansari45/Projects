@@ -1,0 +1,29 @@
+@startuml
+autonumber
+-> Project : main
+Project -> Project : PerformInteractive
+Project -> SymbolTable:CreateGlobalSymbols
+Project -> Driver:new
+loop 
+    Project -> Driver:Parse
+    Driver -> Scanner:new
+    Driver -> Parser:new
+    Driver -> Parser:Parse
+    Driver -> Parser:delete
+    Driver -> Scanner:delete
+    Project -> Driver:GetResult
+    Project -> ExecutionNodeVisitor:new
+    Project -> Node:Accept
+    alt while node case
+    Node -> ExecutionNodeVisitor:VisitWhileNode
+    else if node case
+    Node -> ExecutionNodeVisitor:VisitIfNode
+    else for node case
+    Node -> ExeuctionNodeVisitor::VisitForNode
+    else ...
+    Node -> ExecutionNodeVisitor::VisitXyzNode
+    end
+end
+
+
+@enduml
